@@ -73,3 +73,7 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+
+# D3D Effects build results
+*.fxo
+*.cod
