@@ -1,0 +1,20 @@
+Debugging
+	Research how to debug D3D applications
+		https://msdn.microsoft.com/en-us/library/hh315751(v=vs.110).aspx
+
+Tools
+	DirectX SDK Tools Catalog http://blogs.msdn.com/b/chuckw/archive/2014/10/28/directx-sdk-tools-catalog.aspx
+
+D3DX Replacements
+Living without D3DX http://blogs.msdn.com/b/chuckw/archive/2013/08/21/living-without-d3dx.aspx
+
+Code Samples
+	DirectX SDK Samples Catalog http://blogs.msdn.com/b/chuckw/archive/2013/09/20/directx-sdk-samples-catalog.aspx
+	https://code.msdn.microsoft.com/
+
+Topic to Study
+	WARP (D3D_DRIVER_TYPE_WARP)
+	Deferred rendering
+	Getting NVidia custom resolutions
+	Casting (reinterpret, static, dynamic, ())
+	enums
