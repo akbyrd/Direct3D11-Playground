@@ -20,20 +20,20 @@ class D3DApp
 public:
 	D3DApp(HINSTANCE hInstance);
 	virtual ~D3DApp();
-	
+
 	HINSTANCE AppInst()const;
 	HWND      MainWnd()const;
 	float     AspectRatio()const;
-	
+
 	int Run();
- 
-	// Framework methods.  Derived client class overrides these methods to 
+
+	// Framework methods.  Derived client class overrides these methods to
 	// implement specific application requirements.
 
 	virtual bool Init();
-	virtual void OnResize(); 
+	virtual void OnResize();
 	virtual void UpdateScene(float dt)=0;
-	virtual void DrawScene()=0; 
+	virtual void DrawScene()=0;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	// Convenience overrides for handling mouse input.

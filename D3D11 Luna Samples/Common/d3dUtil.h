@@ -9,7 +9,7 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
- 
+
 #include <d3d11.h>
 #include <d3dx11.h>
 #include "d3dx11Effect.h"
@@ -45,7 +45,7 @@
 	#ifndef HR
 	#define HR(x) (x)
 	#endif
-#endif 
+#endif
 
 
 //---------------------------------------------------------------------------------------
@@ -68,14 +68,14 @@ class d3dHelper
 {
 public:
 	///<summary>
-	/// 
+	///
 	/// Does not work with compressed formats.
 	///</summary>
 	static ID3D11ShaderResourceView* CreateTexture2DArraySRV(
 		ID3D11Device* device, ID3D11DeviceContext* context,
 		std::vector<std::wstring>& filenames,
 		DXGI_FORMAT format = DXGI_FORMAT_FROM_FILE,
-		UINT filter = D3DX11_FILTER_NONE, 
+		UINT filter = D3DX11_FILTER_NONE,
 		UINT mipFilter = D3DX11_FILTER_LINEAR);
 
 	static ID3D11ShaderResourceView* CreateRandomTexture1DSRV(ID3D11Device* device);
@@ -113,7 +113,7 @@ void ExtractFrustumPlanes(XMFLOAT4 planes[6], CXMMATRIX M);
 //   1. extern so there is only one copy of the variable, and not a separate
 //      private copy in each .obj.
 //   2. __declspec(selectany) so that the compiler does not complain about
-//      multiple definitions in a .cpp file (it can pick anyone and discard 
+//      multiple definitions in a .cpp file (it can pick anyone and discard
 //      the rest because they are constant--all the same).
 
 namespace Colors
