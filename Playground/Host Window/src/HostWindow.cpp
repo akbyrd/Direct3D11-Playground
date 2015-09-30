@@ -48,6 +48,9 @@ bool HostWindow::Initialize()
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
 
+	gameTimer.Reset();
+	gameTimer.Start();
+
 	return true;
 }
 
@@ -65,34 +68,13 @@ void HostWindow::Shutdown()
 	hInstance = nullptr;
 }
 
-void HostWindow::Run()
+void HostWindow::Update()
 {
-	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
+	gameTimer.Tick();
+	UpdateFrameStatistics();
 
-	int ret;
-
-	while ( true )
-	{
-		//Handle window messages
-		while ( ret = PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) )
-		{
-			if ( ret == -1 )
-			{
-				LOG_ERROR(WindowPeekMessageFailed);
-				return;
-			}
-
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-
-			//If Windows signals to end the application, exit
-			if ( msg.message == WM_QUIT ) { return; }
-		}
-
-		//Render
-		//...
-	}
+	//Render
+	//...
 
 	return;
 }
@@ -116,4 +98,29 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	default:
 		return __super::MessageHandler(uMsg, wParam, lParam);
 	}
+}
+
+void HostWindow::UpdateFrameStatistics()
+{
+	const int bufferSize = 30;
+	static double buffer[bufferSize];
+	static int head = -1;
+	static int length = 0;
+
+	//Update the head position and length
+	head = (head + 1) % bufferSize;
+	if ( length < bufferSize - 1 )
+		++length;
+
+	//Update the head value
+	buffer[head] = gameTimer.RealTime();
+
+	int tail = (head - length) % bufferSize;
+	if ( tail < 0 )
+		tail += bufferSize;
+
+	double delta = buffer[head] - buffer[tail];
+	averageFrameTime = delta / length;
+
+	return;
 }

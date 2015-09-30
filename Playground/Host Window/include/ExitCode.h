@@ -5,6 +5,7 @@ enum ExitCode
 	Quit    = 1,
 
 	//Errors
-	ApplicationPeekMessageFailed = -1,
-	WindowPeekMessageFailed      = -2,
+	PeekMessageFailed      = -1,
+	WindowNewFailed        = -2,
+	WindowInitializeFailed = -3
 };

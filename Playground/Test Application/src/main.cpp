@@ -18,16 +18,47 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 	//Create the initialize the system object
 	HostWindow* window;
-	RETURN_IF_FALSE(window = new HostWindow, -1);
-	RETURN_IF_FALSE(window->Initialize()   , -1);
+	RETURN_IF_FALSE(window = new HostWindow, ExitCode::WindowNewFailed       );
+	RETURN_IF_FALSE(window->Initialize()   , ExitCode::WindowInitializeFailed);
 
-	//Run, baby, run!
-	window->Run();
+	int ret = 0;
+	MSG msg;
+	ZeroMemory(&msg, sizeof(MSG));
+
+	//Message and render loop
+	while ( ret == 0 )
+	{
+		//Handle thread messages
+		while ( ret = PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) )
+		{
+			//Failure case
+			if ( ret == -1 )
+			{
+				ret = ExitCode::PeekMessageFailed;
+				LOG_ERROR(ret);
+				break;
+			}
+
+			//Dispatch mesages to the appropriate window
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+
+			//I wonder what kind of messages wouldn't have a window pointer...
+			if ( msg.hwnd == nullptr )
+				std::cout << "Found non-window message: " << msg.message << std::endl;
+
+			//Clean quit
+			if ( msg.message == WM_QUIT ) { ret = ExitCode::Quit;  break; }
+		}
+
+		//Run, baby, run!
+		window->Update();
+	}
 
 	//Shutdown and release the system object
 	window->Shutdown();
 	delete window;
 	window = nullptr;
 
-	return 0;
+	return ret;
 }

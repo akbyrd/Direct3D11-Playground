@@ -10,6 +10,7 @@
     <ClCompile Include="src\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\GameTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stdafx.h">
@@ -30,6 +31,7 @@
     <ClInclude Include="include\ExitCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GameTimer.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Direct3D11 Playground.ico">
