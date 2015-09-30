@@ -83,15 +83,24 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( uMsg )
 	{
-	case WM_DESTROY:
-	case WM_CLOSE:
-		PostQuitMessage(0);
-		return 0;
-
 	case WM_KEYDOWN:
 	case WM_KEYUP:
 		if ( wParam == VK_ESCAPE )
 			PostQuitMessage(0);
+		return 0;
+
+	//TODO: This should probably cap the frame rate of the application
+	//Pause the game timer when the window loses focus.
+	case WM_ACTIVATE:
+		if ( LOWORD(wParam) == WA_INACTIVE )
+			gameTimer.Stop();
+		else
+			gameTimer.Start();
+		return 0;
+
+	case WM_DESTROY:
+	case WM_CLOSE:
+		PostQuitMessage(0);
 		return 0;
 
 	//Send unhandled messages to the base class
@@ -106,11 +115,15 @@ void HostWindow::UpdateFrameStatistics()
 	static double buffer[bufferSize];
 	static int head = -1;
 	static int length = 0;
+	static double deltaToMS;
 
 	//Update the head position and length
 	head = (head + 1) % bufferSize;
 	if ( length < bufferSize - 1 )
+	{
 		++length;
+		deltaToMS = 1000. / length;
+	}
 
 	//Update the head value
 	buffer[head] = gameTimer.RealTime();
@@ -120,7 +133,7 @@ void HostWindow::UpdateFrameStatistics()
 		tail += bufferSize;
 
 	double delta = buffer[head] - buffer[tail];
-	averageFrameTime = delta / length;
+	averageFrameTime = delta * deltaToMS;
 
 	return;
 }
