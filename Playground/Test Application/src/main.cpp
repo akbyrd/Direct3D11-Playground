@@ -48,11 +48,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 				std::cout << "Found non-window message: " << msg.message << std::endl;
 
 			//Clean quit
-			if ( msg.message == WM_QUIT ) { ret = ExitCode::Quit;  break; }
+			if ( msg.message == WM_QUIT ) { ret = ExitCode::Quit; break; }
 		}
 
 		//Run, baby, run!
 		window->Update();
+
+		//Slow the update rate when the window is not active
+		if ( !window->IsFocused() )
+			Sleep(100);
 	}
 
 	//Shutdown and release the system object

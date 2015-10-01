@@ -5,6 +5,11 @@
 
 #pragma once
 
+#if defined(DEBUG) || defined(_DEBUG)
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
+
 #include "targetver.h"
 
 // Exclude rarely-used stuff from Windows headers
@@ -19,7 +24,7 @@
 #include <memory.h>
 #include <tchar.h>
 
-// For some GUI magic in the DirectX headers. Must be included before them.
+// For some GUID magic in the DirectX headers. Must be included before them.
 #include <InitGuid.h>
 
 // Direct3D 11 Header Files

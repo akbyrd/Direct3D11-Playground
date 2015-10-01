@@ -240,7 +240,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			else if( wParam == SIZE_RESTORED )
 			{
-
 				// Restoring from minimized state?
 				if( mMinimized )
 				{
@@ -248,7 +247,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					mMinimized = false;
 					OnResize();
 				}
-
 				// Restoring from maximized state?
 				else if( mMaximized )
 				{

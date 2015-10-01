@@ -7,14 +7,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rastertek Window", "Rastert
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rastertek Tutorial 2", "Rastertek Tutorial 2\Rastertek Tutorial 2.vcxproj", "{BB7EEE20-35D0-4EC4-8F74-454EE36CCC2F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Direct3D11 Template", "Direct3D11 Template\Direct3D11 Template.vcxproj", "{9D37719D-2D64-44A6-8247-342B92D4A228}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Host Window", "Host Window\Host Window.vcxproj", "{55D6565C-D542-464B-9485-FA681672B4D8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test Application", "Test Application\Test Application.vcxproj", "{98846D11-7687-4106-8BCB-F4B232817496}"
 	ProjectSection(ProjectDependencies) = postProject
 		{55D6565C-D542-464B-9485-FA681672B4D8} = {55D6565C-D542-464B-9485-FA681672B4D8}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00 - Empty Project", "00 - Empty Project\00 - Empty Project.vcxproj", "{9D37719D-2D64-44A6-8247-342B92D4A228}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00 - Empty Project", "01 - D3D11 Core\01 - D3D11 Core.vcxproj", "{1FEB782B-C79E-4A6D-BE07-D1E0787A75C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,10 +32,6 @@ Global
 		{BB7EEE20-35D0-4EC4-8F74-454EE36CCC2F}.Debug|Win32.Build.0 = Debug|Win32
 		{BB7EEE20-35D0-4EC4-8F74-454EE36CCC2F}.Release|Win32.ActiveCfg = Release|Win32
 		{BB7EEE20-35D0-4EC4-8F74-454EE36CCC2F}.Release|Win32.Build.0 = Release|Win32
-		{9D37719D-2D64-44A6-8247-342B92D4A228}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9D37719D-2D64-44A6-8247-342B92D4A228}.Debug|Win32.Build.0 = Debug|Win32
-		{9D37719D-2D64-44A6-8247-342B92D4A228}.Release|Win32.ActiveCfg = Release|Win32
-		{9D37719D-2D64-44A6-8247-342B92D4A228}.Release|Win32.Build.0 = Release|Win32
 		{55D6565C-D542-464B-9485-FA681672B4D8}.Debug|Win32.ActiveCfg = Debug|Win32
 		{55D6565C-D542-464B-9485-FA681672B4D8}.Debug|Win32.Build.0 = Debug|Win32
 		{55D6565C-D542-464B-9485-FA681672B4D8}.Release|Win32.ActiveCfg = Release|Win32
@@ -42,6 +40,14 @@ Global
 		{98846D11-7687-4106-8BCB-F4B232817496}.Debug|Win32.Build.0 = Debug|Win32
 		{98846D11-7687-4106-8BCB-F4B232817496}.Release|Win32.ActiveCfg = Release|Win32
 		{98846D11-7687-4106-8BCB-F4B232817496}.Release|Win32.Build.0 = Release|Win32
+		{9D37719D-2D64-44A6-8247-342B92D4A228}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9D37719D-2D64-44A6-8247-342B92D4A228}.Debug|Win32.Build.0 = Debug|Win32
+		{9D37719D-2D64-44A6-8247-342B92D4A228}.Release|Win32.ActiveCfg = Release|Win32
+		{9D37719D-2D64-44A6-8247-342B92D4A228}.Release|Win32.Build.0 = Release|Win32
+		{1FEB782B-C79E-4A6D-BE07-D1E0787A75C9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1FEB782B-C79E-4A6D-BE07-D1E0787A75C9}.Debug|Win32.Build.0 = Debug|Win32
+		{1FEB782B-C79E-4A6D-BE07-D1E0787A75C9}.Release|Win32.ActiveCfg = Release|Win32
+		{1FEB782B-C79E-4A6D-BE07-D1E0787A75C9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,6 +2,8 @@
 #include "HostWindow.h"
 #include "ExitCode.h"
 
+bool HostWindow::IsFocused() const { return isActive && !isMinimized; }
+
 bool HostWindow::Initialize()
 {
 	//Get the instance of this application
@@ -30,8 +32,8 @@ bool HostWindow::Initialize()
 	int desktopHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	//Determine window size
-	int windowWidth  = desktopWidth  > 800 ? 800 : desktopWidth;
-	int windowHeight = desktopHeight > 600 ? 600 : desktopHeight;
+	windowWidth  = std::min(windowWidth, desktopWidth);
+	windowHeight = std::min(windowHeight, desktopHeight);
 
 	//Determine window position
 	int windowPosX = (desktopWidth  - windowWidth ) / 2;
@@ -39,7 +41,7 @@ bool HostWindow::Initialize()
 
 	//Create the window with the screen settings and get the handle to it
 	WinCreateWindow(wc, WS_EX_APPWINDOW, applicationName, applicationName,
-	                WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
+	                WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 	                windowPosX, windowPosY, windowWidth, windowHeight,
 	                nullptr, nullptr, hInstance);
 
@@ -56,6 +58,8 @@ bool HostWindow::Initialize()
 
 void HostWindow::Shutdown()
 {
+	gameTimer.Stop();
+
 	//Show the mouse cursor
 	ShowCursor(true);
 
@@ -73,10 +77,17 @@ void HostWindow::Update()
 	gameTimer.Tick();
 	UpdateFrameStatistics();
 
+	if ( isResizing ) { return; }
+
 	//Render
 	//...
 
 	return;
+}
+
+void HostWindow::Resize()
+{
+
 }
 
 LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -93,13 +104,76 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	//Pause the game timer when the window loses focus.
 	case WM_ACTIVATE:
 		if ( LOWORD(wParam) == WA_INACTIVE )
+		{
 			gameTimer.Stop();
+			isActive = false;
+		}
 		else
+		{
 			gameTimer.Start();
+			isActive = true;
+		}
 		return 0;
 
-	case WM_DESTROY:
+	//Includes moves
+	case WM_ENTERSIZEMOVE:
+		gameTimer.Stop();
+		isResizing = true;
+		return 0;
+
+	//Includes moves
+	case WM_EXITSIZEMOVE:
+		gameTimer.Start();
+		isResizing = false;
+		Resize();
+		return 0;
+
+	case WM_SIZE:
+		windowWidth  = LOWORD(lParam);
+		windowHeight = HIWORD(lParam);
+		switch ( wParam )
+		{
+		case SIZE_MINIMIZED:
+			gameTimer.Stop();
+			isMinimized = true;
+			break;
+
+		case SIZE_MAXIMIZED:
+			isMaximized = true;
+			break;
+
+		/* Sent for any size event that isn't covered above, doesn't mean an
+		 * actual 'restore' operation on the window.
+		*/
+		case SIZE_RESTORED:
+			//Actual restore operation
+			if ( isMinimized )
+			{
+				gameTimer.Start();
+				isMinimized = false;
+				Resize();
+			}
+			else if ( isMaximized )
+			{
+				isMaximized = false;
+				Resize();
+			}
+			else if ( !isResizing )
+			{
+				Resize();
+			}
+			break;
+		}
+		return 0;
+
+	case WM_GETMINMAXINFO:
+		//Limit the minimum window size
+		((MINMAXINFO*) lParam)->ptMinTrackSize.x = 200;
+		((MINMAXINFO*) lParam)->ptMinTrackSize.y = 200;
+		return 0;
+
 	case WM_CLOSE:
+	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
 
