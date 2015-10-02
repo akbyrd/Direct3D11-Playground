@@ -5,20 +5,20 @@ class Renderer final
 public:
 	Renderer();
 
-	void Init();
+	long Init();
 
 private:
-	bool InitializeDevice();
+	long InitializeDevice();
 	ID3D11Device*        d3dDevice;
-	ID3D11DeviceContext* d3dDeviceContext;
+	ID3D11DeviceContext* d3dImmediateContext;
 
-	void InitializeSwapChain();
-	void InitializeDXGIFactory();
-	void InitializeRenderTargetView();
+	long InitializeSwapChain();
+	long InitializeDXGIFactory();
+	long InitializeRenderTargetView();
 
-	void InitializeDepthBuffer();
+	long InitializeDepthBuffer();
 
-	void InitializeResourceBindings();
+	long InitializeResourceBindings();
 
-	void InitializeViewport();
+	long InitializeViewport();
 };

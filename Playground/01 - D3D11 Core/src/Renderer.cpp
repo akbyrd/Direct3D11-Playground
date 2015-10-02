@@ -1,12 +1,13 @@
 #include "stdafx.h"
 #include "Renderer.h"
+#include "ExitCode.h"
 #include "D3D11Utility.h"
 
 #pragma comment(lib, "D3D11.lib")
 
 Renderer::Renderer() { }
 
-void Renderer::Init()
+long Renderer::Init()
 {
 	InitializeDevice();
 	//InitializeSwapChain();
@@ -15,13 +16,16 @@ void Renderer::Init()
 	//InitializeDepthBuffer();
 	//InitializeResourceBindings();
 	//InitializeViewport();
+
+	return ExitCode::Success;
 }
 
-bool Renderer::InitializeDevice()
+long Renderer::InitializeDevice()
 {
 	UINT createDeviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
 	#ifdef _DEBUG
-	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_DEBUGGABLE;
+	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUGGABLE; //11_1+
 	#endif
 
 	D3D_FEATURE_LEVEL featureLevel;
@@ -35,14 +39,14 @@ bool Renderer::InitializeDevice()
 		D3D11_SDK_VERSION,
 		&d3dDevice,
 		&featureLevel,
-		&d3dDeviceContext
+		&d3dImmediateContext
 	);
 
 	if ( LOG_ERROR(hr) )
 		return hr;
 
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
-		return false;
+		return ExitCode::D3DFeatureLevelNotSupported;
 
-	return true;
+	return ExitCode::Success;
 }

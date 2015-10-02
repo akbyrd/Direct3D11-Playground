@@ -34,5 +34,8 @@
     <ClInclude Include="include\D3D11Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ExitCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

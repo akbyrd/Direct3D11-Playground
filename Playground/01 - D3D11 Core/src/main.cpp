@@ -8,7 +8,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
+	long ret = 0;
+
 	Renderer* renderer = new Renderer();
-	renderer->Init();
-	return 0;
+	ret = renderer->Init();
+
+	return ret;
 }
