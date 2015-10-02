@@ -18,6 +18,11 @@
 // Windows Header Files:
 #include <windows.h>
 
+// C++ Header Files
+#include <iostream>
+#include <sstream>
+#include <string>
+
 // C RunTime Header Files
 //#include <stdlib.h>
 //#include <malloc.h>
@@ -28,6 +33,11 @@
 #include <InitGuid.h>
 
 // Direct3D 11 Header Files
+#include <d3d11_2.h>
 
 // Macros
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
+
+// Convert char* to wchar_t*
+#define _WIDE(x) L ## x
+#define WIDE(x) _WIDE(x)
