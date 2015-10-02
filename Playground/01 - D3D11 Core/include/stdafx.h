@@ -19,10 +19,10 @@
 #include <windows.h>
 
 // C RunTime Header Files
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
+//#include <stdlib.h>
+//#include <malloc.h>
+//#include <memory.h>
+//#include <tchar.h>
 
 // For some GUID magic in the DirectX headers. Must be included before them.
 #include <InitGuid.h>
