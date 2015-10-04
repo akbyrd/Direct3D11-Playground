@@ -10,51 +10,36 @@
     <ClCompile Include="src\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameTimer.cpp" />
+    <ClCompile Include="src\GameTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\HostWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ExitCode.h">
+    <ClInclude Include="private include\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\GameTimer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\Direct3D11 Playground.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
+    <ClInclude Include="private include\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="private include\ExitCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GameTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
       <UniqueIdentifier>{fb16e9d2-355e-4fe9-98fc-ed0c3ec29f88}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{ff2e35a2-2bdb-4b1b-b54f-5edc4cb39981}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{0d7be5f2-0384-4afe-8145-38482153904f}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="res\Direct3D11 Playground.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
   </ItemGroup>
 </Project>

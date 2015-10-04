@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Window.h"
 #include "GameTimer.h"
 
@@ -6,12 +5,13 @@ class HostWindow final : public Window
 {
 public:
 	bool IsFocused() const;
+	HWND GetHWND() const;
 
 	bool Initialize();
-	void Update();
-	void Shutdown();
+	long Update();
+	long Teardown();
 
-	void Resize();
+	long Resize();
 
 protected:
 	virtual LRESULT MessageHandler(UINT, WPARAM, LPARAM);

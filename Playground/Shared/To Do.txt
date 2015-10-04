@@ -18,4 +18,6 @@ Topic to Study
 	Getting NVidia custom resolutions
 	Casting (reinterpret, static, dynamic, ())
 	enums
+	destructors
+	attributes
 	smart pointers

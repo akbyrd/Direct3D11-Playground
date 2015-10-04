@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 class Window
 {
 protected:
@@ -22,5 +20,4 @@ protected:
 		HINSTANCE hInstance);
 
 	HWND hwnd;
-
 };

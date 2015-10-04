@@ -29,8 +29,12 @@
 // Direct3D 11 Header Files
 #include <d3d11_2.h>
 
+// Project Header Files
+#include "ExitCode.h"
+
 // Macros
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
+#define RETURN_IF_FAILED(x)   { long ret = (x); if ( ret < 0 ) { return ret; } }
 
 // Convert char* to wchar_t*
 #define _WIDE(x) L ## x

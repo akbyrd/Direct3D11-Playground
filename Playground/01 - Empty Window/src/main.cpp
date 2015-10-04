@@ -4,10 +4,13 @@
 #endif
 
 #include <Windows.h>
+#include <iostream>
+
 #include "HostWindow.h"
 #include "ExitCode.h"
 
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
+#define LOG_ERROR(x) { std::cout << "Error: " << x; }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -60,7 +63,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	}
 
 	//Shutdown and release the system object
-	window->Shutdown();
+	window->Teardown();
 	delete window;
 	window = nullptr;
 

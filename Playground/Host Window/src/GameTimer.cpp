@@ -68,7 +68,7 @@ void GameTimer::Tick()
 	realTime = realTimeTicks * secondsPerTick;
 
 	realDeltaTimeTicks = newTicks;
-	realDeltaTime = realDeltaTimeTicks * newTicks;
+	realDeltaTime = realDeltaTimeTicks * secondsPerTick;
 
 	if ( !isStopped )
 	{

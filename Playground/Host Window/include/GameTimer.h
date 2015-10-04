@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 class GameTimer final
 {
 public:

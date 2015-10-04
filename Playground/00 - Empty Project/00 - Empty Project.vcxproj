@@ -85,6 +85,9 @@
     <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="include\targetver.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Shared\To Do.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -3,6 +3,7 @@
 #include "ExitCode.h"
 
 bool HostWindow::IsFocused() const { return isActive && !isMinimized; }
+HWND HostWindow::GetHWND() const { return hwnd; }
 
 bool HostWindow::Initialize()
 {
@@ -56,7 +57,7 @@ bool HostWindow::Initialize()
 	return true;
 }
 
-void HostWindow::Shutdown()
+long HostWindow::Teardown()
 {
 	gameTimer.Stop();
 
@@ -70,24 +71,26 @@ void HostWindow::Shutdown()
 	//Remove the application instance
 	UnregisterClass(applicationName, hInstance);
 	hInstance = nullptr;
+
+	return ExitCode::Success;
 }
 
-void HostWindow::Update()
+long HostWindow::Update()
 {
 	gameTimer.Tick();
 	UpdateFrameStatistics();
 
-	if ( isResizing ) { return; }
+	if ( isResizing ) { return ExitCode::Success; }
 
 	//Render
 	//...
 
-	return;
+	return ExitCode::Success;
 }
 
-void HostWindow::Resize()
+long HostWindow::Resize()
 {
-
+	return ExitCode::Success;
 }
 
 LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
