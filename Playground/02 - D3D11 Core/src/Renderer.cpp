@@ -22,11 +22,14 @@ long Renderer::Initialize()
 	result = InitializeSwapChain();
 	if ( result < 0 ) { return result; }
 
-	//InitializeDXGIFactory();
-	//InitializeRenderTargetView();
-	//InitializeDepthBuffer();
-	//InitializeResourceBindings();
-	//InitializeViewport();
+	result = InitializeDepthBuffer();
+	if ( result < 0 ) { return result; }
+
+	InitializeOutputMerger();
+	if ( result < 0 ) { return result; }
+
+	InitializeViewport();
+	if ( result < 0 ) { return result; }
 
 	return ExitCode::Success;
 }
@@ -41,9 +44,7 @@ long Renderer::InitializeDevice()
 	//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUGGABLE; //11_1+
 	#endif
 
-	D3D_FEATURE_LEVEL    featureLevel;
-	ID3D11Device*        pD3D11Device;
-	ID3D11DeviceContext* pD3D11DeviceContext;
+	D3D_FEATURE_LEVEL featureLevel;
 
 	hr = D3D11CreateDevice(
 		nullptr,
@@ -52,80 +53,69 @@ long Renderer::InitializeDevice()
 		createDeviceFlags,
 		nullptr, 0,
 		D3D11_SDK_VERSION,
-		&pD3D11Device,
+		&pD3DDevice,
 		&featureLevel,
-		&pD3D11DeviceContext
-	);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
+		&pD3DImmediateContext
+	); CHECK(hr);
 
 	//Check feature level
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
-		return ExitCode::D3DFeatureLevelNotSupported;
-
-	//Get device and context for 11.2
-	hr = pD3D11Device->QueryInterface(__uuidof(ID3D11Device2), (void**) &pD3DDevice);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
-	pD3D11Device->Release();
-
-	hr = pD3D11DeviceContext->QueryInterface(__uuidof(ID3D11DeviceContext2), (void**) &pD3DImmediateContext);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
-	pD3D11DeviceContext->Release();
-
-	//Check for the WARP driver
-	IDXGIDevice3* dxgiDevice = nullptr;
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice3), reinterpret_cast<void**>(&dxgiDevice));
-	if ( !LOG_IF_FAILED(hr) )
 	{
-		IDXGIAdapter* adapter = nullptr;
-		hr = dxgiDevice->GetAdapter(&adapter);
-		if ( !LOG_IF_FAILED(hr) )
-		{
-			DXGI_ADAPTER_DESC desc;
-			hr = adapter->GetDesc(&desc);
-			if ( !LOG_IF_FAILED(hr) )
-			{
-				if ( (desc.VendorId == 0x1414) && (desc.DeviceId == 0x8c) )
-				{
-					// WARNING: Microsoft Basic Render Driver is active.
-					// Performance of this application may be unsatisfactory.
-					// Please ensure that your video card is Direct3D10/11 capable
-					// and has the appropriate driver installed.
-				}
-			}
-			adapter->Release();
-		}
-		dxgiDevice->Release();
+		LOG_ERROR(L"Created device does not support D3D 11");
+		hr = ExitCode::D3DFeatureLevelNotSupported;
+		goto Cleanup;
 	}
 
-	return ExitCode::Success;
+	hr = CheckForWarpDriver();
+
+	hr = ExitCode::Success;
+
+Cleanup:
+
+	return hr;
 }
 
+long Renderer::CheckForWarpDriver()
+{
+	HRESULT hr;
+
+	//Check for the WARP driver
+	IDXGIDevice1* pDXGIDevice = nullptr;
+	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), reinterpret_cast<void**>(&pDXGIDevice)); CHECK(hr);
+
+	IDXGIAdapter* pDXGIAdapter = nullptr;
+	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter); CHECK(hr);
+
+	DXGI_ADAPTER_DESC desc;
+	hr = pDXGIAdapter->GetDesc(&desc); CHECK(hr);
+
+	if ( (desc.VendorId == 0x1414) && (desc.DeviceId == 0x8c) )
+	{
+		// WARNING: Microsoft Basic Render Driver is active.
+		// Performance of this application may be unsatisfactory.
+		// Please ensure that your video card is Direct3D10/11 capable
+		// and has the appropriate driver installed.
+		LOG_WARNING(L"WARP driver in use.");
+	}
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	RELEASE_COM(&pDXGIAdapter);
+	RELEASE_COM(&pDXGIDevice);
+
+	return hr;
+}
+
+//TODO: Rebuild swap chain on window resize
 long Renderer::InitializeSwapChain()
 {
 	HRESULT hr;
 
 	//Query and set MSAA quality levels
-	hr = pD3DDevice->CheckMultisampleQualityLevels1(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, 0, &numQualityLevels);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
-
-	DXGI_SAMPLE_DESC sampleDesc;
-	sampleDesc.Count = multiSampleCount;
-	sampleDesc.Quality = numQualityLevels - 1;
+	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK(hr);
 
 	//Set swap chain properties
-	//DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
-	//swapChainDesc.Width = width;
-	//swapChainDesc.Height = height;
-	//swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//swapChainDesc.Stereo = false;
-	//swapChainDesc.SampleDesc = sampleDesc;
-	//swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	//swapChainDesc.BufferCount = 1;
-	//swapChainDesc.Scaling = DXGI_SCALING_ASPECT_RATIO_STRETCH; //Probably Windows Phone only
-	//swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	//swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_STRAIGHT;
-	//swapChainDesc.Flags = 0;
-
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	swapChainDesc.BufferDesc.Width = width;
 	swapChainDesc.BufferDesc.Height = height;
@@ -134,8 +124,8 @@ long Renderer::InitializeSwapChain()
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.SampleDesc.Quality = 0;
+	swapChainDesc.SampleDesc.Count = multiSampleCount;
+	swapChainDesc.SampleDesc.Quality = numQualityLevels - 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = 1;
 	swapChainDesc.OutputWindow = hwnd;
@@ -143,40 +133,94 @@ long Renderer::InitializeSwapChain()
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags = 0;
 
-	//TODO: Redo this by hand
-	IDXGIDevice3* dxgiDevice = 0;
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice3), (void**) &dxgiDevice);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
+	//Obtain the DXGI factory used to create the current device
+	IDXGIDevice1* pDXGIDevice = nullptr;
+	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK(hr);
 
-	IDXGIAdapter2* dxgiAdapter = 0;
-	hr = dxgiDevice->GetParent(__uuidof(IDXGIAdapter2), (void**) &dxgiAdapter);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
+	IDXGIAdapter1* pDXGIAdapter = nullptr;
+	hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter1), (void **) &pDXGIAdapter); CHECK(hr);
 
-	IDXGIFactory3* dxgiFactory = 0;
-	hr = dxgiAdapter->GetParent(__uuidof(IDXGIFactory3), (void**) &dxgiFactory);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
+	IDXGIFactory1* pDXGIFactory = nullptr;
+	hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK(hr);
 
-	IDXGISwapChain* mSwapChain;
-	hr = dxgiFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &mSwapChain);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
+	//Create the swap chain
+	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK(hr);
 
-	//TODO: This seems to work, but it's not supposed to?
-	IDXGIFactory3* pDXGIFactory;
-	CreateDXGIFactory(__uuidof(IDXGIFactory3), (void**) &pDXGIFactory);
+	ID3D11Texture2D* pBackBuffer = nullptr;
+	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK(hr);
 
-	IDXGISwapChain* mSwapChain2;
-	hr = pDXGIFactory->CreateSwapChain(
-		(IUnknown*) pD3DDevice,
-		&swapChainDesc,
-		&mSwapChain2
-	);
-	if ( LOG_IF_FAILED(hr) ) { return hr; }
+	//Create a render target view to the back buffer
+	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView); CHECK(hr);
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	RELEASE_COM(&pDXGIFactory);
+	RELEASE_COM(&pDXGIAdapter);
+	RELEASE_COM(&pDXGIDevice);
+	RELEASE_COM(&pBackBuffer);
+
+	return hr;
+}
+
+long Renderer::InitializeDepthBuffer()
+{
+	HRESULT hr;
+
+	D3D11_TEXTURE2D_DESC depthDesc;
+	depthDesc.Width = width;
+	depthDesc.Height = height;
+	depthDesc.MipLevels = 1;
+	depthDesc.ArraySize = 1;
+	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthDesc.SampleDesc.Count = multiSampleCount;
+	depthDesc.SampleDesc.Quality = numQualityLevels - 1;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthDesc.CPUAccessFlags = 0;
+	depthDesc.MiscFlags = 0;
+
+	ID3D11Texture2D* pDepthBuffer = nullptr;
+	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer); CHECK(hr);
+
+	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer, nullptr, &pDepthBufferView); CHECK(hr);
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	RELEASE_COM(&pDepthBuffer);
+
+	return hr;
+}
+
+long Renderer::InitializeOutputMerger()
+{
+	pD3DImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthBufferView);
+
+	return ExitCode::Success;
+}
+
+long Renderer::InitializeViewport()
+{
+	D3D11_VIEWPORT viewport;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = width;
+	viewport.Height = height;
+	viewport.MinDepth = 0;
+	viewport.MaxDepth = 1;
+
+	pD3DImmediateContext->RSSetViewports(0, &viewport);
 
 	return ExitCode::Success;
 }
 
 long Renderer::Update()
 {
+	HRESULT hr;
+
+	hr = pSwapChain->Present(0, 0); LOG_IF_FAILED(hr);
+
 	return ExitCode::Success;
 }
 
@@ -185,6 +229,7 @@ long Renderer::Teardown()
 	RELEASE_COM(&pD3DDevice);
 	RELEASE_COM(&pD3DImmediateContext);
 	RELEASE_COM(&pSwapChain);
+	RELEASE_COM(&pRenderTargetView);
 
 	hwnd = nullptr;
 

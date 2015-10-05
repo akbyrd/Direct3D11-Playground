@@ -15,9 +15,10 @@ Code Samples
 Topic to Study
 	WARP (D3D_DRIVER_TYPE_WARP)
 	Deferred rendering
-	Getting NVidia custom resolutions
+	Getting NVidia/AMD custom resolutions
 	Casting (reinterpret, static, dynamic, ())
 	enums
 	destructors
 	attributes
 	smart pointers
+	Microsoft::WRL::ComPtr

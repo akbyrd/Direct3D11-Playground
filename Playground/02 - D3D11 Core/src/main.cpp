@@ -13,18 +13,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	#endif
 
 	//TODO: Clean up properly on failure cases, instead of returning immediately.
-
-	//Init a window
-	HostWindow* window = new HostWindow();
-	RETURN_IF_FALSE(window, ExitCode::WindowAllocFailed);
-	RETURN_IF_FAILED(window->Initialize());
-
-	//Init a renderer
-	Renderer* renderer = new Renderer(window->GetHWND());
-	RETURN_IF_FALSE(renderer, ExitCode::RendererAllocFailed);
-	RETURN_IF_FAILED(renderer->Initialize());
-
 	int ret = 0;
+
+	//Create a window
+	HostWindow* window = new HostWindow();
+	if ( !window )
+	{
+		ret = ExitCode::WindowAllocFailed;
+		goto Cleanup;
+	}
+
+	//Init window
+	ret = window->Initialize();
+	if ( ret < 0 ) { goto Cleanup; }
+
+	//Create a renderer
+	Renderer* renderer = new Renderer(window->GetHWND());
+	if ( !renderer )
+	{
+		ret = ExitCode::RendererAllocFailed;
+		goto Cleanup;
+	}
+
+	//Init renderer
+	ret = renderer->Initialize();
+	if ( ret < 0 ) { goto Cleanup; }
+
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
@@ -50,21 +64,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 			//Clean quit
 			if ( msg.message == WM_QUIT ) { ret = ExitCode::Quit; break; }
 		}
-		if ( ret != 0 ) { break; }
+		if ( ret != 0 ) { goto Cleanup; }
+
+		ret = window->Update();
+		if ( ret < 0 ) { goto Cleanup; }
 
 		//The fun stuff!
-		if (   window->Update() < 0 ) { break; }
-		if ( renderer->Update() < 0 ) { break; }
+		ret = renderer->Update();
+		if ( ret < 0 ) { goto Cleanup; }
 	}
 
 	//Cleanup and shutdown
-	renderer->Teardown();
-	delete renderer;
-	renderer = nullptr;
+Cleanup:
 
-	window->Teardown();
-	delete window;
-	window = nullptr;
+	if ( renderer )
+	{
+		renderer->Teardown();
+		delete renderer;
+		renderer = nullptr;
+	}
+
+	if ( window )
+	{
+		window->Teardown();
+		delete window;
+		window = nullptr;
+	}
 
 	return ret;
 }

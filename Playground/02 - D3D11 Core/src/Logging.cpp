@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Logging.h"
 
+//TODO: Make implementation DRYer
 namespace Logging
 {
 	void Log(std::wstring message)
@@ -17,7 +18,33 @@ namespace Logging
 	{
 		std::wstringstream stream;
 
-		stream << message << std::endl;
+		stream << function << " - " << message << std::endl;
+
+		//Append the error location (it's clickable!)
+		stream << "\t" << file << "(" << line << ")" << std::endl;
+
+		//Send it all to the VS Output window
+		OutputDebugString(stream.str().c_str());
+	}
+
+	void LogWarning(std::wstring message, char* file, long line, char* function)
+	{
+		std::wstringstream stream;
+
+		stream << "WARNING: " << function << " - " << message << std::endl;
+
+		//Append the error location (it's clickable!)
+		stream << "\t" << file << "(" << line << ")" << std::endl;
+
+		//Send it all to the VS Output window
+		OutputDebugString(stream.str().c_str());
+	}
+
+	void LogError(std::wstring message, char* file, long line, char* function)
+	{
+		std::wstringstream stream;
+
+		stream << "ERROR: " << function << " - " << message << std::endl;
 
 		//Append the error location (it's clickable!)
 		stream << "\t" << file << "(" << line << ")" << std::endl;
@@ -63,6 +90,8 @@ namespace Logging
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 
+		//DebugBreak();
+		__debugbreak();
 		return true;
 	}
 }

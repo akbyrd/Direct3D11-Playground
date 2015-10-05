@@ -27,7 +27,7 @@
 #include <InitGuid.h>
 
 // Direct3D 11 Header Files
-#include <d3d11_2.h>
+#include <d3d11.h>
 
 // Project Header Files
 #include "ExitCode.h"
