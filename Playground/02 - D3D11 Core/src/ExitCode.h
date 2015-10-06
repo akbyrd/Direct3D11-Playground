@@ -9,6 +9,7 @@ enum ExitCode : long
 	//Errors
 	WindowAllocFailed           = -1,
 	RendererAllocFailed         = -2,
-	PeekMessageFailed           = -3,
-	D3DFeatureLevelNotSupported = -4,
+	TimerAllocFailed            = -3,
+	PeekMessageFailed           = -4,
+	D3DFeatureLevelNotSupported = -5,
 };

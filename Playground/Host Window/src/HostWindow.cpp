@@ -51,7 +51,6 @@ bool HostWindow::Initialize()
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
 
-	gameTimer.Reset();
 	gameTimer.Start();
 
 	return true;
@@ -189,10 +188,14 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void HostWindow::UpdateFrameStatistics()
 {
 	const int bufferSize = 30;
+
 	static double buffer[bufferSize];
 	static int head = -1;
 	static int length = 0;
 	static double deltaToMS;
+
+	if ( length == 0 )
+		buffer[bufferSize - 1] = gameTimer.RealTime();
 
 	//Update the head position and length
 	head = (head + 1) % bufferSize;
@@ -211,6 +214,19 @@ void HostWindow::UpdateFrameStatistics()
 
 	double delta = buffer[head] - buffer[tail];
 	averageFrameTime = delta * deltaToMS;
+
+	//Update FPS in window title once a second
+	static double lastFPSUpdateTime = DBL_EPSILON;
+	if ( gameTimer.RealTime() - lastFPSUpdateTime >= .5f )
+	{
+		lastFPSUpdateTime = gameTimer.RealTime();
+
+		std::wostringstream outs;
+		outs << L"FPS: " << std::setprecision(0) << std::fixed << (1000 / averageFrameTime);
+		outs << L"   Frame Time: " << std::setprecision(2) << averageFrameTime << L" ms";
+	
+		SetWindowText(hwnd, outs.str().c_str());
+	}
 
 	return;
 }

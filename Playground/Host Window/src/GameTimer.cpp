@@ -26,6 +26,8 @@ GameTimer::GameTimer()
 	QueryPerformanceFrequency((LARGE_INTEGER*) &ticksPerSecond);
 
 	secondsPerTick = 1. / ticksPerSecond;
+
+	Reset();
 }
 
 void GameTimer::Reset()
@@ -64,9 +66,11 @@ void GameTimer::Tick()
 	 */
 	if ( newTicks < 0 ) { return; }
 
+	//Update real time
 	realTimeTicks += newTicks;
 	realTime = realTimeTicks * secondsPerTick;
 
+	//Update real delta time
 	realDeltaTimeTicks = newTicks;
 	realDeltaTime = realDeltaTimeTicks * secondsPerTick;
 
@@ -79,6 +83,10 @@ void GameTimer::Tick()
 		//Update delta time
 		deltaTimeTicks = newTicks;
 		deltaTime = deltaTimeTicks * secondsPerTick;
-		if ( deltaTime < 0 ) { deltaTime = 0; }
+	}
+	else
+	{
+		//No delta time while stopped
+		deltaTime = 0;
 	}
 }

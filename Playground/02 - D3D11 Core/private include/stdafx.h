@@ -35,6 +35,7 @@
 // Macros
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
 #define RETURN_IF_FAILED(x)   { long ret = (x); if ( ret < 0 ) { return ret; } }
+#define CHECK_RET(ret) if ( (ret) < 0 ) { goto Cleanup; }
 
 // Convert char* to wchar_t*
 #define _WIDE(x) L ## x

@@ -12,32 +12,43 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
-	//TODO: Clean up properly on failure cases, instead of returning immediately.
-	int ret = 0;
+	long ret = 0;
 
 	//Create a window
 	HostWindow* window = new HostWindow();
 	if ( !window )
 	{
+		LOG_ERROR(L"HostWindow allocation failed");
 		ret = ExitCode::WindowAllocFailed;
 		goto Cleanup;
 	}
 
 	//Init window
-	ret = window->Initialize();
-	if ( ret < 0 ) { goto Cleanup; }
+	ret = window->Initialize(); CHECK_RET(ret);
 
 	//Create a renderer
 	Renderer* renderer = new Renderer(window->GetHWND());
 	if ( !renderer )
 	{
+		LOG_ERROR(L"Renderer allocation failed");
 		ret = ExitCode::RendererAllocFailed;
 		goto Cleanup;
 	}
 
 	//Init renderer
-	ret = renderer->Initialize();
-	if ( ret < 0 ) { goto Cleanup; }
+	ret = renderer->Initialize(); CHECK_RET(ret);
+
+	//Create a timer
+	//GameTimer* gameTimer = new GameTimer();
+	//if ( !gameTimer )
+	//{
+	//	LOG_ERROR(L"GameTimer allocation failed");
+	//	ret = ExitCode::TimerAllocFailed;
+	//	goto Cleanup;
+	//}
+
+	//Init timer
+	//gameTimer->Reset();
 
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
@@ -49,8 +60,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		{
 			if ( ret == -1 )
 			{
+				LOG_ERROR(L"PeekMessage failed");
 				ret = ExitCode::PeekMessageFailed;
-				break;
+				goto Cleanup;
 			}
 
 			//Dispatch messages to the appropriate window
@@ -62,20 +74,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 				Logging::Log(L"Found non-window message: " + std::to_wstring(msg.message));
 
 			//Clean quit
-			if ( msg.message == WM_QUIT ) { ret = ExitCode::Quit; break; }
+			if ( msg.message == WM_QUIT )
+			{
+				Logging::Log(L"Quitting");
+				ret = ExitCode::Quit;
+				break;
+			}
 		}
-		if ( ret != 0 ) { goto Cleanup; }
-
-		ret = window->Update();
-		if ( ret < 0 ) { goto Cleanup; }
+		if ( ret != 0 ) { break; }
 
 		//The fun stuff!
-		ret = renderer->Update();
-		if ( ret < 0 ) { goto Cleanup; }
+		//gameTimer->Tick();
+		ret =   window->Update(); CHECK_RET(ret);
+		ret = renderer->Update(); CHECK_RET(ret);
+
+		//TODO: Looks like the frame time is totally wrong until the buffer fills
+		Sleep(100);
 	}
 
 	//Cleanup and shutdown
 Cleanup:
+
+	//if ( gameTimer )
+	//{
+	//	delete gameTimer;
+	//	gameTimer = nullptr;
+	//}
 
 	if ( renderer )
 	{

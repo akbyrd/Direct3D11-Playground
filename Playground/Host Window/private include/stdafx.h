@@ -10,17 +10,13 @@
 // Exclude rarely-used stuff from Windows headers
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#include <windows.h>
-
-// C RunTime Header Files
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
+#include <Windows.h>
 
 // C++ Header Files
 #include <algorithm>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
 #define LOG_ERROR(x) { std::cout << "Error: " << x; }
