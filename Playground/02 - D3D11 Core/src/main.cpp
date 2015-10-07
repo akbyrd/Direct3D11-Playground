@@ -3,7 +3,10 @@
 #include "HostWindow.h"
 #include "Logging.h"
 
-//TODO: Proper cleanup flow
+//TODO: Primary question: how to get messages from e.g. window to handle or pass to other objects?
+//TODO: Decide how to handle the timer (should probably be in here, but we need to get signals from the 
+//TODO: Decide how to handle resizing
+//TODO: Input
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -39,16 +42,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	ret = renderer->Initialize(); CHECK_RET(ret);
 
 	//Create a timer
-	//GameTimer* gameTimer = new GameTimer();
-	//if ( !gameTimer )
-	//{
-	//	LOG_ERROR(L"GameTimer allocation failed");
-	//	ret = ExitCode::TimerAllocFailed;
-	//	goto Cleanup;
-	//}
+	GameTimer* gameTimer = new GameTimer();
+	if ( !gameTimer )
+	{
+		LOG_ERROR(L"GameTimer allocation failed");
+		ret = ExitCode::TimerAllocFailed;
+		goto Cleanup;
+	}
 
 	//Init timer
-	//gameTimer->Reset();
+	gameTimer->Start();
 
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
@@ -84,22 +87,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		if ( ret != 0 ) { break; }
 
 		//The fun stuff!
-		//gameTimer->Tick();
+		gameTimer->Tick();
 		ret =   window->Update(); CHECK_RET(ret);
-		ret = renderer->Update(); CHECK_RET(ret);
+		ret = renderer->Update(gameTimer); CHECK_RET(ret);
 
-		//TODO: Looks like the frame time is totally wrong until the buffer fills
-		Sleep(100);
+		//Sleep(1);
 	}
 
 	//Cleanup and shutdown
 Cleanup:
 
-	//if ( gameTimer )
-	//{
-	//	delete gameTimer;
-	//	gameTimer = nullptr;
-	//}
+	if ( gameTimer )
+	{
+		delete gameTimer;
+		gameTimer = nullptr;
+	}
 
 	if ( renderer )
 	{

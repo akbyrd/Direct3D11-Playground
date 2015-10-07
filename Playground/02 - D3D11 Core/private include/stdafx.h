@@ -28,6 +28,7 @@
 
 // Direct3D 11 Header Files
 #include <d3d11.h>
+#include <DirectXMath.h>
 
 // Project Header Files
 #include "ExitCode.h"

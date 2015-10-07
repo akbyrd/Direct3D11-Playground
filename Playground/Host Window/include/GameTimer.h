@@ -1,3 +1,5 @@
+#pragma once
+
 class GameTimer final
 {
 public:

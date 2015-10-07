@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "Renderer.h"
 #include "Logging.h"
 #include "Utility.h"
@@ -205,8 +206,8 @@ long Renderer::InitializeViewport()
 	D3D11_VIEWPORT viewport;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = width;
-	viewport.Height = height;
+	viewport.Width = (FLOAT) width;
+	viewport.Height = (FLOAT) height;
 	viewport.MinDepth = 0;
 	viewport.MaxDepth = 1;
 
@@ -215,13 +216,26 @@ long Renderer::InitializeViewport()
 	return ExitCode::Success;
 }
 
-long Renderer::Update()
+long Renderer::Update(GameTimer* gameTimer)
 {
 	HRESULT hr;
 
-	hr = pSwapChain->Present(0, 0); LOG_IF_FAILED(hr);
+	float r = sin(1. * gameTimer->Time());
+	float g = sin(2. * gameTimer->Time());
+	float b = sin(3. * gameTimer->Time());
 
-	return ExitCode::Success;
+	XMVECTORF32 color = { r, g, b, 1.0f };
+
+	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, color);
+	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+
+	hr = pSwapChain->Present(0, 0); CHECK(hr);
+
+	hr = ExitCode::Success;
+
+Cleanup:
+
+	return hr;
 }
 
 long Renderer::Teardown()

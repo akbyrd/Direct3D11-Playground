@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Window.h"
 #include "GameTimer.h"
 

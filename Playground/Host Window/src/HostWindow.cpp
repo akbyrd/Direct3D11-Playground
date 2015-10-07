@@ -194,6 +194,7 @@ void HostWindow::UpdateFrameStatistics()
 	static int length = 0;
 	static double deltaToMS;
 
+	//HACK: Hate this
 	if ( length == 0 )
 		buffer[bufferSize - 1] = gameTimer.RealTime();
 

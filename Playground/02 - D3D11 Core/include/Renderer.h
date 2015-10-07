@@ -1,12 +1,14 @@
 #pragma once
 
+#include "GameTimer.h"
+
 class Renderer final
 {
 public:
 	Renderer(HWND);
 
 	long Initialize();
-	long Update();
+	long Update(GameTimer*);
 	long Teardown();
 
 private:
