@@ -14,6 +14,14 @@ namespace Logging
 		OutputDebugString(stream.str().c_str());
 	}
 
+	void Log(std::wstringstream& stream)
+	{
+		stream << std::endl;
+
+		//Send it all to the VS Output window
+		OutputDebugString(stream.str().c_str());
+	}
+
 	void Log(std::wstring message, char* file, long line, char* function)
 	{
 		std::wstringstream stream;
@@ -51,6 +59,8 @@ namespace Logging
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
+
+		__debugbreak();
 	}
 
 	bool LogIfFailed(HRESULT hr, char* file, long line, char* function)
@@ -90,7 +100,6 @@ namespace Logging
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 
-		//DebugBreak();
 		__debugbreak();
 		return true;
 	}

@@ -6,10 +6,15 @@ enum ExitCode : long
 	Success = 0,
 	Quit    = 1,
 
-	//Errors
+	//Errors - Main
 	WindowAllocFailed           = -1,
 	RendererAllocFailed         = -2,
 	TimerAllocFailed            = -3,
 	PeekMessageFailed           = -4,
-	D3DFeatureLevelNotSupported = -5,
+
+	//Errors - Renderer
+	BadHWNDProvided             = -5,
+	D3DFeatureLevelNotSupported = -6,
+	SwapChainNotInitialized     = -7,
+	D3DDeviceNotInitialized     = -8
 };

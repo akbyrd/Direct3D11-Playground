@@ -1,38 +1,34 @@
 #include "stdafx.h"
 
 #include "Renderer.h"
-#include "Logging.h"
 #include "Utility.h"
 
 #pragma comment(lib, "D3D11.lib")
-#pragma comment(lib, "DXGI.lib")
+#pragma comment(lib,  "DXGI.lib")
 
-Renderer::Renderer(HWND hwnd)
+long Renderer::Initialize(HWND hwnd)
 {
-	Renderer::hwnd = hwnd;
+	long ret;
+
 	this->hwnd = hwnd;
-}
+	if ( hwnd == nullptr )
+	{
+		LOG_ERROR("Failed. Null HWND was provided.");
+		ret = ExitCode::BadHWNDProvided;
+		goto Cleanup;
+	}
 
-long Renderer::Initialize()
-{
-	long result;
+	ret = InitializeDevice();       CHECK_RET(ret);
+	ret = InitializeSwapChain();    CHECK_RET(ret);
+	ret = InitializeDepthBuffer();  CHECK_RET(ret);
+	ret = InitializeOutputMerger(); CHECK_RET(ret);
+	ret = InitializeViewport();     CHECK_RET(ret);
 
-	result = InitializeDevice();
-	if ( result < 0 ) { return result; }
+	ret = ExitCode::Success;
 
-	result = InitializeSwapChain();
-	if ( result < 0 ) { return result; }
+Cleanup:
 
-	result = InitializeDepthBuffer();
-	if ( result < 0 ) { return result; }
-
-	InitializeOutputMerger();
-	if ( result < 0 ) { return result; }
-
-	InitializeViewport();
-	if ( result < 0 ) { return result; }
-
-	return ExitCode::Success;
+	return ret;
 }
 
 long Renderer::InitializeDevice()
@@ -57,21 +53,53 @@ long Renderer::InitializeDevice()
 		&pD3DDevice,
 		&featureLevel,
 		&pD3DImmediateContext
-	); CHECK(hr);
+	); CHECK_HR(hr);
 
 	//Check feature level
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
 	{
-		LOG_ERROR(L"Created device does not support D3D 11");
+		LOG_ERROR("Created device does not support D3D 11");
 		hr = ExitCode::D3DFeatureLevelNotSupported;
 		goto Cleanup;
 	}
 
+	//It's ok if this fails, it's an optional check
 	hr = CheckForWarpDriver();
+
+	hr = ObtainDXGIFactory(); CHECK_RET(hr);
 
 	hr = ExitCode::Success;
 
 Cleanup:
+
+	return hr;
+}
+
+long Renderer::ObtainDXGIFactory()
+{
+	HRESULT hr;
+
+	if ( !pD3DDevice )
+	{
+		LOG_ERROR("Failed. D3D device not initialized.");
+		hr = ExitCode::D3DDeviceNotInitialized;
+		goto Cleanup;
+	}
+
+	//Obtain the DXGI factory used to create the current device
+	IDXGIDevice1* pDXGIDevice = nullptr;
+	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK_HR(hr);
+
+	IDXGIAdapter1* pDXGIAdapter = nullptr;
+	hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter1), (void **) &pDXGIAdapter); CHECK_HR(hr);
+
+	hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK_HR(hr);
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	RELEASE_COM(&pDXGIAdapter);
+	RELEASE_COM(&pDXGIDevice);
 
 	return hr;
 }
@@ -82,13 +110,13 @@ long Renderer::CheckForWarpDriver()
 
 	//Check for the WARP driver
 	IDXGIDevice1* pDXGIDevice = nullptr;
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), reinterpret_cast<void**>(&pDXGIDevice)); CHECK(hr);
+	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), reinterpret_cast<void**>(&pDXGIDevice)); CHECK_HR(hr);
 
 	IDXGIAdapter* pDXGIAdapter = nullptr;
-	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter); CHECK(hr);
+	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter); CHECK_HR(hr);
 
 	DXGI_ADAPTER_DESC desc;
-	hr = pDXGIAdapter->GetDesc(&desc); CHECK(hr);
+	hr = pDXGIAdapter->GetDesc(&desc); CHECK_HR(hr);
 
 	if ( (desc.VendorId == 0x1414) && (desc.DeviceId == 0x8c) )
 	{
@@ -96,7 +124,7 @@ long Renderer::CheckForWarpDriver()
 		// Performance of this application may be unsatisfactory.
 		// Please ensure that your video card is Direct3D10/11 capable
 		// and has the appropriate driver installed.
-		LOG_WARNING(L"WARP driver in use.");
+		LOG_WARNING("WARP driver in use.");
 	}
 
 	hr = ExitCode::Success;
@@ -114,7 +142,7 @@ long Renderer::InitializeSwapChain()
 	HRESULT hr;
 
 	//Query and set MSAA quality levels
-	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK(hr);
+	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK_HR(hr);
 
 	//Set swap chain properties
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -130,36 +158,50 @@ long Renderer::InitializeSwapChain()
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount = 1;
 	swapChainDesc.OutputWindow = hwnd;
-	swapChainDesc.Windowed = true;
+	swapChainDesc.Windowed = !startFullscreen;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapChainDesc.Flags = 0;
-
-	//Obtain the DXGI factory used to create the current device
-	IDXGIDevice1* pDXGIDevice = nullptr;
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK(hr);
-
-	IDXGIAdapter1* pDXGIAdapter = nullptr;
-	hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter1), (void **) &pDXGIAdapter); CHECK(hr);
-
-	IDXGIFactory1* pDXGIFactory = nullptr;
-	hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK(hr);
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	//Create the swap chain
-	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK(hr);
+	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK(hr);
+	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK_HR(hr);
 
 	//Create a render target view to the back buffer
-	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView); CHECK(hr);
+	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView); CHECK_HR(hr);
+
+	hr = UpdateAllowFullscreen(); CHECK_HR(hr);
 
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(&pDXGIFactory);
-	RELEASE_COM(&pDXGIAdapter);
-	RELEASE_COM(&pDXGIDevice);
 	RELEASE_COM(&pBackBuffer);
+
+	return hr;
+}
+
+long Renderer::UpdateAllowFullscreen()
+{
+	HRESULT hr;
+
+	//MakeWindowAssociation only works if the swap chain has been created.
+	if ( !pSwapChain )
+	{
+		LOG_WARNING("Failed. The swap chain has not been initialized.");
+		hr = ExitCode::SwapChainNotInitialized;
+		goto Cleanup;
+	}
+
+	UINT flags = 0;
+	if ( !allowFullscreen )
+		flags |= DXGI_MWA_NO_ALT_ENTER;
+
+	hr = pDXGIFactory->MakeWindowAssociation(hwnd, flags); CHECK_HR(hr);
+
+	hr = ExitCode::Success;
+
+Cleanup:
 
 	return hr;
 }
@@ -182,9 +224,9 @@ long Renderer::InitializeDepthBuffer()
 	depthDesc.MiscFlags = 0;
 
 	ID3D11Texture2D* pDepthBuffer = nullptr;
-	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer); CHECK(hr);
+	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer); CHECK_HR(hr);
 
-	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer, nullptr, &pDepthBufferView); CHECK(hr);
+	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer, nullptr, &pDepthBufferView); CHECK_HR(hr);
 
 	hr = ExitCode::Success;
 
@@ -216,20 +258,74 @@ long Renderer::InitializeViewport()
 	return ExitCode::Success;
 }
 
+
+long Renderer::LogAdapters()
+{
+	HRESULT hr;
+
+	IDXGIFactory1* pDXGIFactory = nullptr;
+	hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK_HR(hr);
+
+	UINT i = 0;
+	IDXGIAdapter1* pDXGIAdapter = nullptr;
+	while ( true )
+	{
+		hr = pDXGIFactory->EnumAdapters1(i, &pDXGIAdapter);
+
+		//We've run out of adapters
+		if ( hr == DXGI_ERROR_NOT_FOUND ) { break; }
+
+		//Other error
+		CHECK_HR(hr);
+
+		//Get adapter description
+		DXGI_ADAPTER_DESC1 adapterDesc;
+		hr = pDXGIAdapter->GetDesc1(&adapterDesc); CHECK_HR(hr);
+
+		//Log the adapter description
+		std::wstringstream stream;
+		stream <<           L"AdapterLuid: " << adapterDesc.AdapterLuid.HighPart
+		                                     << adapterDesc.AdapterLuid.LowPart   << std::endl;
+		stream <<           L"Description: " << adapterDesc.Description           << std::endl;
+		stream <<              L"VendorId: " << adapterDesc.VendorId              << std::endl;
+		stream <<              L"DeviceId: " << adapterDesc.DeviceId              << std::endl;
+		stream <<              L"SubSysId: " << adapterDesc.SubSysId              << std::endl;
+		stream <<              L"Revision: " << adapterDesc.Revision              << std::endl;
+		stream <<  L"DedicatedVideoMemory: " << adapterDesc.DedicatedVideoMemory  << std::endl;
+		stream << L"DedicatedSystemMemory: " << adapterDesc.DedicatedSystemMemory << std::endl;
+		stream <<    L"SharedSystemMemory: " << adapterDesc.SharedSystemMemory    << std::endl;
+		stream <<                 L"Flags: " << adapterDesc.Flags                 << std::endl;
+		Logging::Log(stream);
+
+		RELEASE_COM(&pDXGIAdapter);
+		++i;
+	}
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	RELEASE_COM(&pDXGIAdapter);
+	RELEASE_COM(&pDXGIFactory);
+
+	return hr;
+}
+
+
 long Renderer::Update(GameTimer* gameTimer)
 {
 	HRESULT hr;
 
-	float r = sin(1. * gameTimer->Time());
-	float g = sin(2. * gameTimer->Time());
-	float b = sin(3. * gameTimer->Time());
+	double t = gameTimer->Time();
+	float  r = (float) sin(1. * t);
+	float  g = (float) sin(2. * t);
+	float  b = (float) sin(3. * t);
 
 	XMVECTORF32 color = { r, g, b, 1.0f };
 
 	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, color);
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
-	hr = pSwapChain->Present(0, 0); CHECK(hr);
+	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
 	hr = ExitCode::Success;
 
@@ -240,12 +336,13 @@ Cleanup:
 
 long Renderer::Teardown()
 {
+	hwnd = nullptr;
+
 	RELEASE_COM(&pD3DDevice);
 	RELEASE_COM(&pD3DImmediateContext);
+	RELEASE_COM(&pDXGIFactory);
 	RELEASE_COM(&pSwapChain);
 	RELEASE_COM(&pRenderTargetView);
-
-	hwnd = nullptr;
 
 	return ExitCode::Success;
 }

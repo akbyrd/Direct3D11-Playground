@@ -32,10 +32,12 @@
 
 // Project Header Files
 #include "ExitCode.h"
+#include "Logging.h"
 
 // Macros
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
 #define RETURN_IF_FAILED(x)   { long ret = (x); if ( ret < 0 ) { return ret; } }
+#define CHECK_HR(hr) if ( LOG_IF_FAILED(hr) ) { goto Cleanup; }
 #define CHECK_RET(ret) if ( (ret) < 0 ) { goto Cleanup; }
 
 // Convert char* to wchar_t*

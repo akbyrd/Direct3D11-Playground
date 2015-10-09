@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Renderer.h"
 #include "HostWindow.h"
-#include "Logging.h"
 
+//TODO: Alternative to DXTrace? Fancy message box and debugging prompt
 //TODO: Primary question: how to get messages from e.g. window to handle or pass to other objects?
 //TODO: Decide how to handle the timer (should probably be in here, but we need to get signals from the 
 //TODO: Decide how to handle resizing
@@ -21,7 +21,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	HostWindow* window = new HostWindow();
 	if ( !window )
 	{
-		LOG_ERROR(L"HostWindow allocation failed");
+		LOG_ERROR("HostWindow allocation failed");
 		ret = ExitCode::WindowAllocFailed;
 		goto Cleanup;
 	}
@@ -30,22 +30,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	ret = window->Initialize(); CHECK_RET(ret);
 
 	//Create a renderer
-	Renderer* renderer = new Renderer(window->GetHWND());
+	Renderer* renderer = new Renderer();
 	if ( !renderer )
 	{
-		LOG_ERROR(L"Renderer allocation failed");
+		LOG_ERROR("Renderer allocation failed");
 		ret = ExitCode::RendererAllocFailed;
 		goto Cleanup;
 	}
 
 	//Init renderer
-	ret = renderer->Initialize(); CHECK_RET(ret);
+	ret = renderer->Initialize(window->GetHWND()); CHECK_RET(ret);
 
 	//Create a timer
 	GameTimer* gameTimer = new GameTimer();
 	if ( !gameTimer )
 	{
-		LOG_ERROR(L"GameTimer allocation failed");
+		LOG_ERROR("GameTimer allocation failed");
 		ret = ExitCode::TimerAllocFailed;
 		goto Cleanup;
 	}
@@ -63,7 +63,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		{
 			if ( ret == -1 )
 			{
-				LOG_ERROR(L"PeekMessage failed");
+				LOG_ERROR("PeekMessage failed");
 				ret = ExitCode::PeekMessageFailed;
 				goto Cleanup;
 			}
@@ -88,7 +88,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 		//The fun stuff!
 		gameTimer->Tick();
-		ret =   window->Update(); CHECK_RET(ret);
+		ret =   window->Update();          CHECK_RET(ret);
 		ret = renderer->Update(gameTimer); CHECK_RET(ret);
 
 		//Sleep(1);
@@ -96,7 +96,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 	//Cleanup and shutdown
 Cleanup:
-
 	if ( gameTimer )
 	{
 		delete gameTimer;
