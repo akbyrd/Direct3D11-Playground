@@ -31,6 +31,7 @@ private:
 	long InitializeViewport();
 
 	long LogAdapters();
+	void LogLiveObjects();
 
 	//TODO: Encapsulate in a struct?
 	//Settings
