@@ -23,12 +23,15 @@
 #include <sstream>
 #include <string>
 
-// For some GUID magic in the DirectX headers. Must be included before them.
+// For some GUID magic in the DirectX/DXGI headers. Must be included before them.
 #include <InitGuid.h>
 
 // Direct3D 11 Header Files
 #include <d3d11.h>
 #include <DirectXMath.h>
+#ifdef _DEBUG
+#include <dxgidebug.h>
+#endif
 
 // Project Header Files
 #include "ExitCode.h"

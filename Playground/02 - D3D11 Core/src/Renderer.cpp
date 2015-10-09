@@ -284,6 +284,7 @@ long Renderer::LogAdapters()
 
 		//Log the adapter description
 		std::wstringstream stream;
+		stream <<               L"Adapter: " << i                                 << std::endl;
 		stream <<           L"AdapterLuid: " << adapterDesc.AdapterLuid.HighPart
 		                                     << adapterDesc.AdapterLuid.LowPart   << std::endl;
 		stream <<           L"Description: " << adapterDesc.Description           << std::endl;
@@ -343,6 +344,33 @@ long Renderer::Teardown()
 	RELEASE_COM(&pDXGIFactory);
 	RELEASE_COM(&pSwapChain);
 	RELEASE_COM(&pRenderTargetView);
+	LogLiveObjects();
 
 	return ExitCode::Success;
+}
+
+void Renderer::LogLiveObjects()
+{
+	#ifdef _DEBUG
+
+	typedef HRESULT(WINAPI *fPtr)(const IID&, void**);
+	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(GetModuleHandle(TEXT("dxgidebug.dll")), "DXGIGetDebugInterface");
+	if ( DXGIGetDebugInterface == nullptr )
+	{
+		LOG_ERROR("Failed to obtain dxgidebug.dll module or DXGIGetDebugInterface function pointer");
+		return;
+	}
+
+	HRESULT hr;
+
+	IDXGIDebug* pDXGIDebug = nullptr;
+	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug);
+	if ( LOG_IF_FAILED(hr) ) { return; }
+
+	pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	OutputDebugString(TEXT("\n"));
+
+	RELEASE_COM(&pDXGIDebug);
+
+	#endif
 }
