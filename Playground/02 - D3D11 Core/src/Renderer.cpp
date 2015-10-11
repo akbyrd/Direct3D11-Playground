@@ -64,11 +64,9 @@ long Renderer::InitializeDevice()
 	}
 
 	//It's ok if this fails, it's an optional check
-	hr = CheckForWarpDriver();
+	CheckForWarpDriver();
 
 	hr = ObtainDXGIFactory(); CHECK_RET(hr);
-
-	LogAdapters();
 
 	hr = ExitCode::Success;
 
@@ -433,6 +431,9 @@ long Renderer::Teardown()
 	RELEASE_COM(&pDXGIFactory);
 	RELEASE_COM(&pSwapChain);
 	RELEASE_COM(&pRenderTargetView);
+	RELEASE_COM(&pDepthBufferView);
+
+	//Check for leaks
 	LogLiveObjects();
 
 	return ExitCode::Success;
