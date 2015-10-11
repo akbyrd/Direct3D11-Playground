@@ -68,6 +68,8 @@ long Renderer::InitializeDevice()
 
 	hr = ObtainDXGIFactory(); CHECK_RET(hr);
 
+	LogAdapters();
+
 	hr = ExitCode::Success;
 
 Cleanup:
@@ -284,19 +286,21 @@ long Renderer::LogAdapters()
 
 		//Log the adapter description
 		std::wstringstream stream;
-		stream <<               L"Adapter: " << i                                 << std::endl;
+		stream <<               L"Adapter: " << i                                                        << std::endl;
 		stream <<           L"AdapterLuid: " << adapterDesc.AdapterLuid.HighPart
-		                                     << adapterDesc.AdapterLuid.LowPart   << std::endl;
-		stream <<           L"Description: " << adapterDesc.Description           << std::endl;
-		stream <<              L"VendorId: " << adapterDesc.VendorId              << std::endl;
-		stream <<              L"DeviceId: " << adapterDesc.DeviceId              << std::endl;
-		stream <<              L"SubSysId: " << adapterDesc.SubSysId              << std::endl;
-		stream <<              L"Revision: " << adapterDesc.Revision              << std::endl;
-		stream <<  L"DedicatedVideoMemory: " << adapterDesc.DedicatedVideoMemory  << std::endl;
-		stream << L"DedicatedSystemMemory: " << adapterDesc.DedicatedSystemMemory << std::endl;
-		stream <<    L"SharedSystemMemory: " << adapterDesc.SharedSystemMemory    << std::endl;
-		stream <<                 L"Flags: " << adapterDesc.Flags                 << std::endl;
+		                                     << adapterDesc.AdapterLuid.LowPart                          << std::endl;
+		stream <<           L"Description: " << adapterDesc.Description                                  << std::endl;
+		stream <<              L"VendorId: " << adapterDesc.VendorId                                     << std::endl;
+		stream <<              L"DeviceId: " << adapterDesc.DeviceId                                     << std::endl;
+		stream <<              L"SubSysId: " << adapterDesc.SubSysId                                     << std::endl;
+		stream <<              L"Revision: " << adapterDesc.Revision                                     << std::endl;
+		stream <<  L"DedicatedVideoMemory: " << adapterDesc.DedicatedVideoMemory  / 1048576.0f << L" MB" << std::endl;
+		stream << L"DedicatedSystemMemory: " << adapterDesc.DedicatedSystemMemory / 1048576.0f << L" MB" << std::endl;
+		stream <<    L"SharedSystemMemory: " << adapterDesc.SharedSystemMemory    / 1048576.0f << L" MB" << std::endl;
+		stream <<                 L"Flags: " << adapterDesc.Flags                                        << std::endl;
 		Logging::Log(stream);
+
+		LogOutputs(pDXGIAdapter);
 
 		RELEASE_COM(&pDXGIAdapter);
 		++i;
@@ -307,6 +311,91 @@ long Renderer::LogAdapters()
 Cleanup:
 	RELEASE_COM(&pDXGIAdapter);
 	RELEASE_COM(&pDXGIFactory);
+
+	return hr;
+}
+
+long Renderer::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
+{
+	HRESULT hr;
+
+	UINT i = 0;
+	IDXGIOutput* pDXGIOutput = nullptr;
+	while ( true )
+	{
+		hr = pDXGIAdapter->EnumOutputs(i, &pDXGIOutput);
+		if ( hr == DXGI_ERROR_NOT_FOUND ) { break; }
+
+		CHECK_HR(hr);
+
+		DXGI_OUTPUT_DESC outputDesc;
+		hr = pDXGIOutput->GetDesc(&outputDesc); CHECK_HR(hr);
+
+		std::wstringstream stream;
+
+		stream <<             "Output: "    << i                                            << std::endl;
+		stream <<         "DeviceName: "    << outputDesc.DeviceName                        << std::endl;
+		stream << "DesktopCoordinates: (L:" << outputDesc.DesktopCoordinates.left
+		                         << L", T:" << outputDesc.DesktopCoordinates.top
+		                         << L", R:" << outputDesc.DesktopCoordinates.right
+		                         << L", B:" << outputDesc.DesktopCoordinates.bottom << L")" << std::endl;
+		stream <<  "AttachedToDesktop: "    << outputDesc.AttachedToDesktop                 << std::endl;
+		stream <<           "Rotation: "    << outputDesc.Rotation                          << std::endl;
+		stream <<            "Monitor: "    << outputDesc.Monitor                           << std::endl;
+
+		Logging::Log(stream);
+
+		LogDisplayModes(pDXGIOutput);
+
+		RELEASE_COM(&pDXGIOutput);
+		++i;
+	}
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	RELEASE_COM(&pDXGIOutput);
+
+	return hr;
+}
+
+long Renderer::LogDisplayModes(IDXGIOutput* pDXGIOutput)
+{
+	HRESULT hr;
+
+	DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+	//Get the number of modes
+	UINT numModes;
+	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, nullptr); CHECK_HR(hr);
+
+	//Allocate space
+	DXGI_MODE_DESC* arrModeDesc = new DXGI_MODE_DESC[numModes];
+
+	//Get the actual display modes
+	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, arrModeDesc); CHECK_HR(hr);
+
+	{
+		std::wstringstream stream;
+		for ( UINT i = 0; i < numModes; ++i )
+		{
+			UINT  width = arrModeDesc[i].Width;
+			UINT  height = arrModeDesc[i].Height;
+			float refreshRate = arrModeDesc[i].RefreshRate.Numerator / (float) arrModeDesc[i].RefreshRate.Denominator;
+
+			stream << width << L"x" << height << L" @ " << refreshRate << L" Hz" << std::endl;
+		}
+		Logging::Log(stream);
+	}
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	if ( arrModeDesc )
+	{
+		delete arrModeDesc;
+		arrModeDesc = nullptr;
+	}
 
 	return hr;
 }

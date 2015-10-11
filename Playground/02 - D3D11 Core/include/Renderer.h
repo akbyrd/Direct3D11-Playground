@@ -31,6 +31,8 @@ private:
 	long InitializeViewport();
 
 	long LogAdapters();
+	long LogOutputs(IDXGIAdapter1*);
+	long LogDisplayModes(IDXGIOutput*);
 	void LogLiveObjects();
 
 	//TODO: Encapsulate in a struct?
