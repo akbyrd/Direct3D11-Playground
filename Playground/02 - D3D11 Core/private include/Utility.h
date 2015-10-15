@@ -4,7 +4,7 @@
 
 using namespace DirectX;
 
-#define RELEASE_COM(x) { Utility::ReleaseCOM((IUnknown**) (x)); }
+#define RELEASE_COM(x) { Utility::ReleaseCOM((IUnknown**) &(x)); }
 
 namespace Utility
 {

@@ -98,8 +98,8 @@ long Renderer::ObtainDXGIFactory()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(&pDXGIAdapter);
-	RELEASE_COM(&pDXGIDevice);
+	RELEASE_COM(pDXGIAdapter);
+	RELEASE_COM(pDXGIDevice);
 
 	return hr;
 }
@@ -130,8 +130,8 @@ long Renderer::CheckForWarpDriver()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(&pDXGIAdapter);
-	RELEASE_COM(&pDXGIDevice);
+	RELEASE_COM(pDXGIAdapter);
+	RELEASE_COM(pDXGIDevice);
 
 	return hr;
 }
@@ -176,7 +176,7 @@ long Renderer::InitializeSwapChain()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(&pBackBuffer);
+	RELEASE_COM(pBackBuffer);
 
 	return hr;
 }
@@ -231,7 +231,7 @@ long Renderer::InitializeDepthBuffer()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(&pDepthBuffer);
+	RELEASE_COM(pDepthBuffer);
 
 	return hr;
 }
@@ -300,15 +300,15 @@ long Renderer::LogAdapters()
 
 		LogOutputs(pDXGIAdapter);
 
-		RELEASE_COM(&pDXGIAdapter);
+		RELEASE_COM(pDXGIAdapter);
 		++i;
 	}
 
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(&pDXGIAdapter);
-	RELEASE_COM(&pDXGIFactory);
+	RELEASE_COM(pDXGIAdapter);
+	RELEASE_COM(pDXGIFactory);
 
 	return hr;
 }
@@ -345,14 +345,14 @@ long Renderer::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
 
 		LogDisplayModes(pDXGIOutput);
 
-		RELEASE_COM(&pDXGIOutput);
+		RELEASE_COM(pDXGIOutput);
 		++i;
 	}
 
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(&pDXGIOutput);
+	RELEASE_COM(pDXGIOutput);
 
 	return hr;
 }
@@ -426,12 +426,12 @@ long Renderer::Teardown()
 {
 	hwnd = nullptr;
 
-	RELEASE_COM(&pD3DDevice);
-	RELEASE_COM(&pD3DImmediateContext);
-	RELEASE_COM(&pDXGIFactory);
-	RELEASE_COM(&pSwapChain);
-	RELEASE_COM(&pRenderTargetView);
-	RELEASE_COM(&pDepthBufferView);
+	RELEASE_COM(pD3DDevice);
+	RELEASE_COM(pD3DImmediateContext);
+	RELEASE_COM(pDXGIFactory);
+	RELEASE_COM(pSwapChain);
+	RELEASE_COM(pRenderTargetView);
+	RELEASE_COM(pDepthBufferView);
 
 	//Check for leaks
 	LogLiveObjects();
@@ -454,13 +454,13 @@ void Renderer::LogLiveObjects()
 	HRESULT hr;
 
 	IDXGIDebug* pDXGIDebug = nullptr;
-	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug);
-	if ( LOG_IF_FAILED(hr) ) { return; }
+	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug); CHECK_HR(hr);
 
 	pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 	OutputDebugString(TEXT("\n"));
 
-	RELEASE_COM(&pDXGIDebug);
+Cleanup:
+	RELEASE_COM(pDXGIDebug);
 
 	#endif
 }
