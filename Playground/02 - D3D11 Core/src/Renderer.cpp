@@ -399,7 +399,7 @@ Cleanup:
 }
 
 
-long Renderer::Update(GameTimer* gameTimer)
+long Renderer::Update(const GameTimer* gameTimer)
 {
 	HRESULT hr;
 

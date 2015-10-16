@@ -6,7 +6,7 @@ class Renderer final
 {
 public:
 	long Initialize(HWND);
-	long Update(GameTimer*);
+	long Update(const GameTimer*);
 	long Teardown();
 
 private:
