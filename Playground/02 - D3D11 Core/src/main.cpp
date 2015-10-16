@@ -57,6 +57,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	ZeroMemory(&msg, sizeof(MSG));
 
 	//Message and render loop
+	bool quit = false;
 	while ( ret == 0 )
 	{
 		while ( ret = PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) )
@@ -75,7 +76,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 			//Clean quit
 			if ( msg.message == WM_QUIT )
 			{
-				ret = ExitCode::Quit;
+				ret = msg.wParam;
+				quit = true;
 				break;
 			}
 
@@ -83,7 +85,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 			if ( msg.hwnd == nullptr )
 				Logging::Log(L"Found non-window message: " + std::to_wstring(msg.message));
 		}
-		if ( ret != 0 ) { break; }
+		if ( quit ) { break; }
 
 		//The fun stuff!
 		gameTimer->Tick();
