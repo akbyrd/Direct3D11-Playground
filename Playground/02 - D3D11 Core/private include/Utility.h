@@ -1,14 +1,30 @@
 #pragma once
 
-#include "stdafx.h"
-
 using namespace DirectX;
-
-#define RELEASE_COM(x) { Utility::ReleaseCOM((IUnknown**) &(x)); }
 
 namespace Utility
 {
-	void ReleaseCOM(IUnknown**);
+	//Safely release a COM object.
+	template<typename T>
+	inline void SafeRelease(T& ptr)
+	{
+		if ( ptr != nullptr )
+		{
+			ptr->Release();
+			ptr = nullptr;
+		}
+	}
+
+	//Safely delete an object
+	template<typename T>
+	inline void SafeDelete(T& ptr)
+	{
+		if ( ptr != nullptr )
+		{
+			delete ptr;
+			ptr = nullptr;
+		}
+	}
 }
 
 namespace Color

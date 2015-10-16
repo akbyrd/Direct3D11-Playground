@@ -6,6 +6,8 @@
 #pragma comment(lib, "D3D11.lib")
 #pragma comment(lib,  "DXGI.lib")
 
+using namespace Utility;
+
 long Renderer::Initialize(HWND hwnd)
 {
 	long ret;
@@ -98,8 +100,8 @@ long Renderer::ObtainDXGIFactory()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(pDXGIAdapter);
-	RELEASE_COM(pDXGIDevice);
+	SafeRelease(pDXGIAdapter); 
+	SafeRelease(pDXGIDevice);
 
 	return hr;
 }
@@ -130,8 +132,8 @@ long Renderer::CheckForWarpDriver()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(pDXGIAdapter);
-	RELEASE_COM(pDXGIDevice);
+	SafeRelease(pDXGIAdapter);
+	SafeRelease(pDXGIDevice);
 
 	return hr;
 }
@@ -176,7 +178,7 @@ long Renderer::InitializeSwapChain()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(pBackBuffer);
+	SafeRelease(pBackBuffer);
 
 	return hr;
 }
@@ -231,7 +233,7 @@ long Renderer::InitializeDepthBuffer()
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(pDepthBuffer);
+	SafeRelease(pDepthBuffer);
 
 	return hr;
 }
@@ -300,15 +302,15 @@ long Renderer::LogAdapters()
 
 		LogOutputs(pDXGIAdapter);
 
-		RELEASE_COM(pDXGIAdapter);
+		SafeRelease(pDXGIAdapter);
 		++i;
 	}
 
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(pDXGIAdapter);
-	RELEASE_COM(pDXGIFactory);
+	SafeRelease(pDXGIAdapter);
+	SafeRelease(pDXGIFactory);
 
 	return hr;
 }
@@ -345,14 +347,14 @@ long Renderer::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
 
 		LogDisplayModes(pDXGIOutput);
 
-		RELEASE_COM(pDXGIOutput);
+		SafeRelease(pDXGIOutput);
 		++i;
 	}
 
 	hr = ExitCode::Success;
 
 Cleanup:
-	RELEASE_COM(pDXGIOutput);
+	SafeRelease(pDXGIOutput);
 
 	return hr;
 }
@@ -426,12 +428,12 @@ long Renderer::Teardown()
 {
 	hwnd = nullptr;
 
-	RELEASE_COM(pD3DDevice);
-	RELEASE_COM(pD3DImmediateContext);
-	RELEASE_COM(pDXGIFactory);
-	RELEASE_COM(pSwapChain);
-	RELEASE_COM(pRenderTargetView);
-	RELEASE_COM(pDepthBufferView);
+	SafeRelease(pD3DDevice);
+	SafeRelease(pD3DImmediateContext);
+	SafeRelease(pDXGIFactory);
+	SafeRelease(pSwapChain);
+	SafeRelease(pRenderTargetView);
+	SafeRelease(pDepthBufferView);
 
 	//Check for leaks
 	LogLiveObjects();
@@ -460,7 +462,7 @@ void Renderer::LogLiveObjects()
 	OutputDebugString(TEXT("\n"));
 
 Cleanup:
-	RELEASE_COM(pDXGIDebug);
+	SafeRelease(pDXGIDebug);
 
 	#endif
 }

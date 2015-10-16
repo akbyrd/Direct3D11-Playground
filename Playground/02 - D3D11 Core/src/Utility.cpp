@@ -1,13 +1,6 @@
 #include "stdafx.h"
+#include "Utility.h"
 
 namespace Utility
 {
-	void ReleaseCOM(IUnknown** ppCOMObject)
-	{
-		if ( *ppCOMObject )
-		{
-			(*ppCOMObject)->Release();
-			(*ppCOMObject) = nullptr;
-		}
-	}
 }
