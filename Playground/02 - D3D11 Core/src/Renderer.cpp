@@ -10,7 +10,7 @@ long Renderer::Initialize(HWND hwnd)
 {
 	long ret;
 
-	this->hwnd = hwnd;
+	Renderer::hwnd = hwnd;
 	if ( hwnd == nullptr )
 	{
 		LOG_ERROR("Failed. Null HWND was provided.");
