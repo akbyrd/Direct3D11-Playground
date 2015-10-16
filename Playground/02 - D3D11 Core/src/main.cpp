@@ -27,7 +27,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	}
 
 	//Init window
-	ret = window->Initialize(); CHECK_RET(ret);
+	ret = window->Initialize(iCmdshow); CHECK_RET(ret);
 
 	//Create a renderer
 	Renderer* renderer = new Renderer();

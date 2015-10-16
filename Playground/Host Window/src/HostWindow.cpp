@@ -5,7 +5,7 @@
 bool HostWindow::IsFocused() const { return isActive && !isMinimized; }
 HWND HostWindow::GetHWND() const { return hwnd; }
 
-bool HostWindow::Initialize()
+bool HostWindow::Initialize(int iCmdshow)
 {
 	//Get the instance of this application
 	hInstance = GetModuleHandle(nullptr);
@@ -47,7 +47,7 @@ bool HostWindow::Initialize()
 	                nullptr, nullptr, hInstance);
 
 	//Bring the window up on the screen and set it as main focus
-	ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(hwnd, iCmdshow);
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
 

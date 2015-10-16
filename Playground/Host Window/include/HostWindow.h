@@ -9,7 +9,7 @@ public:
 	bool IsFocused() const;
 	HWND GetHWND() const;
 
-	bool Initialize();
+	bool Initialize(int);
 	long Update();
 	long Teardown();
 
