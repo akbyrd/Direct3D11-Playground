@@ -22,3 +22,12 @@ Topic to Study
 	attributes
 	smart pointers
 	Microsoft::WRL::ComPtr
+	Input methods: RawInput, DirectInput (deprecated) http://gamedev.stackexchange.com/questions/72114/how-do-i-handle-directx-mouse-events/72545
+	AI http://gamedev.stackexchange.com/questions/2194/new-to-creating-ai-where-to-start
+
+General Reading Material
+	Shawn Hargreaves' Blog http://blogs.msdn.com/b/shawnhar/
+	Aras Pranckevicius' Blog http://aras-p.info/blog/
+	Chuck Walbourns Blog http://blogs.msdn.com/b/chuckw/
+	Fabian Giesen's Blog https://fgiesen.wordpress.com/
+	Fabien Sanglard's Site http://fabiensanglard.net/
