@@ -14,9 +14,7 @@
 
 // C++ Header Files
 #include <algorithm>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
+#include <string>
 
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
 #define LOG_ERROR(x) { std::cout << "Error: " << x; }

@@ -10,7 +10,6 @@ public:
 	double     DeltaTime() const;
 	double RealDeltaTime() const;
 
-	void Reset();
 	void Start();
 	void Stop();
 	void Tick();
@@ -32,6 +31,5 @@ private:
 
 	double secondsPerTick;
 
-	__int64    startTick;
 	__int64 previousTick;
 };

@@ -8,6 +8,5 @@ enum ExitCode
 
 	//Errors
 	PeekMessageFailed      = -1,
-	WindowNewFailed        = -2,
-	WindowInitializeFailed = -3
+	WindowInitializeFailed = -2
 };

@@ -1,12 +1,18 @@
 #include "stdafx.h"
-#include "Renderer.h"
+#include "MessageQueue.h"
 #include "HostWindow.h"
+#include "Renderer.h"
+
+#pragma warning ( disable : 4533 ) //Init skipped by goto
+
+//TODO: Disable scaling during resize
+//TODO: Fix blocking during resize (timer?)
+//TODO: Fix init + immediate swap chain resize
 
 //TODO: Alternative to DXTrace? Fancy message box and debugging prompt
-//TODO: Primary question: how to get messages from e.g. window to handle or pass to other objects?
-//TODO: Decide how to handle the timer (should probably be in here, but we need to get signals from the 
-//TODO: Decide how to handle resizing
 //TODO: Input
+
+long ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -15,43 +21,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
-	long ret = 0;
+	long ret;
+
+	//Create a message queue
+	MessageQueue messageQueue;
 
 	//Create a window
-	HostWindow* window = new HostWindow();
-	if ( !window )
-	{
-		LOG_ERROR("HostWindow allocation failed");
-		ret = ExitCode::WindowAllocFailed;
-		goto Cleanup;
-	}
-
-	//Init window
-	ret = window->Initialize(iCmdshow); CHECK_RET(ret);
+	HostWindow window;
+	ret = window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()); CHECK_RET(ret);
 
 	//Create a renderer
-	Renderer* renderer = new Renderer();
-	if ( !renderer )
-	{
-		LOG_ERROR("Renderer allocation failed");
-		ret = ExitCode::RendererAllocFailed;
-		goto Cleanup;
-	}
-
-	//Init renderer
-	ret = renderer->Initialize(window->GetHWND()); CHECK_RET(ret);
+	Renderer renderer;
+	ret = renderer.Initialize(window.GetHWND()); CHECK_RET(ret);
 
 	//Create a timer
-	GameTimer* gameTimer = new GameTimer();
-	if ( !gameTimer )
-	{
-		LOG_ERROR("GameTimer allocation failed");
-		ret = ExitCode::TimerAllocFailed;
-		goto Cleanup;
-	}
-
-	//Init timer
-	gameTimer->Start();
+	GameTimer gameTimer;
+	gameTimer.Start();
 
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
@@ -87,34 +72,70 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		}
 		if ( quit ) { break; }
 
-		//The fun stuff!
-		gameTimer->Tick();
-		ret =   window->Update();          CHECK_RET(ret);
-		ret = renderer->Update(gameTimer); CHECK_RET(ret);
+		//Advance time
+		gameTimer.Tick();
 
-		//Sleep(1);
+		//Process messages
+		Message message;
+		while ( messageQueue.PopMessage(message) ) {
+			ret = ProcessMessage(message, gameTimer, renderer, window); CHECK_RET(ret);
+		}
+
+		//The fun stuff!
+		ret = renderer.Update(gameTimer); CHECK_RET(ret);
 	}
 
 	//Cleanup and shutdown
 Cleanup:
-	if ( gameTimer )
-	{
-		delete gameTimer;
-		gameTimer = nullptr;
-	}
 
-	if ( renderer )
-	{
-		renderer->Teardown();
-		delete renderer;
-		renderer = nullptr;
-	}
+	return ret;
+}
 
-	if ( window )
+#pragma warning ( default : 4533 )
+
+long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, const HostWindow &window)
+{
+	long ret = ExitCode::Success;
+
+	switch ( message )
 	{
-		window->Teardown();
-		delete window;
-		window = nullptr;
+	case Message::WindowResizingBegin:
+		gameTimer.Stop();
+		break;
+
+	case Message::WindowResizingEnd:
+		gameTimer.Start();
+		break;
+
+	case Message::WindowSizeChanged:
+		ret = renderer.Resize();
+		break;
+
+	case Message::WindowMinimized:
+		gameTimer.Stop();
+		break;
+
+	case Message::WindowUnminimized:
+		gameTimer.Start();
+		break;
+
+	case Message::WindowActive:
+		//Windows can be active while minimized. Silly.
+		if ( window.IsActive() )
+			gameTimer.Start();
+		break;
+
+	case Message::WindowInactive:
+		gameTimer.Stop();
+		break;
+
+	case Message::Quit:
+		//TODO: Handle in simulation class to begin shutdown process
+		break;
+
+	case Message::WindowClosed:
+		//TODO: Handle if closing was unexpected
+		break;
 	}
 
 	return ret;

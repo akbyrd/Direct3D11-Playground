@@ -1,37 +1,29 @@
 #pragma once
 
 #include "Window.h"
-#include "GameTimer.h"
+#include "MessageQueue.h"
 
 class HostWindow final : public Window
 {
 public:
-	bool IsFocused() const;
-	HWND GetHWND() const;
+	bool IsActive()    const;
+	bool IsMinimized() const;
+	bool IsResizing()  const;
+	HWND GetHWND()     const;
 
-	bool Initialize(int);
-	long Update();
-	long Teardown();
-
-	long Resize();
+	bool Initialize(LPCWSTR applicationName, int iCmdshow, int width, int height, MessageQueue::Pusher* messageQueue);
+	void Teardown();
 
 protected:
 	virtual LRESULT MessageHandler(UINT, WPARAM, LPARAM);
 
 private:
-	void UpdateFrameStatistics();
-	double averageFrameTime = 0;
-
-	LPCWSTR   applicationName = nullptr;
-	HINSTANCE hInstance       = nullptr;
-	GameTimer gameTimer;
+	LPCWSTR               applicationName = nullptr;
+	HINSTANCE             hInstance       = nullptr;
+	MessageQueue::Pusher* messageQueue    = nullptr;
 
 	bool isActive    = false;
+	bool isResizing  = false;
 	bool isMinimized = false;
 	bool isMaximized = false;
-	bool isResizing  = false;
-
-	//TODO: Move this into a config struct
-	int windowWidth  = 800;
-	int windowHeight = 600;
 };

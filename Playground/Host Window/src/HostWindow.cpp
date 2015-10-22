@@ -1,17 +1,22 @@
 #include "stdafx.h"
 #include "HostWindow.h"
-#include "ExitCode.h"
 
-bool HostWindow::IsFocused() const { return isActive && !isMinimized; }
-HWND HostWindow::GetHWND() const { return hwnd; }
+bool HostWindow::IsActive()    const { return isActive;    }
+bool HostWindow::IsMinimized() const { return isMinimized; }
+bool HostWindow::IsResizing()  const { return isResizing;  }
+HWND HostWindow::GetHWND()     const { return hwnd;        }
 
-bool HostWindow::Initialize(int iCmdshow)
+bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
+                            int clientWidth, int clientHeight,
+                            MessageQueue::Pusher* messageQueue)
 {
+	HostWindow::messageQueue = messageQueue;
+
 	//Get the instance of this application
 	hInstance = GetModuleHandle(nullptr);
 
 	//Give the application a name
-	applicationName = L"Direct3D11 Playground";
+	HostWindow::applicationName = applicationName;
 
 	//Setup the windows class with default settings
 	WNDCLASSEX wc;
@@ -28,21 +33,49 @@ bool HostWindow::Initialize(int iCmdshow)
 	wc.lpszClassName = applicationName;
 	wc.cbSize        = sizeof(WNDCLASSEX);
 
+	DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+
 	//Determine the resolution of the desktop screen
 	int desktopWidth  = GetSystemMetrics(SM_CXSCREEN);
 	int desktopHeight = GetSystemMetrics(SM_CYSCREEN);
 
-	//Determine window size
-	windowWidth  = std::min(windowWidth, desktopWidth);
+	//Convert the client size to a window size
+	RECT windowRect;
+	windowRect.left   = 0;
+	windowRect.top    = 0;
+	windowRect.right  = clientWidth;
+	windowRect.bottom = clientHeight;
+
+	int windowWidth;
+	int windowHeight;
+
+	bool success = AdjustWindowRect(&windowRect, windowStyle, false);
+	if ( success )
+	{
+		windowWidth  = windowRect.right - windowRect.left;
+		windowHeight = windowRect.bottom - windowRect.top;
+	}
+	else
+	{
+		windowWidth  = clientWidth;
+		windowHeight = clientHeight;
+
+		DWORD ret = GetLastError();
+		OutputDebugString(wcscat(L"WARNING: Failed to translate client size to window size", std::to_wstring(ret).c_str()));
+		__debugbreak();
+	}
+
+	//Clamp window size to fit screen
+	windowWidth  = std::min(windowWidth,  desktopWidth);
 	windowHeight = std::min(windowHeight, desktopHeight);
 
-	//Determine window position
+	//Center window
 	int windowPosX = (desktopWidth  - windowWidth ) / 2;
 	int windowPosY = (desktopHeight - windowHeight) / 2;
 
 	//Create the window with the screen settings and get the handle to it
 	WinCreateWindow(wc, WS_EX_APPWINDOW, applicationName, applicationName,
-	                WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+	                windowStyle,
 	                windowPosX, windowPosY, windowWidth, windowHeight,
 	                nullptr, nullptr, hInstance);
 
@@ -51,15 +84,11 @@ bool HostWindow::Initialize(int iCmdshow)
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
 
-	gameTimer.Start();
-
 	return true;
 }
 
-long HostWindow::Teardown()
+void HostWindow::Teardown()
 {
-	gameTimer.Stop();
-
 	//Show the mouse cursor
 	ShowCursor(true);
 
@@ -70,78 +99,56 @@ long HostWindow::Teardown()
 	//Remove the application instance
 	UnregisterClass(applicationName, hInstance);
 	hInstance = nullptr;
-
-	return ExitCode::Success;
-}
-
-long HostWindow::Update()
-{
-	gameTimer.Tick();
-	UpdateFrameStatistics();
-
-	if ( isResizing ) { return ExitCode::Success; }
-
-	//Render
-	//...
-
-	return ExitCode::Success;
-}
-
-long HostWindow::Resize()
-{
-	return ExitCode::Success;
 }
 
 LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( uMsg )
 	{
+	//TODO: Move to input in game
 	case WM_KEYDOWN:
 	case WM_KEYUP:
 		if ( wParam == VK_ESCAPE )
 			PostQuitMessage(0);
 		return 0;
 
-	//TODO: This should probably cap the frame rate of the application
-	//Pause the game timer when the window loses focus.
 	case WM_ACTIVATE:
 		if ( LOWORD(wParam) == WA_INACTIVE )
 		{
-			gameTimer.Stop();
 			isActive = false;
+			messageQueue->PushMessage(Message::WindowInactive);
 		}
 		else
 		{
-			gameTimer.Start();
 			isActive = true;
+			messageQueue->PushMessage(Message::WindowActive);
 		}
 		return 0;
 
 	//Includes moves
 	case WM_ENTERSIZEMOVE:
-		gameTimer.Stop();
 		isResizing = true;
+		messageQueue->PushMessage(Message::WindowResizingBegin);
 		return 0;
 
 	//Includes moves
 	case WM_EXITSIZEMOVE:
-		gameTimer.Start();
 		isResizing = false;
-		Resize();
+		messageQueue->PushMessage(Message::WindowResizingEnd);
+		messageQueue->PushMessage(Message::WindowSizeChanged);
 		return 0;
 
 	case WM_SIZE:
-		windowWidth  = LOWORD(lParam);
-		windowHeight = HIWORD(lParam);
 		switch ( wParam )
 		{
 		case SIZE_MINIMIZED:
-			gameTimer.Stop();
 			isMinimized = true;
+			messageQueue->PushMessage(Message::WindowMinimized);
 			break;
 
 		case SIZE_MAXIMIZED:
 			isMaximized = true;
+			messageQueue->PushMessage(Message::WindowSizeChanged);
 			break;
 
 		/* Sent for any size event that isn't covered above, doesn't mean an
@@ -151,18 +158,19 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			//Actual restore operation
 			if ( isMinimized )
 			{
-				gameTimer.Start();
 				isMinimized = false;
-				Resize();
+				messageQueue->PushMessage(Message::WindowUnminimized);
 			}
+			//Actual restore operation
 			else if ( isMaximized )
 			{
 				isMaximized = false;
-				Resize();
+				messageQueue->PushMessage(Message::WindowSizeChanged);
 			}
+			//Just a resize operation
 			else if ( !isResizing )
 			{
-				Resize();
+				messageQueue->PushMessage(Message::WindowSizeChanged);
 			}
 			break;
 		}
@@ -170,64 +178,20 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_GETMINMAXINFO:
 		//Limit the minimum window size
-		((MINMAXINFO*) lParam)->ptMinTrackSize.x = 200;
-		((MINMAXINFO*) lParam)->ptMinTrackSize.y = 200;
+		((MINMAXINFO*) lParam)->ptMinTrackSize.x = 640;
+		((MINMAXINFO*) lParam)->ptMinTrackSize.y = 480;
 		return 0;
 
 	case WM_CLOSE:
+		PostQuitMessage(1);
+		return 0;
+
 	case WM_DESTROY:
-		PostQuitMessage(0);
+		messageQueue->PushMessage(Message::WindowClosed);
 		return 0;
 
 	//Send unhandled messages to the base class
 	default:
 		return __super::MessageHandler(uMsg, wParam, lParam);
 	}
-}
-
-void HostWindow::UpdateFrameStatistics()
-{
-	const int bufferSize = 30;
-
-	static double buffer[bufferSize];
-	static int head = -1;
-	static int length = 0;
-	static double deltaToMS;
-
-	//HACK: Hate this
-	if ( length == 0 )
-		buffer[bufferSize - 1] = gameTimer.RealTime();
-
-	//Update the head position and length
-	head = (head + 1) % bufferSize;
-	if ( length < bufferSize - 1 )
-	{
-		++length;
-		deltaToMS = 1000. / length;
-	}
-
-	//Update the head value
-	buffer[head] = gameTimer.RealTime();
-
-	int tail = (head - length) % bufferSize;
-	if ( tail < 0 )
-		tail += bufferSize;
-
-	double delta = buffer[head] - buffer[tail];
-	averageFrameTime = delta * deltaToMS;
-
-	//Update FPS in window title once a second
-	static double lastFPSUpdateTime = DBL_EPSILON;
-	if ( gameTimer.RealTime() - lastFPSUpdateTime >= .5f )
-	{
-		lastFPSUpdateTime = gameTimer.RealTime();
-
-		std::wostringstream outs;
-		outs << L"FPS: " << std::setprecision(0) << std::fixed << (1000 / averageFrameTime);
-		outs << L"   Frame Time: " << std::setprecision(2) << averageFrameTime << L" ms";
-	
-		SetWindowText(hwnd, outs.str().c_str());
-	}
-
-	return;
 }

@@ -81,18 +81,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\GameTimer.cpp" />
     <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\GameTimer.h" />
     <ClInclude Include="include\Logging.h" />
+    <ClInclude Include="private include\ExitCode.h" />
     <ClInclude Include="private include\stdafx.h" />
     <ClInclude Include="private include\targetver.h" />
     <ClInclude Include="include\Renderer.h" />
     <ClInclude Include="private include\Utility.h" />
-    <ClInclude Include="src\ExitCode.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Host Window\Host Window.vcxproj">

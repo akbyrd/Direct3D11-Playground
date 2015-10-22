@@ -2,16 +2,18 @@
 
 #include "GameTimer.h"
 
-class Renderer final
+class Renderer
 {
 public:
 	long Initialize(HWND);
-	long Update(const GameTimer*);
+	long Resize();
+	long Update(const GameTimer&);
 	long Teardown();
 
 private:
 	HWND hwnd = nullptr;
 
+	long SetHwnd(HWND);
 	long InitializeDevice();
 	long CheckForWarpDriver();
 	long ObtainDXGIFactory();
@@ -20,6 +22,7 @@ private:
 	IDXGIFactory1*       pDXGIFactory         = nullptr;
 
 	long InitializeSwapChain();
+	long CreateBackBufferView();
 	long UpdateAllowFullscreen();
 	IDXGISwapChain*         pSwapChain        = nullptr;
 	ID3D11RenderTargetView* pRenderTargetView = nullptr;
@@ -29,6 +32,9 @@ private:
 
 	long InitializeOutputMerger();
 	long InitializeViewport();
+
+	void UpdateFrameStatistics(const GameTimer&);
+	double averageFrameTime = 0;
 
 	long LogAdapters();
 	long LogOutputs(IDXGIAdapter1*);

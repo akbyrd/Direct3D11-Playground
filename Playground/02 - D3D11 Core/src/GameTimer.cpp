@@ -19,25 +19,14 @@ GameTimer::GameTimer()
 	  realDeltaTime      = 0;
 	  realDeltaTimeTicks = 0;
 
-	   startTick = 0;
-	previousTick = 0;
-
+	//Initialize frequency info
 	__int64 ticksPerSecond;
 	QueryPerformanceFrequency((LARGE_INTEGER*) &ticksPerSecond);
 
 	secondsPerTick = 1. / ticksPerSecond;
 
-	Reset();
-}
-
-void GameTimer::Reset()
-{
-	__int64 currentTick;
-	QueryPerformanceCounter((LARGE_INTEGER*) &currentTick);
-
-	   startTick = currentTick;
-	previousTick = currentTick;
-
+	//Initialize the timer
+	QueryPerformanceCounter((LARGE_INTEGER*) &previousTick);
 	isStopped = true;
 }
 

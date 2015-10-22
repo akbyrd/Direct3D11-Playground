@@ -19,10 +19,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
+	//Create a message queue
+	MessageQueue messageQueue;
+
 	//Create the initialize the system object
-	HostWindow* window;
-	RETURN_IF_FALSE(window = new HostWindow, ExitCode::WindowNewFailed       );
-	RETURN_IF_FALSE(window->Initialize()   , ExitCode::WindowInitializeFailed);
+	HostWindow window;
+	RETURN_IF_FALSE(window.Initialize(L"Empty Window", iCmdshow, 800, 600, messageQueue.GetQueuePusher()), ExitCode::WindowInitializeFailed);
 
 	int ret = 0;
 	MSG msg;
@@ -54,18 +56,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 			if ( msg.message == WM_QUIT ) { ret = ExitCode::Quit; break; }
 		}
 
-		//Run, baby, run!
-		window->Update();
-
 		//Slow the update rate when the window is not active
-		if ( !window->IsFocused() )
+		if ( !window.IsActive() || window.IsMinimized() )
 			Sleep(100);
 	}
 
-	//Shutdown and release the system object
-	window->Teardown();
-	delete window;
-	window = nullptr;
+	//Teardown the window
+	window.Teardown();
 
 	return ret;
 }

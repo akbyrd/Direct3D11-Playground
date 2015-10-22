@@ -12,6 +12,24 @@ long Renderer::Initialize(HWND hwnd)
 {
 	long ret;
 
+	ret = SetHwnd(hwnd);            CHECK_RET(ret);
+	ret = InitializeDevice();       CHECK_RET(ret);
+	ret = InitializeSwapChain();    CHECK_RET(ret);
+	ret = InitializeDepthBuffer();  CHECK_RET(ret);
+	ret = InitializeOutputMerger(); CHECK_RET(ret);
+	ret = InitializeViewport();     CHECK_RET(ret);
+
+	ret = ExitCode::Success;
+
+Cleanup:
+
+	return ret;
+}
+
+long Renderer::SetHwnd(HWND hwnd)
+{
+	long ret;
+
 	Renderer::hwnd = hwnd;
 	if ( hwnd == nullptr )
 	{
@@ -19,12 +37,6 @@ long Renderer::Initialize(HWND hwnd)
 		ret = ExitCode::BadHWNDProvided;
 		goto Cleanup;
 	}
-
-	ret = InitializeDevice();       CHECK_RET(ret);
-	ret = InitializeSwapChain();    CHECK_RET(ret);
-	ret = InitializeDepthBuffer();  CHECK_RET(ret);
-	ret = InitializeOutputMerger(); CHECK_RET(ret);
-	ret = InitializeViewport();     CHECK_RET(ret);
 
 	ret = ExitCode::Success;
 
@@ -110,6 +122,13 @@ long Renderer::CheckForWarpDriver()
 {
 	HRESULT hr;
 
+	if ( !pD3DDevice )
+	{
+		LOG_ERROR("Failed. D3D device not initialized.");
+		hr = ExitCode::D3DDeviceNotInitialized;
+		goto Cleanup;
+	}
+
 	//Check for the WARP driver
 	IDXGIDevice1* pDXGIDevice = nullptr;
 	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), reinterpret_cast<void**>(&pDXGIDevice)); CHECK_HR(hr);
@@ -138,13 +157,39 @@ Cleanup:
 	return hr;
 }
 
-//TODO: Rebuild swap chain on window resize
 long Renderer::InitializeSwapChain()
 {
 	HRESULT hr;
 
+	if ( !pD3DDevice )
+	{
+		LOG_ERROR("Failed. D3D device not initialized.");
+		hr = ExitCode::D3DDeviceNotInitialized;
+		goto Cleanup;
+	}
+
+	if ( !pDXGIFactory )
+	{
+		LOG_ERROR("Failed. DXGI factory not initialized.");
+		hr = ExitCode::DXGIFactoryNotInitialized;
+		goto Cleanup;
+	}
+
 	//Query and set MSAA quality levels
 	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK_HR(hr);
+
+	//Get the actual window size, just in case
+	RECT rect;
+	if ( GetClientRect(hwnd, &rect) )
+	{
+		width  = rect.right - rect.left;
+		height = rect.bottom - rect.top;
+	}
+	else
+	{
+		hr = GetLastError();
+		LOG_IF_FAILED(hr);
+	}
 
 	//Set swap chain properties
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -167,13 +212,39 @@ long Renderer::InitializeSwapChain()
 	//Create the swap chain
 	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
 
+	hr = CreateBackBufferView(); CHECK_RET(hr);
+	hr = UpdateAllowFullscreen(); CHECK_RET(hr);
+
+	hr = ExitCode::Success;
+
+Cleanup:
+
+	return hr;
+}
+
+long Renderer::CreateBackBufferView()
+{
+	HRESULT hr;
+
+	if ( !pD3DDevice )
+	{
+		LOG_ERROR("Failed. D3D device not initialized.");
+		hr = ExitCode::D3DDeviceNotInitialized;
+		goto Cleanup;
+	}
+
+	if ( !pSwapChain )
+	{
+		LOG_ERROR("Failed. The swap chain has not been initialized.");
+		hr = ExitCode::D3DSwapChainNotInitialized;
+		goto Cleanup;
+	}
+
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK_HR(hr);
 
 	//Create a render target view to the back buffer
 	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView); CHECK_HR(hr);
-
-	hr = UpdateAllowFullscreen(); CHECK_HR(hr);
 
 	hr = ExitCode::Success;
 
@@ -191,7 +262,14 @@ long Renderer::UpdateAllowFullscreen()
 	if ( !pSwapChain )
 	{
 		LOG_WARNING("Failed. The swap chain has not been initialized.");
-		hr = ExitCode::SwapChainNotInitialized;
+		hr = ExitCode::D3DSwapChainNotInitialized;
+		goto Cleanup;
+	}
+
+	if ( !pDXGIFactory )
+	{
+		LOG_ERROR("Failed. DXGI factory not initialized.");
+		hr = ExitCode::DXGIFactoryNotInitialized;
 		goto Cleanup;
 	}
 
@@ -211,6 +289,13 @@ Cleanup:
 long Renderer::InitializeDepthBuffer()
 {
 	HRESULT hr;
+
+	if ( !pD3DDevice )
+	{
+		LOG_ERROR("Failed. D3D device not initialized.");
+		hr = ExitCode::D3DDeviceNotInitialized;
+		goto Cleanup;
+	}
 
 	D3D11_TEXTURE2D_DESC depthDesc;
 	depthDesc.Width = width;
@@ -240,13 +325,35 @@ Cleanup:
 
 long Renderer::InitializeOutputMerger()
 {
+	long ret;
+
+	if ( !pD3DImmediateContext )
+	{
+		LOG_ERROR("Failed. D3D context not initialized.");
+		ret = ExitCode::D3DContextNotInitialized;
+		goto Cleanup;
+	}
+
 	pD3DImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthBufferView);
 
-	return ExitCode::Success;
+	ret = ExitCode::Success;
+
+Cleanup:
+
+	return ret;
 }
 
 long Renderer::InitializeViewport()
 {
+	long ret;
+
+	if ( !pD3DImmediateContext )
+	{
+		LOG_ERROR("Failed. D3D context not initialized.");
+		ret = ExitCode::D3DContextNotInitialized;
+		goto Cleanup;
+	}
+
 	D3D11_VIEWPORT viewport;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
@@ -257,7 +364,11 @@ long Renderer::InitializeViewport()
 
 	pD3DImmediateContext->RSSetViewports(0, &viewport);
 
-	return ExitCode::Success;
+	ret = ExitCode::Success;
+
+Cleanup:
+
+	return ret;
 }
 
 
@@ -401,11 +512,64 @@ Cleanup:
 }
 
 
-long Renderer::Update(const GameTimer* gameTimer)
+long Renderer::Resize()
 {
 	HRESULT hr;
 
-	double t = gameTimer->Time();
+	if ( !pSwapChain )
+	{
+		LOG_ERROR("Failed. The swap chain has not been initialized.");
+		hr = ExitCode::D3DSwapChainNotInitialized;
+		goto Cleanup;
+	}
+
+	//Get the new window size
+	RECT rect;
+	if ( GetClientRect(hwnd, &rect) )
+	{
+		width  = rect.right - rect.left;
+		height = rect.bottom - rect.top;
+	}
+	else
+	{
+		hr = GetLastError();
+		LOG_IF_FAILED(hr);
+	}
+
+	//Preserve the swap chain configuration
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	hr = pSwapChain->GetDesc(&swapChainDesc); CHECK_HR(hr);
+
+	//Skip resizing if it's not necessary
+	if ( swapChainDesc.BufferDesc.Width  == width
+	  && swapChainDesc.BufferDesc.Height == height )
+	{
+		hr = ExitCode::Success;
+		goto Cleanup;
+	}
+
+	//Release the old resource views (required to resize)
+	SafeRelease(pRenderTargetView);
+	SafeRelease(pDepthBufferView);
+
+	hr = pSwapChain->ResizeBuffers(1, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags); CHECK_HR(hr);
+
+	hr = CreateBackBufferView(); CHECK_RET(hr);
+	hr = InitializeDepthBuffer(); CHECK_RET(hr);
+	hr = InitializeViewport(); CHECK_RET(hr);
+
+	hr = ExitCode::Success;
+
+Cleanup:
+
+	return hr;
+}
+
+long Renderer::Update(const GameTimer &gameTimer)
+{
+	HRESULT hr;
+
+	double t = gameTimer.Time();
 	float  r = (float) sin(1. * t);
 	float  g = (float) sin(2. * t);
 	float  b = (float) sin(3. * t);
@@ -417,11 +581,61 @@ long Renderer::Update(const GameTimer* gameTimer)
 
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
+	UpdateFrameStatistics(gameTimer);
+
 	hr = ExitCode::Success;
 
 Cleanup:
 
 	return hr;
+}
+
+void Renderer::UpdateFrameStatistics(const GameTimer &gameTimer)
+{
+	const int bufferSize = 30;
+
+	static double buffer[bufferSize];
+	static int head = -1;
+	static int length = 0;
+	static double deltaToMS;
+
+	//HACK: Hate this
+	if ( length == 0 )
+		buffer[bufferSize - 1] = gameTimer.RealTime();
+
+	//Update the head position and length
+	head = (head + 1) % bufferSize;
+	if ( length < bufferSize - 1 )
+	{
+		++length;
+		deltaToMS = 1000. / length;
+	}
+
+	//Update the head value
+	buffer[head] = gameTimer.RealTime();
+
+	int tail = (head - length) % bufferSize;
+	if ( tail < 0 )
+		tail += bufferSize;
+
+	double delta = buffer[head] - buffer[tail];
+	averageFrameTime = delta * deltaToMS;
+
+	//Update FPS in window title once a second
+	static double lastFPSUpdateTime = DBL_EPSILON;
+	if ( gameTimer.RealTime() - lastFPSUpdateTime >= .5f )
+	{
+		lastFPSUpdateTime = gameTimer.RealTime();
+
+		std::wostringstream outs;
+		outs << L"FPS: " << std::setprecision(0) << std::fixed << (1000 / averageFrameTime);
+		outs << L"   Frame Time: " << std::setprecision(2) << averageFrameTime << L" ms";
+		outs << L"   (" << width << L" x " << height << L")";
+
+		SetWindowText(hwnd, outs.str().c_str());
+	}
+
+	return;
 }
 
 long Renderer::Teardown()
