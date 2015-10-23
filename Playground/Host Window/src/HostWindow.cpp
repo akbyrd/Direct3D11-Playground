@@ -141,10 +141,6 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
-	case WM_TIMER:
-		{ int i = 0; }
-		return 0;
-
 	//Includes moves
 	case WM_ENTERSIZEMOVE:
 		isResizing = true;

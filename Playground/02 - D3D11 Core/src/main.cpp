@@ -3,9 +3,7 @@
 #include "HostWindow.h"
 #include "Renderer.h"
 
-//TODO: Disable scaling during resize
-//TODO: Fix blocking during resize (timer?)
-//TODO: Fix init + immediate swap chain resize
+//FUTURE: Simulation and window in different threads (handles modal resize blocking implicitly)
 
 //TODO: Alternative to DXTrace? Fancy message box and debugging prompt
 //TODO: Input
