@@ -49,8 +49,7 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	int windowWidth;
 	int windowHeight;
 
-	bool success = AdjustWindowRect(&windowRect, windowStyle, false);
-	if ( success )
+	if ( AdjustWindowRect(&windowRect, windowStyle, false) )
 	{
 		windowWidth  = windowRect.right - windowRect.left;
 		windowHeight = windowRect.bottom - windowRect.top;
@@ -61,7 +60,9 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 		windowHeight = clientHeight;
 
 		DWORD ret = GetLastError();
-		OutputDebugString(wcscat(L"WARNING: Failed to translate client size to window size", std::to_wstring(ret).c_str()));
+		std::wstring warning = L"WARNING: Failed to translate client size to window size";
+		warning += std::to_wstring(ret);
+		OutputDebugString(warning.c_str());
 		__debugbreak();
 	}
 
