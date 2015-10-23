@@ -3,8 +3,6 @@
 #include "HostWindow.h"
 #include "Renderer.h"
 
-#pragma warning ( disable : 4533 ) //Init skipped by goto
-
 //TODO: Fix WM_GETMINMAXINFO to clamp client size, not window size
 //TODO: Disable scaling during resize
 //TODO: Fix blocking during resize (timer?)
@@ -24,19 +22,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 	long ret;
 
-	//Create a message queue
+	//Create game components
 	MessageQueue messageQueue;
-
-	//Create a window
 	HostWindow window;
-	ret = window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()); CHECK_RET(ret);
-
-	//Create a renderer
 	Renderer renderer;
-	ret = renderer.Initialize(window.GetHWND()); CHECK_RET(ret);
-
-	//Create a timer
 	GameTimer gameTimer;
+
+	//Initialize game components
+	ret = window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()); CHECK_RET(ret);
+	ret = renderer.Initialize(window.GetHWND()); CHECK_RET(ret);
 	gameTimer.Start();
 
 	MSG msg;
@@ -88,11 +82,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 	//Cleanup and shutdown
 Cleanup:
+	renderer.Teardown();
+	window.Teardown();
 
 	return ret;
 }
-
-#pragma warning ( default : 4533 )
 
 long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, const HostWindow &window)
 {
