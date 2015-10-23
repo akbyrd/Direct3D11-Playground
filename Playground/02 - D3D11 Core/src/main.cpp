@@ -3,7 +3,6 @@
 #include "HostWindow.h"
 #include "Renderer.h"
 
-//TODO: Fix WM_GETMINMAXINFO to clamp client size, not window size
 //TODO: Disable scaling during resize
 //TODO: Fix blocking during resize (timer?)
 //TODO: Fix init + immediate swap chain resize

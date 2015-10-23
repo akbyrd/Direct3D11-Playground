@@ -16,11 +16,17 @@ public:
 
 protected:
 	virtual LRESULT MessageHandler(UINT, WPARAM, LPARAM);
+	void LogLastError(std::wstring);
 
 private:
+	bool ClientSizeToWindowSize(int&, int&, int, int, DWORD);
+
 	LPCWSTR               applicationName = nullptr;
 	HINSTANCE             hInstance       = nullptr;
 	MessageQueue::Pusher* messageQueue    = nullptr;
+
+	int minWidth  = 640;
+	int minHeight = 480;
 
 	bool isActive    = false;
 	bool isResizing  = false;

@@ -39,51 +39,53 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	int desktopWidth  = GetSystemMetrics(SM_CXSCREEN);
 	int desktopHeight = GetSystemMetrics(SM_CYSCREEN);
 
+	//Convert the min size to clamp the client area, not the whole window
+	ClientSizeToWindowSize(minWidth, minHeight, desktopWidth, desktopHeight, windowStyle);
+
 	//Convert the client size to a window size
-	RECT windowRect;
-	windowRect.left   = 0;
-	windowRect.top    = 0;
-	windowRect.right  = clientWidth;
-	windowRect.bottom = clientHeight;
-
-	int windowWidth;
-	int windowHeight;
-
-	if ( AdjustWindowRect(&windowRect, windowStyle, false) )
-	{
-		windowWidth  = windowRect.right - windowRect.left;
-		windowHeight = windowRect.bottom - windowRect.top;
-	}
-	else
-	{
-		windowWidth  = clientWidth;
-		windowHeight = clientHeight;
-
-		DWORD ret = GetLastError();
-		std::wstring warning = L"WARNING: Failed to translate client size to window size";
-		warning += std::to_wstring(ret);
-		OutputDebugString(warning.c_str());
-		__debugbreak();
-	}
-
-	//Clamp window size to fit screen
-	windowWidth  = std::min(windowWidth,  desktopWidth);
-	windowHeight = std::min(windowHeight, desktopHeight);
+	ClientSizeToWindowSize(clientWidth, clientHeight, desktopWidth, desktopHeight, windowStyle);
 
 	//Center window
-	int windowPosX = (desktopWidth  - windowWidth ) / 2;
-	int windowPosY = (desktopHeight - windowHeight) / 2;
+	int windowPosX = (desktopWidth  - clientWidth ) / 2;
+	int windowPosY = (desktopHeight - clientHeight) / 2;
 
 	//Create the window with the screen settings and get the handle to it
 	WinCreateWindow(wc, WS_EX_APPWINDOW, applicationName, applicationName,
 	                windowStyle,
-	                windowPosX, windowPosY, windowWidth, windowHeight,
+	                windowPosX, windowPosY, clientWidth, clientHeight,
 	                nullptr, nullptr, hInstance);
 
 	//Bring the window up on the screen and set it as main focus
 	ShowWindow(hwnd, iCmdshow);
 	SetForegroundWindow(hwnd);
 	SetFocus(hwnd);
+
+	return true;
+}
+
+bool HostWindow::ClientSizeToWindowSize(int &width, int &height,
+                                        int desktopWidth, int desktopHeight, DWORD windowStyle)
+{
+	//Convert the min size to clamp the client area, not the whole window
+	RECT windowRect;
+	windowRect.left   = 0;
+	windowRect.top    = 0;
+	windowRect.right  = width;
+	windowRect.bottom = height;
+
+	BOOL ret = AdjustWindowRect(&windowRect, windowStyle, false);
+	if ( !ret )
+	{
+		LogLastError(L"WARNING: Failed to translate client size to window size");
+		return false;
+	}
+
+	width  = windowRect.right - windowRect.left;
+	height = windowRect.bottom - windowRect.top;
+
+	//Clamp window size to fit screen
+	width  = std::min(width, desktopWidth);
+	height = std::min(height, desktopHeight);
 
 	return true;
 }
@@ -100,6 +102,19 @@ void HostWindow::Teardown()
 	//Remove the application instance
 	UnregisterClass(applicationName, hInstance);
 	hInstance = nullptr;
+}
+
+void HostWindow::LogLastError(std::wstring message)
+{
+	DWORD ret = GetLastError();
+
+	message += L". Last Error: ";
+	message += std::to_wstring(ret);
+	message += L"\n";
+
+	OutputDebugString(message.c_str());
+
+	__debugbreak();
 }
 
 LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -124,6 +139,10 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			isActive = true;
 			messageQueue->PushMessage(Message::WindowActive);
 		}
+		return 0;
+
+	case WM_TIMER:
+		{ int i = 0; }
 		return 0;
 
 	//Includes moves
@@ -179,8 +198,8 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_GETMINMAXINFO:
 		//Limit the minimum window size
-		((MINMAXINFO*) lParam)->ptMinTrackSize.x = 640;
-		((MINMAXINFO*) lParam)->ptMinTrackSize.y = 480;
+		((MINMAXINFO*) lParam)->ptMinTrackSize.x = minWidth;
+		((MINMAXINFO*) lParam)->ptMinTrackSize.y = minHeight;
 		return 0;
 
 	case WM_CLOSE:
