@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Renderer.h"
+#include "RendererBase.h"
 #include "Utility.h"
 
 #pragma comment(lib, "D3D11.lib")
@@ -8,7 +8,7 @@
 
 using namespace Utility;
 
-long Renderer::Initialize(HWND hwnd)
+long RendererBase::Initialize(HWND hwnd)
 {
 	long ret;
 
@@ -26,11 +26,11 @@ Cleanup:
 	return ret;
 }
 
-long Renderer::SetHwnd(HWND hwnd)
+long RendererBase::SetHwnd(HWND hwnd)
 {
 	long ret;
 
-	Renderer::hwnd = hwnd;
+	RendererBase::hwnd = hwnd;
 	if ( hwnd == nullptr )
 	{
 		LOG_ERROR("Failed. Null HWND was provided.");
@@ -45,7 +45,7 @@ Cleanup:
 	return ret;
 }
 
-long Renderer::InitializeDevice()
+long RendererBase::InitializeDevice()
 {
 	HRESULT hr;
 
@@ -89,7 +89,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::ObtainDXGIFactory()
+long RendererBase::ObtainDXGIFactory()
 {
 	HRESULT hr;
 
@@ -118,7 +118,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::CheckForWarpDriver()
+long RendererBase::CheckForWarpDriver()
 {
 	HRESULT hr;
 
@@ -157,7 +157,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::InitializeSwapChain()
+long RendererBase::InitializeSwapChain()
 {
 	HRESULT hr;
 
@@ -222,7 +222,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::CreateBackBufferView()
+long RendererBase::CreateBackBufferView()
 {
 	HRESULT hr;
 
@@ -254,7 +254,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::UpdateAllowFullscreen()
+long RendererBase::UpdateAllowFullscreen()
 {
 	HRESULT hr;
 
@@ -286,7 +286,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::InitializeDepthBuffer()
+long RendererBase::InitializeDepthBuffer()
 {
 	HRESULT hr;
 
@@ -323,7 +323,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::InitializeOutputMerger()
+long RendererBase::InitializeOutputMerger()
 {
 	long ret;
 
@@ -343,7 +343,7 @@ Cleanup:
 	return ret;
 }
 
-long Renderer::InitializeViewport()
+long RendererBase::InitializeViewport()
 {
 	long ret;
 
@@ -372,7 +372,7 @@ Cleanup:
 }
 
 
-long Renderer::LogAdapters()
+long RendererBase::LogAdapters()
 {
 	HRESULT hr;
 
@@ -426,7 +426,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
+long RendererBase::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
 {
 	HRESULT hr;
 
@@ -470,7 +470,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::LogDisplayModes(IDXGIOutput* pDXGIOutput)
+long RendererBase::LogDisplayModes(IDXGIOutput* pDXGIOutput)
 {
 	HRESULT hr;
 
@@ -512,7 +512,7 @@ Cleanup:
 }
 
 
-long Renderer::Resize()
+long RendererBase::Resize()
 {
 	HRESULT hr;
 
@@ -565,7 +565,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::Update(const GameTimer &gameTimer)
+long RendererBase::Update(const GameTimer &gameTimer)
 {
 	HRESULT hr;
 
@@ -590,7 +590,7 @@ Cleanup:
 	return hr;
 }
 
-void Renderer::UpdateFrameStatistics(const GameTimer &gameTimer)
+void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 {
 	const int bufferSize = 30;
 
@@ -638,7 +638,7 @@ void Renderer::UpdateFrameStatistics(const GameTimer &gameTimer)
 	return;
 }
 
-long Renderer::Teardown()
+long RendererBase::Teardown()
 {
 	hwnd = nullptr;
 
@@ -655,7 +655,7 @@ long Renderer::Teardown()
 	return ExitCode::Success;
 }
 
-void Renderer::LogLiveObjects()
+void RendererBase::LogLiveObjects()
 {
 	#ifdef _DEBUG
 

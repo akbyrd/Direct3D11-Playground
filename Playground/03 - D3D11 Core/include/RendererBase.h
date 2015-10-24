@@ -2,7 +2,7 @@
 
 #include "GameTimer.h"
 
-class Renderer
+class RendererBase
 {
 public:
 	long Initialize(HWND);
@@ -10,7 +10,7 @@ public:
 	virtual long Update(const GameTimer&);
 	long Teardown();
 
-private:
+protected:
 	HWND hwnd = nullptr;
 
 	long SetHwnd(HWND);
