@@ -7,7 +7,7 @@ class Renderer
 public:
 	long Initialize(HWND);
 	long Resize();
-	long Update(const GameTimer&);
+	virtual long Update(const GameTimer&);
 	long Teardown();
 
 private:

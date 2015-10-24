@@ -10,10 +10,10 @@
 #include <crtdbg.h>
 #endif
 
-#include "targetver.h"
-
-// Exclude rarely-used stuff from Windows headers
+// Modify Windows Header Files
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include "targetver.h"
 
 // Windows Header Files:
 #include <windows.h>
