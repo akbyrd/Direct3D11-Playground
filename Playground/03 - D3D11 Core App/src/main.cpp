@@ -2,7 +2,7 @@
 
 #include "MessageQueue.h"
 #include "HostWindow.h"
-#include "Renderer.h"
+#include "RendererBase.h"
 #include "Logging.h"
 #include "GameTimer.h"
 #include "ExitCode.h"
@@ -12,7 +12,7 @@
 //TODO: Alternative to DXTrace? Fancy message box and debugging prompt
 //TODO: Input
 
-long ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&);
+long ProcessMessage(Message&, GameTimer&, RendererBase&, const HostWindow&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -26,7 +26,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	//Create game components
 	MessageQueue messageQueue;
 	HostWindow window;
-	Renderer renderer;
+	RendererBase renderer;
 	GameTimer gameTimer;
 
 	//Initialize game components
@@ -89,7 +89,7 @@ Cleanup:
 	return ret;
 }
 
-long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, const HostWindow &window)
+long ProcessMessage(Message& message, GameTimer &gameTimer, RendererBase &renderer, const HostWindow &window)
 {
 	long ret = ExitCode::Success;
 
