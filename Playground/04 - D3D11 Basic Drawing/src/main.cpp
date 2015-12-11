@@ -7,19 +7,14 @@
 #include "GameTimer.h"
 #include "ExitCode.h"
 
-//FUTURE: Simulation and window in different threads (handles modal resize blocking implicitly)
-
-//TODO: Alternative to DXTrace? Fancy message box and debugging prompt
-//TODO: Input
-
 long ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
 	//Enable run-time memory check for debug builds.
-#ifdef _DEBUG
+	#ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
+	#endif
 
 	long ret;
 

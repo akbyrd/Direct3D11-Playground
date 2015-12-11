@@ -5,6 +5,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{c6163a34-e9c6-44c5-b881-a053884486e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -12,10 +15,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="private include\ExitCode.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="private include\targetver.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="private include\stdafx.h" />
-    <ClInclude Include="private include\targetver.h" />
+    <ClInclude Include="private include\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="private include\ExitCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
