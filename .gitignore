@@ -77,3 +77,4 @@ ipch/
 # D3D Effects build results
 *.fxo
 *.cod
+*.opendb
