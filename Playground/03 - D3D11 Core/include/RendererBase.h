@@ -41,6 +41,9 @@ protected:
 	long LogDisplayModes(IDXGIOutput*);
 	void LogLiveObjects();
 
+	virtual long OnInitialize();
+	virtual long OnTeardown();
+
 	//TODO: Encapsulate in a struct?
 	//Settings
 	bool startFullscreen   = false;

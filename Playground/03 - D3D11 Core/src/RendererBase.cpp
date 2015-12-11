@@ -18,6 +18,7 @@ long RendererBase::Initialize(HWND hwnd)
 	ret = InitializeDepthBuffer();  CHECK_RET(ret);
 	ret = InitializeOutputMerger(); CHECK_RET(ret);
 	ret = InitializeViewport();     CHECK_RET(ret);
+	ret = OnInitialize();           CHECK_RET(ret);
 
 	ret = ExitCode::Success;
 
@@ -640,6 +641,10 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 
 long RendererBase::Teardown()
 {
+	long ret;
+
+	ret = OnTeardown();
+
 	hwnd = nullptr;
 
 	SafeRelease(pD3DDevice);
@@ -652,8 +657,11 @@ long RendererBase::Teardown()
 	//Check for leaks
 	LogLiveObjects();
 
-	return ExitCode::Success;
+	return ret;
 }
+
+long RendererBase::OnInitialize() { return ExitCode::Success; }
+long RendererBase::OnTeardown()   { return ExitCode::Success; }
 
 void RendererBase::LogLiveObjects()
 {
