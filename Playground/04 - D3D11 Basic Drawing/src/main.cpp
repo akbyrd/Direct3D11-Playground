@@ -7,6 +7,12 @@
 #include "GameTimer.h"
 #include "ExitCode.h"
 
+//TODO: Refactor error handling pattern. Choose:
+//      1) Declare variables at top of methods
+//     *2) Switch to cascaded-ifs with smart pointers
+//      3) Switch to throw-on-fail
+//TODO: Shader syntax coloring
+
 long ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
