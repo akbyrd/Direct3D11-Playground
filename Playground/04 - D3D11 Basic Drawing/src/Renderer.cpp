@@ -44,6 +44,7 @@ long Renderer::InitializeInputLayout()
 
 	//Create and set input layout
 	hr = pD3DDevice->CreateInputLayout(arrVertShaderInputDescs, 2, vertShaderBytes, vertShaderBytesLength, &pInputLayout); CHECK_HR(hr);
+	SetDebugObjectName(pInputLayout, "Input Layout");
 
 	pD3DImmediateContext->IASetInputLayout(pInputLayout);
 	pD3DImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -51,6 +52,8 @@ long Renderer::InitializeInputLayout()
 	//Create and set vertex shader
 	ID3D11VertexShader* pVertShader = nullptr;
 	hr = pD3DDevice->CreateVertexShader(vertShaderBytes, vertShaderBytesLength, nullptr, &pVertShader); CHECK_HR(hr);
+	SetDebugObjectName(pVertShader, "Basic Vertex Shader");
+
 	pD3DImmediateContext->VSSetShader(pVertShader, nullptr, 0);
 
 	//Load pixel shader bytecode
@@ -61,6 +64,8 @@ long Renderer::InitializeInputLayout()
 	//Create pixel shader
 	ID3D11PixelShader* pPixelShader = nullptr;
 	hr = pD3DDevice->CreatePixelShader(pixelShaderBytes, pixelShaderBytesLength, nullptr, &pPixelShader); CHECK_HR(hr);
+	SetDebugObjectName(pPixelShader, "Basic Pixel Shader");
+
 	pD3DImmediateContext->PSSetShader(pPixelShader, nullptr, 0);
 
 	hr = ExitCode::Success;
@@ -106,6 +111,7 @@ long Renderer::InitializeBuffers()
 
 	ID3D11Buffer* pVertBuffer = nullptr;
 	hr = pD3DDevice->CreateBuffer(&vertBufDesc, &vertBufInitData, &pVertBuffer); CHECK_HR(hr);
+	SetDebugObjectName(pVertBuffer, "Cube Vertex Buffer");
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -143,6 +149,7 @@ long Renderer::InitializeBuffers()
 
 	ID3D11Buffer* pIndexBuffer = nullptr;
 	hr = pD3DDevice->CreateBuffer(&indexBufDesc, &indexBufInitData, &pIndexBuffer); CHECK_HR(hr);
+	SetDebugObjectName(pIndexBuffer, "Cube Index Buffer");
 
 	pD3DImmediateContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
@@ -186,6 +193,7 @@ long Renderer::InitializeBuffers()
 	vsConstBufInitData.SysMemSlicePitch = 0;
 
 	hr = pD3DDevice->CreateBuffer(&vsConstBufDesc, &vsConstBufInitData, &pVSConstBuffer); CHECK_HR(hr);
+	SetDebugObjectName(pVSConstBuffer, "Vertex Shader WVP Constant Buffer");
 
 	pD3DImmediateContext->VSSetConstantBuffers(0, 1, &pVSConstBuffer);
 

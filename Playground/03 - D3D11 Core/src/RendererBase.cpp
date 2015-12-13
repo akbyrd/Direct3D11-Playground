@@ -70,6 +70,8 @@ long RendererBase::InitializeDevice()
 		&featureLevel,
 		&pD3DImmediateContext
 	); CHECK_HR(hr);
+	SetDebugObjectName(pD3DDevice, "Device");
+	SetDebugObjectName(pD3DImmediateContext, "Device Context");
 
 	//Check feature level
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
@@ -105,11 +107,14 @@ long RendererBase::ObtainDXGIFactory()
 	//Obtain the DXGI factory used to create the current device
 	IDXGIDevice1* pDXGIDevice = nullptr;
 	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK_HR(hr);
+	SetDebugObjectName(pDXGIDevice, "DXGI Device");
 
 	IDXGIAdapter1* pDXGIAdapter = nullptr;
 	hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter1), (void **) &pDXGIAdapter); CHECK_HR(hr);
+	SetDebugObjectName(pDXGIAdapter, "DXGI Adapter");
 
 	hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK_HR(hr);
+	SetDebugObjectName(pDXGIFactory, "DXGI Factory");
 
 	hr = ExitCode::Success;
 
@@ -213,6 +218,7 @@ long RendererBase::InitializeSwapChain()
 
 	//Create the swap chain
 	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
+	SetDebugObjectName(pSwapChain, "Swap Chain");
 
 	hr = CreateBackBufferView(); CHECK_RET(hr);
 	hr = UpdateAllowFullscreen(); CHECK_RET(hr);
@@ -244,9 +250,11 @@ long RendererBase::CreateBackBufferView()
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK_HR(hr);
+	SetDebugObjectName(pBackBuffer, "Back Buffer");
 
 	//Create a render target view to the back buffer
 	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView); CHECK_HR(hr);
+	SetDebugObjectName(pRenderTargetView, "Render Target View");
 
 	hr = ExitCode::Success;
 
@@ -314,8 +322,10 @@ long RendererBase::InitializeDepthBuffer()
 
 	ID3D11Texture2D* pDepthBuffer = nullptr;
 	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer); CHECK_HR(hr);
+	SetDebugObjectName(pDepthBuffer, "Depth Buffer");
 
 	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer, nullptr, &pDepthBufferView); CHECK_HR(hr);
+	SetDebugObjectName(pDepthBufferView, "Depth Buffer View");
 
 	hr = ExitCode::Success;
 
