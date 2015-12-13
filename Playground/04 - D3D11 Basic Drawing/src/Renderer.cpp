@@ -119,7 +119,7 @@ long Renderer::InitializeBuffers()
 
 
 	//Create and set index buffer
-	const UINT cubeIndeces[] = {
+	const UINT cubeIndices[] = {
 		0, 1, 2, //Front
 		0, 2, 3,
 		3, 2, 6, //Right
@@ -143,7 +143,7 @@ long Renderer::InitializeBuffers()
 	indexBufDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA indexBufInitData;
-	indexBufInitData.pSysMem          = &indexBufDesc;
+	indexBufInitData.pSysMem          = cubeIndices;
 	indexBufInitData.SysMemPitch      = 0;
 	indexBufInitData.SysMemSlicePitch = 0;
 
