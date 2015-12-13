@@ -514,11 +514,7 @@ long RendererBase::LogDisplayModes(IDXGIOutput* pDXGIOutput)
 	hr = ExitCode::Success;
 
 Cleanup:
-	if ( arrModeDesc )
-	{
-		delete arrModeDesc;
-		arrModeDesc = nullptr;
-	}
+	SafeDelete(arrModeDesc);
 
 	return hr;
 }
