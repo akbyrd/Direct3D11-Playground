@@ -9,6 +9,7 @@ public:
 
 protected:
 	virtual long OnInitialize();
+	virtual long OnResize();
 	virtual void OnTeardown();
 
 private:
@@ -24,11 +25,12 @@ private:
 	long InitializeBuffers();
 	ID3D11Buffer* pVSConstBuffer = nullptr;
 
+	long UpdateView(float);
 	DirectX::XMFLOAT4X4 mWorld;
 	DirectX::XMFLOAT4X4 mView;
 	DirectX::XMFLOAT4X4 mProj;
+	DirectX::XMFLOAT4X4 mWVP;
 
 	float theta  = DirectX::XM_PIDIV4;
 	float phi    = DirectX::XM_PIDIV4;
-	float radius = 4;
 };

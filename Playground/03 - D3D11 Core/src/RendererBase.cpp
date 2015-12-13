@@ -566,6 +566,8 @@ long RendererBase::Resize()
 	hr = InitializeDepthBuffer(); CHECK_RET(hr);
 	hr = InitializeViewport(); CHECK_RET(hr);
 
+	hr = OnResize(); CHECK_RET(hr);
+
 	hr = ExitCode::Success;
 
 Cleanup:
@@ -664,6 +666,7 @@ void RendererBase::Teardown()
 }
 
 long RendererBase::OnInitialize() { return ExitCode::Success; }
+long RendererBase::OnResize()     { return ExitCode::Success; }
 void RendererBase::OnTeardown()   { }
 
 void RendererBase::LogLiveObjects()

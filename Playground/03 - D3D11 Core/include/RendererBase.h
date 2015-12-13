@@ -42,6 +42,7 @@ protected:
 	void LogLiveObjects();
 
 	virtual long OnInitialize();
+	virtual long OnResize();
 	virtual void OnTeardown();
 
 	//TODO: Encapsulate in a struct?
