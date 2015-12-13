@@ -254,9 +254,6 @@ long Renderer::Update(const GameTimer &gameTimer)
 	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, color);
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
-	//TODO: Set view position
-	//pD3DImmediateContext->VSSetConstantBuffers(0, 1, nullptr);
-
 	pD3DImmediateContext->DrawIndexed(36, 0, 0);
 
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
@@ -295,13 +292,10 @@ long Renderer::UpdateView(float deltaTime)
 	XMMATRIX view  = XMLoadFloat4x4(&mView);
 	XMMATRIX proj  = XMLoadFloat4x4(&mProj);
 	XMMATRIX worldViewProj = world * view * proj;
-
-	XMFLOAT4X4 wvp;
-	XMStoreFloat4x4(&wvp, worldViewProj);
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	//Update the vertex shaders WVP constant buffer
-	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &wvp, 0, 0);
+	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &worldViewProj, 0, 0);
 
 	hr = ExitCode::Success;
 
