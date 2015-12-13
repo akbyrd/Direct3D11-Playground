@@ -3,7 +3,7 @@
 #define LOG(msg)          Logging::Log        (TEXT(msg), __FILE__, __LINE__, __FUNCTION__)
 #define LOG_WARNING(msg)  Logging::LogWarning (TEXT(msg), __FILE__, __LINE__, __FUNCTION__)
 #define LOG_ERROR(msg)    Logging::LogError   (TEXT(msg), __FILE__, __LINE__, __FUNCTION__)
-#define LOG_IF_FAILED(hr) Logging::LogIfFailed(hr , __FILE__, __LINE__, __FUNCTION__)
+#define LOG_IF_FAILED(hr) Logging::LogIfFailed(       hr, __FILE__, __LINE__, __FUNCTION__)
 
 namespace Logging
 {
