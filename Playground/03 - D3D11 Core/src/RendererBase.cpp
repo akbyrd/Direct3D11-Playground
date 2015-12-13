@@ -7,6 +7,7 @@
 #pragma comment(lib,  "DXGI.lib")
 
 using namespace Utility;
+using namespace DirectX;
 
 long RendererBase::Initialize(HWND hwnd)
 {
