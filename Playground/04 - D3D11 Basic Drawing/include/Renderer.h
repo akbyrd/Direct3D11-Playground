@@ -31,9 +31,9 @@ private:
 	DirectX::XMFLOAT4X4 mProj;
 	DirectX::XMFLOAT4X4 mWVP;
 
-	float theta  = DirectX::XM_PIDIV4;
+	float theta  = DirectX::XM_PIDIV2*3;
 	float phi    = DirectX::XM_PIDIV4;
-	float radius = 10;
+	float radius = 5;
 
 	//Debugging
 	long SetWireframeMode(bool enableWireframe);

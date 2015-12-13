@@ -294,8 +294,10 @@ long Renderer::UpdateView(float deltaTime)
 	XMMATRIX worldViewProj = world * view * proj;
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
+	XMMATRIX wvpT = XMMatrixTranspose(worldViewProj);
 	//Update the vertex shaders WVP constant buffer
-	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &worldViewProj, 0, 0);
+	//pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &worldViewProj, 0, 0);
+	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &wvpT, 0, 0);
 
 	hr = ExitCode::Success;
 
