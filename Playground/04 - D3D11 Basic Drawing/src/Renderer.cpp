@@ -185,6 +185,48 @@ Cleanup:
 	return hr;
 }
 
+long Renderer::SetWireframeMode(bool enableWireframe)
+{
+	HRESULT hr;
+
+	ID3D11RasterizerState *pRasterizerState = nullptr;
+	pD3DImmediateContext->RSGetState(&pRasterizerState);
+
+	D3D11_RASTERIZER_DESC rasterizerDesc;
+	if ( pRasterizerState != nullptr )
+	{
+		pRasterizerState->GetDesc(&rasterizerDesc);
+		SafeRelease(pRasterizerState);
+	}
+	else
+	{
+		rasterizerDesc.CullMode              = D3D11_CULL_BACK;
+		rasterizerDesc.FrontCounterClockwise = false;
+		rasterizerDesc.DepthBias             = 0;
+		rasterizerDesc.DepthBiasClamp        = 0;
+		rasterizerDesc.SlopeScaledDepthBias  = 0;
+		rasterizerDesc.DepthClipEnable       = true;
+		rasterizerDesc.ScissorEnable         = false;
+		rasterizerDesc.MultisampleEnable     = false;
+		rasterizerDesc.AntialiasedLineEnable = multiSampleCount > 0;
+	}
+
+	if ( enableWireframe )
+		rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+	else
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+
+	hr = pD3DDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerState); CHECK_HR(hr);
+	pD3DImmediateContext->RSSetState(pRasterizerState);
+
+	hr = ExitCode::Success;
+
+Cleanup:
+	SafeRelease(pRasterizerState);
+
+	return hr;
+}
+
 long Renderer::OnResize()
 {
 	long ret;

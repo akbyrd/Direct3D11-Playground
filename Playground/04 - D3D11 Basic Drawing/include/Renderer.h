@@ -34,4 +34,7 @@ private:
 	float theta  = DirectX::XM_PIDIV4;
 	float phi    = DirectX::XM_PIDIV4;
 	float radius = 10;
+
+	//Debugging
+	long SetWireframeMode(bool enableWireframe);
 };
