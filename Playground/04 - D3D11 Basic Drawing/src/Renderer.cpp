@@ -32,7 +32,7 @@ long Renderer::InitializeInputLayout()
 {
 	HRESULT hr;
 
-	D3D11_INPUT_ELEMENT_DESC arrVertShaderInputDescs[] = {
+	const D3D11_INPUT_ELEMENT_DESC arrVertShaderInputDescs[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT   ,  0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR"   , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 12, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
@@ -85,7 +85,7 @@ long Renderer::InitializeBuffers()
 
 	//TODO: Best practices for types
 	//Create and set vertex buffer
-	Vertex cubeVerts[] = {
+	const Vertex cubeVerts[] = {
 		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), (XMFLOAT4) Color::Red     },
 		{ XMFLOAT3(-1.0f,  1.0f, -1.0f), (XMFLOAT4) Color::Green   },
 		{ XMFLOAT3( 1.0f,  1.0f, -1.0f), (XMFLOAT4) Color::Blue    },
@@ -113,13 +113,13 @@ long Renderer::InitializeBuffers()
 	hr = pD3DDevice->CreateBuffer(&vertBufDesc, &vertBufInitData, &pVertBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pVertBuffer, "Cube Vertex Buffer");
 
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
+	const UINT stride = sizeof(Vertex);
+	const UINT offset = 0;
 	pD3DImmediateContext->IASetVertexBuffers(0, 1, &pVertBuffer, &stride, &offset);
 
 
 	//Create and set index buffer
-	UINT cubeIndeces[] = {
+	const UINT cubeIndeces[] = {
 		0, 1, 2, //Front
 		0, 2, 3,
 		3, 2, 6, //Right
@@ -157,26 +157,26 @@ long Renderer::InitializeBuffers()
 	//Create and set vertex shader constant buffer
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// The window resized, so update the aspect ratio and recompute the projection matrix.
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*DirectX::XM_PI, width/height, 1.0f, 1000.0f);
+	const XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*DirectX::XM_PI, (float) width/height, 1.0f, 1000.0f);
 	XMStoreFloat4x4(&mProj, P);
 
 	// Convert Spherical to Cartesian coordinates.
-	float x = radius*sinf(phi)*cosf(theta);
-	float z = radius*sinf(phi)*sinf(theta);
-	float y = radius*cosf(phi);
+	const float x = radius*sinf(phi)*cosf(theta);
+	const float z = radius*sinf(phi)*sinf(theta);
+	const float y = radius*cosf(phi);
 
 	// Build the view matrix.
-	XMVECTOR pos    = XMVectorSet(x, y, z, 1.0f);
-	XMVECTOR target = XMVectorZero();
-	XMVECTOR up     = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	const XMVECTOR pos    = XMVectorSet(x, y, z, 1.0f);
+	const XMVECTOR target = XMVectorZero();
+	const XMVECTOR up     = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
+	const XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
 	XMStoreFloat4x4(&mView, V);
 
-	XMMATRIX world = XMLoadFloat4x4(&mWorld);
-	XMMATRIX view  = XMLoadFloat4x4(&mView);
-	XMMATRIX proj  = XMLoadFloat4x4(&mProj);
-	XMMATRIX worldViewProj = world * view * proj;
+	const XMMATRIX world = XMLoadFloat4x4(&mWorld);
+	const XMMATRIX view  = XMLoadFloat4x4(&mView);
+	const XMMATRIX proj  = XMLoadFloat4x4(&mProj);
+	const XMMATRIX worldViewProj = world * view * proj;
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	D3D11_BUFFER_DESC vsConstBufDesc;
@@ -210,12 +210,12 @@ long Renderer::Update(const GameTimer &gameTimer)
 {
 	HRESULT hr;
 
-	double t = gameTimer.Time();
-	float  r = sinf(1.0f * t);
-	float  g = sinf(2.0f * t);
-	float  b = sinf(3.0f * t);
+	const float t = (float) gameTimer.Time();
+	const float r = sinf(1.0f * t);
+	const float g = sinf(2.0f * t);
+	const float b = sinf(3.0f * t);
 
-	XMVECTORF32 color = { r, g, b, 1.0f };
+	const XMVECTORF32 color = { r, g, b, 1.0f };
 
 	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, color);
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);

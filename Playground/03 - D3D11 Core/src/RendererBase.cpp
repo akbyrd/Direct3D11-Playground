@@ -577,12 +577,12 @@ long RendererBase::Update(const GameTimer &gameTimer)
 {
 	HRESULT hr;
 
-	double t = gameTimer.Time();
-	float  r = (float) sin(1. * t);
-	float  g = (float) sin(2. * t);
-	float  b = (float) sin(3. * t);
+	const float t = (float) gameTimer.Time();
+	const float r = (float) sin(1. * t);
+	const float g = (float) sin(2. * t);
+	const float b = (float) sin(3. * t);
 
-	XMVECTORF32 color = { r, g, b, 1.0f };
+	const XMVECTORF32 color = { r, g, b, 1.0f };
 
 	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, color);
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
@@ -600,7 +600,7 @@ Cleanup:
 
 void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 {
-	const int bufferSize = 30;
+	const static int bufferSize = 30;
 
 	static double buffer[bufferSize];
 	static int head = -1;
