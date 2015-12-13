@@ -168,6 +168,7 @@ long RendererBase::InitializeSwapChain()
 {
 	HRESULT hr;
 
+	//TODO: These should probably just be asserts?
 	if ( !pD3DDevice )
 	{
 		LOG_ERROR("Failed. D3D device not initialized.");
@@ -194,27 +195,26 @@ long RendererBase::InitializeSwapChain()
 	}
 	else
 	{
-		hr = GetLastError();
-		LOG_IF_FAILED(hr);
+		hr = GetLastError(); CHECK_HR(hr);
 	}
 
 	//Set swap chain properties
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	swapChainDesc.BufferDesc.Width = width;
-	swapChainDesc.BufferDesc.Height = height;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapChainDesc.BufferDesc.Width                   = width;
+	swapChainDesc.BufferDesc.Height                  = height;
+	swapChainDesc.BufferDesc.RefreshRate.Numerator   = 60;
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	swapChainDesc.SampleDesc.Count = multiSampleCount;
-	swapChainDesc.SampleDesc.Quality = numQualityLevels - 1;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 1;
-	swapChainDesc.OutputWindow = hwnd;
-	swapChainDesc.Windowed = !startFullscreen;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	swapChainDesc.BufferDesc.Format                  = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.ScanlineOrdering        = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Scaling                 = DXGI_MODE_SCALING_UNSPECIFIED;
+	swapChainDesc.SampleDesc.Count                   = multiSampleCount;
+	swapChainDesc.SampleDesc.Quality                 = numQualityLevels - 1;
+	swapChainDesc.BufferUsage                        = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount                        = 1;
+	swapChainDesc.OutputWindow                       = hwnd;
+	swapChainDesc.Windowed                           = !startFullscreen;
+	swapChainDesc.SwapEffect                         = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.Flags                              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	//Create the swap chain
 	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
@@ -540,8 +540,7 @@ long RendererBase::Resize()
 	}
 	else
 	{
-		hr = GetLastError();
-		LOG_IF_FAILED(hr);
+		hr = GetLastError(); CHECK_HR(hr);
 	}
 
 	//Preserve the swap chain configuration

@@ -4,7 +4,7 @@ struct PixelFragment
 	float4 Color : COLOR;
 };
 
-float4 main( PixelFragment pIn ) : SV_Target
+float4 main( PixelFragment pIn ) : SV_TARGET
 {
 	return pIn.Color;
 }
