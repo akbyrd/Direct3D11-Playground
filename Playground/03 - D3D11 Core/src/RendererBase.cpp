@@ -364,7 +364,7 @@ long RendererBase::InitializeViewport()
 	viewport.MinDepth = 0;
 	viewport.MaxDepth = 1;
 
-	pD3DImmediateContext->RSSetViewports(0, &viewport);
+	pD3DImmediateContext->RSSetViewports(1, &viewport);
 
 	ret = ExitCode::Success;
 
