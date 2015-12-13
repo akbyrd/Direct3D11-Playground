@@ -13,5 +13,9 @@ enum ExitCode
 	D3DSwapChainNotInitialized  = -4,
 	D3DDeviceNotInitialized     = -5,
 	D3DContextNotInitialized    = -6,
-	D3DResizeFailed             = -7
+	D3DResizeFailed             = -7,
+
+	//Errors - File Reading
+	FileOpenFailed    = -8,
+	FileReadFailed    = -9
 };

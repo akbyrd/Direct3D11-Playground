@@ -32,4 +32,5 @@ namespace Color
 	XMGLOBALCONST XMVECTORF32 Red   = { 1.0f, 0.0f, 0.0f, 1.0f };
 	XMGLOBALCONST XMVECTORF32 Green = { 0.0f, 1.0f, 0.0f, 1.0f };
 	XMGLOBALCONST XMVECTORF32 Blue  = { 0.0f, 0.0f, 1.0f, 1.0f };
+	long LoadFile(const std::wstring fileName, char* &data, SIZE_T &dataSize);
 }
