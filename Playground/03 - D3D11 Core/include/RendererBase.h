@@ -8,7 +8,7 @@ public:
 	long Initialize(HWND);
 	long Resize();
 	virtual long Update(const GameTimer&);
-	long Teardown();
+	void Teardown();
 
 protected:
 	HWND hwnd = nullptr;
@@ -42,7 +42,7 @@ protected:
 	void LogLiveObjects();
 
 	virtual long OnInitialize();
-	virtual long OnTeardown();
+	virtual void OnTeardown();
 
 	//TODO: Encapsulate in a struct?
 	//Settings

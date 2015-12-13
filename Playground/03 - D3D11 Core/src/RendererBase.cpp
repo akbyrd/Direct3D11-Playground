@@ -640,11 +640,9 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 	return;
 }
 
-long RendererBase::Teardown()
+void RendererBase::Teardown()
 {
-	long ret;
-
-	ret = OnTeardown();
+	OnTeardown();
 
 	hwnd = nullptr;
 
@@ -657,12 +655,10 @@ long RendererBase::Teardown()
 
 	//Check for leaks
 	LogLiveObjects();
-
-	return ret;
 }
 
 long RendererBase::OnInitialize() { return ExitCode::Success; }
-long RendererBase::OnTeardown()   { return ExitCode::Success; }
+void RendererBase::OnTeardown()   { }
 
 void RendererBase::LogLiveObjects()
 {
