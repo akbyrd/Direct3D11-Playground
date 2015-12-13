@@ -21,9 +21,6 @@
     <ClInclude Include="d3dUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="d3dx11effect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

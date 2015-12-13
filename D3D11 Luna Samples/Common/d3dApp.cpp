@@ -14,6 +14,8 @@ namespace
 	D3DApp* gd3dApp = 0;
 }
 
+int (WINAPIV * __vsnwprintf)(wchar_t *, size_t, const wchar_t*, va_list) = _vsnwprintf;
+
 LRESULT CALLBACK
 MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

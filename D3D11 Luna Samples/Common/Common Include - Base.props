@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(SolutionDir)Common;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common;$(SolutionDir)Effects11\inc;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common;$(LibraryPath)</LibraryPath>
     <_PropertySheetDisplayName>Common Include - Base</_PropertySheetDisplayName>
   </PropertyGroup>

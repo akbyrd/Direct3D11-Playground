@@ -190,8 +190,8 @@ void BoxApp::OnMouseMove(WPARAM btnState, int x, int y)
 	if( (btnState & MK_LBUTTON) != 0 )
 	{
 		// Make each pixel correspond to a quarter of a degree.
-		float dx = XMConvertToRadians(0.25f*static_cast<float>(x - mLastMousePos.x));
-		float dy = XMConvertToRadians(0.25f*static_cast<float>(y - mLastMousePos.y));
+		float dx = XMConvertToRadians(0.25f*static_cast<float>(mLastMousePos.x - x));
+		float dy = XMConvertToRadians(0.25f*static_cast<float>(mLastMousePos.y - y));
 
 		// Update angles based on input to orbit camera around box.
 		mTheta += dx;
@@ -203,8 +203,8 @@ void BoxApp::OnMouseMove(WPARAM btnState, int x, int y)
 	else if( (btnState & MK_RBUTTON) != 0 )
 	{
 		// Make each pixel correspond to 0.005 unit in the scene.
-		float dx = 0.005f*static_cast<float>(x - mLastMousePos.x);
-		float dy = 0.005f*static_cast<float>(y - mLastMousePos.y);
+		float dx = 0.005f*static_cast<float>(mLastMousePos.x - x);
+		float dy = 0.005f*static_cast<float>(mLastMousePos.y - y);
 
 		// Update the camera radius based on input.
 		mRadius += dx - dy;

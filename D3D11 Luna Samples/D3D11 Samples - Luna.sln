@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chapter 01 - XMVECTOR", "Chapter 1 Vector Algebra\XMVECTOR\XMVECTOR.vcxproj", "{DADB6887-AAD1-48B8-BE2D-94D2C36681E9}"
 EndProject
@@ -80,6 +80,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Solutions - Waves2", "SelectedCodeSolutions\DisplacementMappedWaves\Waves2.vcxproj", "{1A252274-D265-4692-9944-17B5FEDF5217}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{D3CF5AD5-70D0-4C0A-ADF1-70BC11D706FA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DF460EAB-570D-4B50-9089-2E2FC801BF38} = {DF460EAB-570D-4B50-9089-2E2FC801BF38}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Effects11", "Effects11\Effects11.vcxproj", "{DF460EAB-570D-4B50-9089-2E2FC801BF38}"
 EndProject
