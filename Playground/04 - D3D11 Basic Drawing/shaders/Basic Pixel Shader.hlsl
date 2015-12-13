@@ -6,6 +6,5 @@ struct PixelFragment
 
 float4 main( PixelFragment pIn ) : SV_Target
 {
-	//return pIn.Color;
-	return float4(1, 1, 1, 1);
+	return pIn.Color;
 }
