@@ -273,7 +273,7 @@ long Renderer::UpdateView(float deltaTime)
 	HRESULT hr;
 
 	//Update the camera position
-	theta += .5f * deltaTime;
+	theta += 1.f * deltaTime;
 
 	// Convert Spherical to Cartesian coordinates.
 	float x = radius*sinf(phi)*cosf(theta);
