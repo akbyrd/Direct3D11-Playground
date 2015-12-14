@@ -29,7 +29,6 @@ private:
 	DirectX::XMFLOAT4X4 mWorld;
 	DirectX::XMFLOAT4X4 mView;
 	DirectX::XMFLOAT4X4 mProj;
-	DirectX::XMFLOAT4X4 mWVP;
 
 	float theta  = DirectX::XM_PIDIV2*3;
 	float phi    = DirectX::XM_PIDIV4;

@@ -166,8 +166,9 @@ long Renderer::InitializeBuffers()
 	vsConstBufDesc.MiscFlags           = 0;
 	vsConstBufDesc.StructureByteStride = 0;
 
+	//Junk, it'll get updated before rendering
 	D3D11_SUBRESOURCE_DATA vsConstBufInitData;
-	vsConstBufInitData.pSysMem          = &mWVP;
+	vsConstBufInitData.pSysMem          = &mWorld;
 	vsConstBufInitData.SysMemPitch      = 0;
 	vsConstBufInitData.SysMemSlicePitch = 0;
 
