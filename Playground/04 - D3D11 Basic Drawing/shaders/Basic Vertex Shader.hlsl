@@ -1,6 +1,6 @@
 cbuffer cbPerObject
 {
-	float4x4 gWorldViewProj;
+	matrix gWorldViewProj;
 };
 
 struct VertexIn
@@ -20,6 +20,7 @@ VertexOut main( VertexIn vIn )
 	VertexOut vOut;
 
 	vOut.PosH = mul(float4(vIn.PosL, 1.0f), gWorldViewProj);
+
 	vOut.Color = vIn.Color;
 
 	return vOut;

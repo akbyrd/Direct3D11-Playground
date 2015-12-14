@@ -234,7 +234,7 @@ long Renderer::OnResize()
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// The window resized, so update the aspect ratio and recompute the projection matrix.
-	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, static_cast<float>(width) / height, 0.1f, 100.0f);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float) width / height, 0.1f, 100.0f);
 	XMStoreFloat4x4(&mProj, P);
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -292,13 +292,11 @@ long Renderer::UpdateView(float deltaTime)
 	XMMATRIX world = XMLoadFloat4x4(&mWorld);
 	XMMATRIX view  = XMLoadFloat4x4(&mView);
 	XMMATRIX proj  = XMLoadFloat4x4(&mProj);
-	XMMATRIX worldViewProj = world * view * proj;
+	XMMATRIX worldViewProj = XMMatrixTranspose(world * view * proj);
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-	XMMATRIX wvpT = XMMatrixTranspose(worldViewProj);
 	//Update the vertex shaders WVP constant buffer
-	//pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &worldViewProj, 0, 0);
-	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &wvpT, 0, 0);
+	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &worldViewProj, 0, 0);
 
 	hr = ExitCode::Success;
 
