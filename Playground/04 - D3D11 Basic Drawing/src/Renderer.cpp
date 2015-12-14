@@ -122,7 +122,7 @@ long Renderer::InitializeBuffers()
 
 
 	//Create and set index buffer
-	const UINT cubeIndices[] = {
+	const USHORT cubeIndices[] = {
 		0, 1, 2, //Front
 		0, 2, 3,
 		3, 2, 6, //Right
@@ -154,7 +154,7 @@ long Renderer::InitializeBuffers()
 	hr = pD3DDevice->CreateBuffer(&indexBufDesc, &indexBufInitData, &pIndexBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pIndexBuffer, "Cube Index Buffer");
 
-	pD3DImmediateContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	pD3DImmediateContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 
 	//Create and set vertex shader constant buffer
