@@ -579,9 +579,9 @@ long RendererBase::Update(const GameTimer &gameTimer)
 	HRESULT hr;
 
 	const float t = (float) gameTimer.Time();
-	const float r = (float) sin(1. * t);
-	const float g = (float) sin(2. * t);
-	const float b = (float) sin(3. * t);
+	const float r = sinf(1.0f * t);
+	const float g = sinf(2.0f * t);
+	const float b = sinf(3.0f * t);
 
 	const XMVECTORF32 color = { r, g, b, 1.0f };
 
