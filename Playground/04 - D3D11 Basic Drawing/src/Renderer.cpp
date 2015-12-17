@@ -243,12 +243,9 @@ long Renderer::OnResize()
 	return ret;
 }
 
-long Renderer::Update(const GameTimer &gameTimer)
+long Renderer::Render()
 {
 	HRESULT hr;
-
-	const float dt = (float) gameTimer.DeltaTime();
-	UpdateView(dt);
 
 	const XMVECTORF32 color = { 0.5f, 0.5f, 0.5f, 1.0f };
 
@@ -259,8 +256,6 @@ long Renderer::Update(const GameTimer &gameTimer)
 
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
-	UpdateFrameStatistics(gameTimer);
-
 	hr = ExitCode::Success;
 
 Cleanup:
@@ -268,12 +263,9 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::UpdateView(float deltaTime)
+long Renderer::Update(const GameTimer &gameTimer)
 {
 	HRESULT hr;
-
-	//Update the camera position
-	theta += 1.f * deltaTime;
 
 	// Convert Spherical to Cartesian coordinates.
 	float x = radius*sinf(phi)*cosf(theta);
@@ -298,11 +290,49 @@ long Renderer::UpdateView(float deltaTime)
 	//Update the vertex shaders WVP constant buffer
 	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer, 0, nullptr, &worldViewProj, 0, 0);
 
+	UpdateFrameStatistics(gameTimer);
+
 	hr = ExitCode::Success;
 
 Cleanup:
 
 	return hr;
+}
+
+void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, POINTS mousePosition)
+{
+	static float epsilon = numeric_limits<float>::epsilon();
+
+	if ( leftMouseDown )
+	{
+		short dx = lastMousePosition.x - mousePosition.x;
+		short dy = lastMousePosition.y - mousePosition.y;
+
+		theta += .006f * dx;
+		  phi += .006f * dy;
+
+		if ( phi <     0 ) phi = epsilon;
+		if ( phi > XM_PI ) phi = XM_PI - epsilon;
+		SetCapture(hwnd);
+	}
+	else if ( rightMouseDown )
+	{
+		short dx = lastMousePosition.x - mousePosition.x;
+		short dy = lastMousePosition.y - mousePosition.y;
+
+		radius += .01f * (dx - dy);
+
+		if ( radius <  0 ) radius = epsilon;
+		if ( radius > 50 ) radius = 50;
+
+		SetCapture(hwnd);
+	}
+	else
+	{
+		ReleaseCapture();
+	}
+
+	lastMousePosition = mousePosition;
 }
 
 void Renderer::OnTeardown()

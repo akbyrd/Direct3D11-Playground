@@ -6,10 +6,11 @@
 class HostWindow final : public Window
 {
 public:
-	bool IsActive()    const;
-	bool IsMinimized() const;
-	bool IsResizing()  const;
-	HWND GetHWND()     const;
+	bool   IsActive()      const;
+	bool   HostWindow::IsMinimized()   const;
+	bool   IsResizing()    const;
+	HWND   GetHWND()       const;
+	POINTS MousePosition() const;
 
 	bool Initialize(LPCWSTR applicationName, int iCmdshow, int width, int height, MessageQueue::Pusher* messageQueue);
 	void Teardown();
@@ -32,4 +33,6 @@ private:
 	bool isResizing  = false;
 	bool isMinimized = false;
 	bool isMaximized = false;
+
+	POINTS mousePosition;
 };

@@ -13,7 +13,7 @@
 //      3) Switch to throw-on-fail
 //TODO: Shader syntax coloring
 
-long ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&);
+long ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -29,6 +29,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	HostWindow window;
 	Renderer renderer;
 	GameTimer gameTimer;
+
+	bool leftMouseDown = false;
+	bool rightMouseDown = false;
 
 	//Initialize game components
 	ret = window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()); CHECK_RET(ret);
@@ -76,11 +79,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		Message message;
 		while ( messageQueue.PopMessage(message) )
 		{
-			ret = ProcessMessage(message, gameTimer, renderer, window); CHECK_RET(ret);
+			ret = ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown); CHECK_RET(ret);
 		}
+		renderer.HandleInput(leftMouseDown, rightMouseDown, window.MousePosition());
 
 		//The fun stuff!
 		ret = renderer.Update(gameTimer); CHECK_RET(ret);
+		ret = renderer.Render(); CHECK_RET(ret);
 	}
 
 	//Cleanup and shutdown
@@ -91,7 +96,7 @@ Cleanup:
 	return ret;
 }
 
-long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, const HostWindow &window)
+long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, const HostWindow &window, bool &leftMouseDown, bool &rightMouseDown)
 {
 	long ret = ExitCode::Success;
 
@@ -133,6 +138,26 @@ long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, 
 
 	case Message::WindowClosed:
 		//TODO: Handle if closing was unexpected
+		break;
+
+	case Message::MouseLeftDown:
+		leftMouseDown = true;
+		break;
+
+	case Message::MouseLeftUp:
+		leftMouseDown = false;
+		break;
+
+	case Message::MouseRightDown:
+		rightMouseDown = true;
+		break;
+
+	case Message::MouseRightUp:
+		rightMouseDown = false;
+		break;
+
+	case Message::MouseWheelDown:
+	case Message::MouseWheelUp:
 		break;
 	}
 

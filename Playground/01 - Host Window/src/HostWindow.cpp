@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "HostWindow.h"
 
-bool HostWindow::IsActive()    const { return isActive;    }
-bool HostWindow::IsMinimized() const { return isMinimized; }
-bool HostWindow::IsResizing()  const { return isResizing;  }
-HWND HostWindow::GetHWND()     const { return hwnd;        }
+bool   HostWindow::IsActive()      const { return isActive;      }
+bool   HostWindow::IsMinimized()   const { return isMinimized;   }
+bool   HostWindow::IsResizing()    const { return isResizing;    }
+HWND   HostWindow::GetHWND()       const { return hwnd;          }
+POINTS HostWindow::MousePosition() const { return mousePosition; }
 
 bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
                             int clientWidth, int clientHeight,
@@ -204,6 +205,38 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_DESTROY:
 		messageQueue->PushMessage(Message::WindowClosed);
+		return 0;
+
+	case WM_MOUSEWHEEL:
+	{
+		//TODO: Should really check storing and incrementing the offset
+		short delta = GET_WHEEL_DELTA_WPARAM(wParam);
+		if ( delta > WHEEL_DELTA )
+			messageQueue->PushMessage(Message::MouseWheelUp);
+		else if ( delta < -WHEEL_DELTA )
+			messageQueue->PushMessage(Message::MouseWheelDown);
+		goto UpdateMousePosition;
+	}
+
+	case WM_RBUTTONDOWN:
+		messageQueue->PushMessage(Message::MouseRightDown);
+		goto UpdateMousePosition;
+
+	case WM_RBUTTONUP:
+		messageQueue->PushMessage(Message::MouseRightUp);
+		goto UpdateMousePosition;
+
+	case WM_LBUTTONDOWN:
+		messageQueue->PushMessage(Message::MouseLeftDown);
+		goto UpdateMousePosition;
+
+	case WM_LBUTTONUP:
+		messageQueue->PushMessage(Message::MouseLeftUp);
+		goto UpdateMousePosition;
+
+	UpdateMousePosition:
+	case WM_MOUSEMOVE:
+		mousePosition = MAKEPOINTS(lParam);
 		return 0;
 
 	//Send unhandled messages to the base class

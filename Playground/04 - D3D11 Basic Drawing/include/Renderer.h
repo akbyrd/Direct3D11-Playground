@@ -6,6 +6,10 @@ class Renderer : public RendererBase
 {
 public:
 	virtual long Update(const GameTimer&);
+	virtual long Render();
+
+	//TODO: This is awful. Implement proper input handling.
+	void HandleInput(bool, bool, POINTS);
 
 protected:
 	virtual long OnInitialize();
@@ -25,7 +29,6 @@ private:
 	long InitializeBuffers();
 	ID3D11Buffer* pVSConstBuffer = nullptr;
 
-	long UpdateView(float);
 	DirectX::XMFLOAT4X4 mWorld;
 	DirectX::XMFLOAT4X4 mView;
 	DirectX::XMFLOAT4X4 mProj;
@@ -36,4 +39,6 @@ private:
 
 	//Debugging
 	long SetWireframeMode(bool enableWireframe);
+
+	POINTS lastMousePosition;
 };
