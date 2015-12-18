@@ -9,7 +9,7 @@ using namespace std;
 using namespace Utility;
 using namespace DirectX;
 
-long Renderer::OnInitialize()
+bool Renderer::OnInitialize()
 {
 	long ret;
 
@@ -228,7 +228,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::OnResize()
+bool Renderer::OnResize()
 {
 	long ret;
 
@@ -243,7 +243,7 @@ long Renderer::OnResize()
 	return ret;
 }
 
-long Renderer::Render()
+bool Renderer::Render()
 {
 	HRESULT hr;
 
@@ -263,7 +263,7 @@ Cleanup:
 	return hr;
 }
 
-long Renderer::Update(const GameTimer &gameTimer)
+bool Renderer::Update(const GameTimer &gameTimer)
 {
 	HRESULT hr;
 

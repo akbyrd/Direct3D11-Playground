@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "RendererBase.h"
+#include "AssertionException.h"
 #include "Utility.h"
 
 #pragma comment(lib, "D3D11.lib")
@@ -9,16 +10,16 @@
 using namespace Utility;
 using namespace DirectX;
 
-long RendererBase::Initialize(HWND hwnd)
+bool RendererBase::Initialize(HWND hwnd)
 {
 	long ret;
 
-	ret = SetHwnd(hwnd);            CHECK_RET(ret);
+	      SetHwnd(hwnd);
 	ret = InitializeDevice();       CHECK_RET(ret);
 	ret = InitializeSwapChain();    CHECK_RET(ret);
 	ret = InitializeDepthBuffer();  CHECK_RET(ret);
-	ret = InitializeOutputMerger(); CHECK_RET(ret);
-	ret = InitializeViewport();     CHECK_RET(ret);
+	      InitializeOutputMerger();
+	      InitializeViewport();
 	ret = OnInitialize();           CHECK_RET(ret);
 
 	ret = ExitCode::Success;
@@ -28,26 +29,14 @@ Cleanup:
 	return ret;
 }
 
-long RendererBase::SetHwnd(HWND hwnd)
+void RendererBase::SetHwnd(HWND hwnd)
 {
-	long ret;
+	throw_assert(hwnd && "Failed. Null HWND was provided.");
 
 	RendererBase::hwnd = hwnd;
-	if ( hwnd == nullptr )
-	{
-		LOG_ERROR("Failed. Null HWND was provided.");
-		ret = ExitCode::BadHWNDProvided;
-		goto Cleanup;
-	}
-
-	ret = ExitCode::Success;
-
-Cleanup:
-
-	return ret;
 }
 
-long RendererBase::InitializeDevice()
+bool RendererBase::InitializeDevice()
 {
 	HRESULT hr;
 
@@ -73,6 +62,7 @@ long RendererBase::InitializeDevice()
 	SetDebugObjectName(pD3DDevice, "Device");
 	SetDebugObjectName(pD3DImmediateContext, "Device Context");
 
+	//TODO: Throw
 	//Check feature level
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
 	{
@@ -93,16 +83,11 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::ObtainDXGIFactory()
+bool RendererBase::ObtainDXGIFactory()
 {
 	HRESULT hr;
 
-	if ( !pD3DDevice )
-	{
-		LOG_ERROR("Failed. D3D device not initialized.");
-		hr = ExitCode::D3DDeviceNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
 
 	//Obtain the DXGI factory used to create the current device
 	IDXGIDevice1* pDXGIDevice = nullptr;
@@ -125,16 +110,11 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::CheckForWarpDriver()
+bool RendererBase::CheckForWarpDriver()
 {
 	HRESULT hr;
 
-	if ( !pD3DDevice )
-	{
-		LOG_ERROR("Failed. D3D device not initialized.");
-		hr = ExitCode::D3DDeviceNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
 
 	//Check for the WARP driver
 	IDXGIDevice1* pDXGIDevice = nullptr;
@@ -164,24 +144,12 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::InitializeSwapChain()
+bool RendererBase::InitializeSwapChain()
 {
 	HRESULT hr;
 
-	//TODO: These should probably just be asserts?
-	if ( !pD3DDevice )
-	{
-		LOG_ERROR("Failed. D3D device not initialized.");
-		hr = ExitCode::D3DDeviceNotInitialized;
-		goto Cleanup;
-	}
-
-	if ( !pDXGIFactory )
-	{
-		LOG_ERROR("Failed. DXGI factory not initialized.");
-		hr = ExitCode::DXGIFactoryNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
+	throw_assert(pDXGIFactory && "Failed. DXGI factory not initialized.");
 
 	//Query and set MSAA quality levels
 	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK_HR(hr);
@@ -230,23 +198,12 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::CreateBackBufferView()
+bool RendererBase::CreateBackBufferView()
 {
 	HRESULT hr;
 
-	if ( !pD3DDevice )
-	{
-		LOG_ERROR("Failed. D3D device not initialized.");
-		hr = ExitCode::D3DDeviceNotInitialized;
-		goto Cleanup;
-	}
-
-	if ( !pSwapChain )
-	{
-		LOG_ERROR("Failed. The swap chain has not been initialized.");
-		hr = ExitCode::D3DSwapChainNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
+	throw_assert(pSwapChain && "Failed. The swap chain has not been initialized.");
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK_HR(hr);
@@ -264,24 +221,13 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::UpdateAllowFullscreen()
+bool RendererBase::UpdateAllowFullscreen()
 {
 	HRESULT hr;
 
 	//MakeWindowAssociation only works if the swap chain has been created.
-	if ( !pSwapChain )
-	{
-		LOG_WARNING("Failed. The swap chain has not been initialized.");
-		hr = ExitCode::D3DSwapChainNotInitialized;
-		goto Cleanup;
-	}
-
-	if ( !pDXGIFactory )
-	{
-		LOG_ERROR("Failed. DXGI factory not initialized.");
-		hr = ExitCode::DXGIFactoryNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pSwapChain && "Failed. The swap chain has not been initialized.");
+	throw_assert(pDXGIFactory && "Failed. DXGI factory not initialized.");
 
 	UINT flags = 0;
 	if ( !allowFullscreen )
@@ -296,16 +242,11 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::InitializeDepthBuffer()
+bool RendererBase::InitializeDepthBuffer()
 {
 	HRESULT hr;
 
-	if ( !pD3DDevice )
-	{
-		LOG_ERROR("Failed. D3D device not initialized.");
-		hr = ExitCode::D3DDeviceNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
 
 	D3D11_TEXTURE2D_DESC depthDesc;
 	depthDesc.Width = width;
@@ -335,36 +276,16 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::InitializeOutputMerger()
+void RendererBase::InitializeOutputMerger()
 {
-	long ret;
-
-	if ( !pD3DImmediateContext )
-	{
-		LOG_ERROR("Failed. D3D context not initialized.");
-		ret = ExitCode::D3DContextNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pD3DImmediateContext && "Failed. D3D context not initialized.");
 
 	pD3DImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthBufferView);
-
-	ret = ExitCode::Success;
-
-Cleanup:
-
-	return ret;
 }
 
-long RendererBase::InitializeViewport()
+void RendererBase::InitializeViewport()
 {
-	long ret;
-
-	if ( !pD3DImmediateContext )
-	{
-		LOG_ERROR("Failed. D3D context not initialized.");
-		ret = ExitCode::D3DContextNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pD3DImmediateContext && "Failed. D3D context not initialized.");
 
 	D3D11_VIEWPORT viewport;
 	viewport.TopLeftX = 0;
@@ -375,16 +296,10 @@ long RendererBase::InitializeViewport()
 	viewport.MaxDepth = 1;
 
 	pD3DImmediateContext->RSSetViewports(1, &viewport);
-
-	ret = ExitCode::Success;
-
-Cleanup:
-
-	return ret;
 }
 
 
-long RendererBase::LogAdapters()
+bool RendererBase::LogAdapters()
 {
 	HRESULT hr;
 
@@ -438,8 +353,10 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
+bool RendererBase::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
 {
+	throw_assert(pDXGIAdapter && "Failed. pDXGIAdapter is null.");
+
 	HRESULT hr;
 
 	UINT i = 0;
@@ -482,7 +399,7 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::LogDisplayModes(IDXGIOutput* pDXGIOutput)
+bool RendererBase::LogDisplayModes(IDXGIOutput* pDXGIOutput)
 {
 	HRESULT hr;
 
@@ -520,16 +437,11 @@ Cleanup:
 }
 
 
-long RendererBase::Resize()
+bool RendererBase::Resize()
 {
 	HRESULT hr;
 
-	if ( !pSwapChain )
-	{
-		LOG_ERROR("Failed. The swap chain has not been initialized.");
-		hr = ExitCode::D3DSwapChainNotInitialized;
-		goto Cleanup;
-	}
+	throw_assert(pSwapChain && "Failed. The swap chain has not been initialized.");
 
 	//Get the new window size
 	RECT rect;
@@ -563,7 +475,8 @@ long RendererBase::Resize()
 
 	hr = CreateBackBufferView(); CHECK_RET(hr);
 	hr = InitializeDepthBuffer(); CHECK_RET(hr);
-	hr = InitializeViewport(); CHECK_RET(hr);
+
+	InitializeViewport();
 
 	hr = OnResize(); CHECK_RET(hr);
 
@@ -574,7 +487,7 @@ Cleanup:
 	return hr;
 }
 
-long RendererBase::Update(const GameTimer &gameTimer)
+bool RendererBase::Update(const GameTimer &gameTimer)
 {
 	HRESULT hr;
 
@@ -664,8 +577,8 @@ void RendererBase::Teardown()
 	LogLiveObjects();
 }
 
-long RendererBase::OnInitialize() { return ExitCode::Success; }
-long RendererBase::OnResize()     { return ExitCode::Success; }
+bool RendererBase::OnInitialize() { return ExitCode::Success; }
+bool RendererBase::OnResize()     { return ExitCode::Success; }
 void RendererBase::OnTeardown()   { }
 
 void RendererBase::LogLiveObjects()

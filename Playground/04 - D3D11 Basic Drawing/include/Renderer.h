@@ -5,15 +5,15 @@
 class Renderer : public RendererBase
 {
 public:
-	virtual long Update(const GameTimer&);
-	virtual long Render();
+	virtual bool Update(const GameTimer&);
+	virtual bool Render();
 
 	//TODO: This is awful. Implement proper input handling.
 	void HandleInput(bool, bool, POINTS);
 
 protected:
-	virtual long OnInitialize();
-	virtual long OnResize();
+	virtual bool OnInitialize();
+	virtual bool OnResize();
 	virtual void OnTeardown();
 
 private:

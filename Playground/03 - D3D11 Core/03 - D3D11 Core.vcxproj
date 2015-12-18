@@ -79,6 +79,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AssertionException.cpp" />
     <ClCompile Include="src\Color.cpp" />
     <ClCompile Include="src\GameTimer.cpp" />
     <ClCompile Include="src\Logging.cpp" />
@@ -86,6 +87,7 @@
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\AssertionException.h" />
     <ClInclude Include="include\Color.h" />
     <ClInclude Include="include\GameTimer.h" />
     <ClInclude Include="include\Logging.h" />

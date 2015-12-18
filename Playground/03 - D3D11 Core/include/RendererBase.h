@@ -5,44 +5,44 @@
 class RendererBase
 {
 public:
-	long Initialize(HWND);
-	long Resize();
-	virtual long Update(const GameTimer&);
+	bool Initialize(HWND);
+	bool Resize();
+	virtual bool Update(const GameTimer&);
 	void Teardown();
 
 protected:
 	HWND hwnd = nullptr;
 
-	long SetHwnd(HWND);
-	long InitializeDevice();
-	long CheckForWarpDriver();
-	long ObtainDXGIFactory();
+	void SetHwnd(HWND);
+	bool InitializeDevice();
+	bool CheckForWarpDriver();
+	bool ObtainDXGIFactory();
 	ID3D11Device*        pD3DDevice           = nullptr;
 	ID3D11DeviceContext* pD3DImmediateContext = nullptr;
 	IDXGIFactory1*       pDXGIFactory         = nullptr;
 
-	long InitializeSwapChain();
-	long CreateBackBufferView();
-	long UpdateAllowFullscreen();
+	bool InitializeSwapChain();
+	bool CreateBackBufferView();
+	bool UpdateAllowFullscreen();
 	IDXGISwapChain*         pSwapChain        = nullptr;
 	ID3D11RenderTargetView* pRenderTargetView = nullptr;
 
-	long InitializeDepthBuffer();
+	bool InitializeDepthBuffer();
 	ID3D11DepthStencilView* pDepthBufferView  = nullptr;
 
-	long InitializeOutputMerger();
-	long InitializeViewport();
+	void InitializeOutputMerger();
+	void InitializeViewport();
 
 	void UpdateFrameStatistics(const GameTimer&);
 	double averageFrameTime = 0;
 
-	long LogAdapters();
-	long LogOutputs(IDXGIAdapter1*);
-	long LogDisplayModes(IDXGIOutput*);
+	bool LogAdapters();
+	bool LogOutputs(IDXGIAdapter1*);
+	bool LogDisplayModes(IDXGIOutput*);
 	void LogLiveObjects();
 
-	virtual long OnInitialize();
-	virtual long OnResize();
+	virtual bool OnInitialize();
+	virtual bool OnResize();
 	virtual void OnTeardown();
 
 	//TODO: Encapsulate in a struct?
