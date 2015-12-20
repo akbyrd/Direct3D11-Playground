@@ -24,40 +24,40 @@ namespace Logging
 		OutputDebugString(stream.str().c_str());
 	}
 
-	void Log(wstring message, char* file, long line, char* function)
+	void Log(wstring message, const char* file, long line, const char* function)
 	{
 		wostringstream stream;
 
-		stream << function << " - " << message << endl;
+		stream << function << L" - " << message << endl;
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << endl;
+		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 	}
 
-	void LogWarning(wstring message, char* file, long line, char* function)
+	void LogWarning(wstring message, const char* file, long line, const char* function)
 	{
 		wostringstream stream;
 
-		stream << "WARNING: " << function << " - " << message << endl;
+		stream << L"WARNING: " << function << L" - " << message << endl;
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << endl;
+		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 	}
 
-	void LogError(wstring message, char* file, long line, char* function)
+	void LogError(wstring message, const char* file, long line, const char* function)
 	{
 		wostringstream stream;
 
-		stream << "ERROR: " << function << " - " << message << endl;
+		stream << L"ERROR: " << function << L" - " << message << endl;
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << endl;
+		stream << "\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
@@ -69,11 +69,11 @@ namespace Logging
 	{
 		wostringstream stream;
 
-		stream << "ASSERT FAILED: " << function << " - " << expression << endl
+		stream << L"ASSERT FAILED: " << function << L" - " << expression << endl
 		       << message << endl;
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << endl;
+		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
@@ -81,7 +81,7 @@ namespace Logging
 		__debugbreak();
 	}
 
-	bool LogIfFailed(HRESULT hr, char* file, long line, char* function)
+	bool LogIfFailed(HRESULT hr, const char* file, long line, const char* function)
 	{
 		//Success!
 		if ( !FAILED(hr) ) { return false; }
@@ -103,17 +103,17 @@ namespace Logging
 		//Log the friendly error message
 		if ( ret != 0 )
 		{
-			stream << "ERROR: " << function << " - " << errorMessage;
+			stream << L"ERROR: " << function << L" - " << errorMessage;
 		}
 		//FormatMessage failed, log that too
 		else
 		{
-			stream << "ERROR: Failed to format error message from HRESULT: " << hr << ". FormatMessage error: " << GetLastError() << endl;
+			stream << L"ERROR: Failed to format error message from HRESULT: " << hr << L". FormatMessage error: " << GetLastError() << endl;
 		}
 		HeapFree(GetProcessHeap(), NULL, errorMessage);
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << endl;
+		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
