@@ -41,18 +41,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	bool quit = false;
 	while ( ret == 0 )
 	{
-		while ( ret = PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) )
+		while ( ret = PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) )
 		{
 			if ( ret == -1 )
 			{
-				LOG_ERROR("PeekMessage failed");
+				LOG_ERROR(L"PeekMessage failed");
 				ret = ExitCode::PeekMessageFailed;
 				goto Cleanup;
 			}
 
 			//Dispatch messages to the appropriate window
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 
 			//Clean quit
 			if ( msg.message == WM_QUIT )

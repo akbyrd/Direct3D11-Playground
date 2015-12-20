@@ -13,7 +13,7 @@ namespace Logging
 		stream << message << endl;
 
 		//Send it all to the VS Output window
-		OutputDebugString(stream.str().c_str());
+		OutputDebugStringW(stream.str().c_str());
 	}
 
 	void Log(wostringstream& stream)
@@ -21,7 +21,7 @@ namespace Logging
 		stream << endl;
 
 		//Send it all to the VS Output window
-		OutputDebugString(stream.str().c_str());
+		OutputDebugStringW(stream.str().c_str());
 	}
 
 	void Log(wstring message, const char* file, long line, const char* function)
@@ -34,7 +34,7 @@ namespace Logging
 		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
-		OutputDebugString(stream.str().c_str());
+		OutputDebugStringW(stream.str().c_str());
 	}
 
 	void LogWarning(wstring message, const char* file, long line, const char* function)
@@ -47,7 +47,7 @@ namespace Logging
 		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
-		OutputDebugString(stream.str().c_str());
+		OutputDebugStringW(stream.str().c_str());
 	}
 
 	void LogError(wstring message, const char* file, long line, const char* function)
@@ -60,7 +60,7 @@ namespace Logging
 		stream << "\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
-		OutputDebugString(stream.str().c_str());
+		OutputDebugStringW(stream.str().c_str());
 
 		__debugbreak();
 	}
@@ -76,7 +76,7 @@ namespace Logging
 		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
-		OutputDebugString(stream.str().c_str());
+		OutputDebugStringW(stream.str().c_str());
 
 		__debugbreak();
 	}
@@ -88,7 +88,7 @@ namespace Logging
 
 		//Get a friendly string from the D3D error
 		wchar_t* errorMessage;
-		DWORD ret = FormatMessage(
+		DWORD ret = FormatMessageW(
 			FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
 			nullptr,
 			hr,
@@ -116,7 +116,7 @@ namespace Logging
 		stream << L"\t" << file << L"(" << line << L")" << endl;
 
 		//Send it all to the VS Output window
-		OutputDebugString(stream.str().c_str());
+		OutputDebugStringW(stream.str().c_str());
 
 		__debugbreak();
 		return true;

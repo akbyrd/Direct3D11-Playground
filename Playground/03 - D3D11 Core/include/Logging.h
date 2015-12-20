@@ -9,9 +9,9 @@ namespace Logging
 {
 	void Log        (std::wstring);
 	void Log        (std::wostringstream&);
-	void Log        (std::wstring, const char*, long, const char*);
-	void LogWarning (std::wstring, const char*, long, const char*);
-	void LogError   (std::wstring, const char*, long, const char*);
-	bool LogIfFailed(HRESULT, const char*, long, const char*);
+	void Log        (std::wstring,               const char*, long, const char*);
+	void LogWarning (std::wstring,               const char*, long, const char*);
+	void LogError   (std::wstring,               const char*, long, const char*);
+	bool LogIfFailed(HRESULT,                    const char*, long, const char*);
 	void LogAssert  (std::wstring, std::wstring, const char*, long, const char*);
 }

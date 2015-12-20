@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Utility.h"
+#include "Logging.h"
 
 using namespace std;
 
@@ -12,8 +13,7 @@ namespace Utility
 		ifstream inFile(fileName, ios::binary | ios::ate);
 		if ( !inFile.is_open() )
 		{
-			wstring errorMessage = L"Failed to open file: " + fileName;
-			Logging::LogError(errorMessage, __FILE__, __LINE__, __FUNCTION__);
+			LOG_ERROR(L"Failed to open file: " + fileName);
 
 			ret = ExitCode::FileOpenFailed;
 			goto Cleanup;
@@ -31,8 +31,7 @@ namespace Utility
 			delete data;
 			data = nullptr;
 
-			wstring errorMessage = L"Failed to read file: " + fileName;
-			Logging::LogError(errorMessage, __FILE__, __LINE__, __FUNCTION__);
+			LOG_ERROR(L"Failed to read file: " + fileName);
 
 			ret = ExitCode::FileReadFailed;
 			goto Cleanup;

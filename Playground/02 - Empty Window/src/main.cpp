@@ -34,7 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	while ( ret == 0 )
 	{
 		//Handle thread messages
-		while ( ret = PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) )
+		while ( ret = PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) )
 		{
 			//Failure case
 			if ( ret == -1 )
@@ -46,7 +46,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 			//Dispatch mesages to the appropriate window
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 
 			//I wonder what kind of messages wouldn't have a window pointer...
 			if ( msg.hwnd == nullptr )

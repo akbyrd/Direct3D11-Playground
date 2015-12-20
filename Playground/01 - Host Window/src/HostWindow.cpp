@@ -14,7 +14,7 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	HostWindow::messageQueue = messageQueue;
 
 	//Get the instance of this application
-	hInstance = GetModuleHandle(nullptr);
+	hInstance = GetModuleHandleW(nullptr);
 
 	//Give the application a name
 	HostWindow::applicationName = applicationName;
@@ -26,9 +26,9 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
 	wc.hInstance     = hInstance;
-	wc.hIcon         = LoadIcon(nullptr, IDI_WINLOGO);
+	wc.hIcon         = LoadIconW(nullptr, IDI_WINLOGO);
 	wc.hIconSm       = wc.hIcon;
-	wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);
+	wc.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName  = nullptr;
 	wc.lpszClassName = applicationName;
@@ -101,7 +101,7 @@ void HostWindow::Teardown()
 	hwnd = nullptr;
 
 	//Remove the application instance
-	UnregisterClass(applicationName, hInstance);
+	UnregisterClassW(applicationName, hInstance);
 	hInstance = nullptr;
 }
 
@@ -113,7 +113,7 @@ void HostWindow::LogLastError(std::wstring message)
 	message += std::to_wstring(ret);
 	message += L"\n";
 
-	OutputDebugString(message.c_str());
+	OutputDebugStringW(message.c_str());
 
 	__debugbreak();
 }

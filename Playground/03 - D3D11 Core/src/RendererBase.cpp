@@ -67,7 +67,7 @@ bool RendererBase::InitializeDevice()
 	//Check feature level
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
 	{
-		LOG_ERROR("Created device does not support D3D 11");
+		LOG_ERROR(L"Created device does not support D3D 11");
 		hr = ExitCode::D3DFeatureLevelNotSupported;
 		goto Cleanup;
 	}
@@ -133,7 +133,7 @@ bool RendererBase::CheckForWarpDriver()
 		// Performance of this application may be unsatisfactory.
 		// Please ensure that your video card is Direct3D10/11 capable
 		// and has the appropriate driver installed.
-		LOG_WARNING("WARP driver in use.");
+		LOG_WARNING(L"WARP driver in use.");
 	}
 
 	hr = ExitCode::Success;
@@ -555,7 +555,7 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 		outs << L"   Frame Time: " << setprecision(2) << averageFrameTime << L" ms";
 		outs << L"   (" << width << L" x " << height << L")";
 
-		SetWindowText(hwnd, outs.str().c_str());
+		SetWindowTextW(hwnd, outs.str().c_str());
 	}
 
 	return;
@@ -587,10 +587,10 @@ void RendererBase::LogLiveObjects()
 	#ifdef _DEBUG
 
 	typedef HRESULT(WINAPI *fPtr)(const IID&, void**);
-	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(GetModuleHandle(TEXT("dxgidebug.dll")), "DXGIGetDebugInterface");
+	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(GetModuleHandleW(L"dxgidebug.dll"), "DXGIGetDebugInterface");
 	if ( DXGIGetDebugInterface == nullptr )
 	{
-		LOG_ERROR("Failed to obtain dxgidebug.dll module or DXGIGetDebugInterface function pointer");
+		LOG_ERROR(L"Failed to obtain dxgidebug.dll module or DXGIGetDebugInterface function pointer");
 		return;
 	}
 
@@ -600,7 +600,7 @@ void RendererBase::LogLiveObjects()
 	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug); CHECK_HR(hr);
 
 	pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-	OutputDebugString(TEXT("\n"));
+	OutputDebugStringW(L"\n");
 
 Cleanup:
 	SafeRelease(pDXGIDebug);
