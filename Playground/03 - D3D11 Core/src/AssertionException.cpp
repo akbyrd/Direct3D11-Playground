@@ -4,15 +4,13 @@
 using namespace std;
 
 AssertionException::AssertionException(
-	string      expression,
-	string      message,
+	wstring     expression,
+	wstring     message,
 	const char* file,
 	DWORD       line,
 	const char* function)
 {
-	ostringstream msgStream;
-	msgStream << "Assertion failed: " << expression << endl;
-	          //<< 
+	Logging::LogAssert(expression, message, file, line, function);
 }
 
 const char* AssertionException::what() const

@@ -7,6 +7,7 @@
 #pragma comment(lib, "D3D11.lib")
 #pragma comment(lib,  "DXGI.lib")
 
+using namespace std;
 using namespace Utility;
 using namespace DirectX;
 
@@ -31,7 +32,7 @@ Cleanup:
 
 void RendererBase::SetHwnd(HWND hwnd)
 {
-	throw_assert(hwnd && "Failed. Null HWND was provided.");
+	throw_assert(hwnd, L"Failed. Null HWND was provided.");
 
 	RendererBase::hwnd = hwnd;
 }
@@ -87,7 +88,7 @@ bool RendererBase::ObtainDXGIFactory()
 {
 	HRESULT hr;
 
-	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
+	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
 
 	//Obtain the DXGI factory used to create the current device
 	IDXGIDevice1* pDXGIDevice = nullptr;
@@ -114,7 +115,7 @@ bool RendererBase::CheckForWarpDriver()
 {
 	HRESULT hr;
 
-	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
+	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
 
 	//Check for the WARP driver
 	IDXGIDevice1* pDXGIDevice = nullptr;
@@ -148,8 +149,8 @@ bool RendererBase::InitializeSwapChain()
 {
 	HRESULT hr;
 
-	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
-	throw_assert(pDXGIFactory && "Failed. DXGI factory not initialized.");
+	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
+	throw_assert(pDXGIFactory, L"Failed. DXGI factory not initialized.");
 
 	//Query and set MSAA quality levels
 	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK_HR(hr);
@@ -202,8 +203,8 @@ bool RendererBase::CreateBackBufferView()
 {
 	HRESULT hr;
 
-	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
-	throw_assert(pSwapChain && "Failed. The swap chain has not been initialized.");
+	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
+	throw_assert(pSwapChain, L"Failed. The swap chain has not been initialized.");
 
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK_HR(hr);
@@ -226,8 +227,8 @@ bool RendererBase::UpdateAllowFullscreen()
 	HRESULT hr;
 
 	//MakeWindowAssociation only works if the swap chain has been created.
-	throw_assert(pSwapChain && "Failed. The swap chain has not been initialized.");
-	throw_assert(pDXGIFactory && "Failed. DXGI factory not initialized.");
+	throw_assert(pSwapChain, L"Failed. The swap chain has not been initialized.");
+	throw_assert(pDXGIFactory, L"Failed. DXGI factory not initialized.");
 
 	UINT flags = 0;
 	if ( !allowFullscreen )
@@ -246,7 +247,7 @@ bool RendererBase::InitializeDepthBuffer()
 {
 	HRESULT hr;
 
-	throw_assert(pD3DDevice && "Failed. D3D device not initialized.");
+	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
 
 	D3D11_TEXTURE2D_DESC depthDesc;
 	depthDesc.Width = width;
@@ -278,14 +279,14 @@ Cleanup:
 
 void RendererBase::InitializeOutputMerger()
 {
-	throw_assert(pD3DImmediateContext && "Failed. D3D context not initialized.");
+	throw_assert(pD3DImmediateContext, L"Failed. D3D context not initialized.");
 
 	pD3DImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthBufferView);
 }
 
 void RendererBase::InitializeViewport()
 {
-	throw_assert(pD3DImmediateContext && "Failed. D3D context not initialized.");
+	throw_assert(pD3DImmediateContext, L"Failed. D3D context not initialized.");
 
 	D3D11_VIEWPORT viewport;
 	viewport.TopLeftX = 0;
@@ -323,19 +324,19 @@ bool RendererBase::LogAdapters()
 		hr = pDXGIAdapter->GetDesc1(&adapterDesc); CHECK_HR(hr);
 
 		//Log the adapter description
-		std::wstringstream stream;
-		stream <<               L"Adapter: " << i                                                        << std::endl;
+		wostringstream stream;
+		stream <<               L"Adapter: " << i                                                        << endl;
 		stream <<           L"AdapterLuid: " << adapterDesc.AdapterLuid.HighPart
-		                                     << adapterDesc.AdapterLuid.LowPart                          << std::endl;
-		stream <<           L"Description: " << adapterDesc.Description                                  << std::endl;
-		stream <<              L"VendorId: " << adapterDesc.VendorId                                     << std::endl;
-		stream <<              L"DeviceId: " << adapterDesc.DeviceId                                     << std::endl;
-		stream <<              L"SubSysId: " << adapterDesc.SubSysId                                     << std::endl;
-		stream <<              L"Revision: " << adapterDesc.Revision                                     << std::endl;
-		stream <<  L"DedicatedVideoMemory: " << adapterDesc.DedicatedVideoMemory  / 1048576.0f << L" MB" << std::endl;
-		stream << L"DedicatedSystemMemory: " << adapterDesc.DedicatedSystemMemory / 1048576.0f << L" MB" << std::endl;
-		stream <<    L"SharedSystemMemory: " << adapterDesc.SharedSystemMemory    / 1048576.0f << L" MB" << std::endl;
-		stream <<                 L"Flags: " << adapterDesc.Flags                                        << std::endl;
+		                                     << adapterDesc.AdapterLuid.LowPart                          << endl;
+		stream <<           L"Description: " << adapterDesc.Description                                  << endl;
+		stream <<              L"VendorId: " << adapterDesc.VendorId                                     << endl;
+		stream <<              L"DeviceId: " << adapterDesc.DeviceId                                     << endl;
+		stream <<              L"SubSysId: " << adapterDesc.SubSysId                                     << endl;
+		stream <<              L"Revision: " << adapterDesc.Revision                                     << endl;
+		stream <<  L"DedicatedVideoMemory: " << adapterDesc.DedicatedVideoMemory  / 1048576.0f << L" MB" << endl;
+		stream << L"DedicatedSystemMemory: " << adapterDesc.DedicatedSystemMemory / 1048576.0f << L" MB" << endl;
+		stream <<    L"SharedSystemMemory: " << adapterDesc.SharedSystemMemory    / 1048576.0f << L" MB" << endl;
+		stream <<                 L"Flags: " << adapterDesc.Flags                                        << endl;
 		Logging::Log(stream);
 
 		LogOutputs(pDXGIAdapter);
@@ -355,7 +356,7 @@ Cleanup:
 
 bool RendererBase::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
 {
-	throw_assert(pDXGIAdapter && "Failed. pDXGIAdapter is null.");
+	throw_assert(pDXGIAdapter, L"Failed. pDXGIAdapter is null.");
 
 	HRESULT hr;
 
@@ -371,17 +372,17 @@ bool RendererBase::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
 		DXGI_OUTPUT_DESC outputDesc;
 		hr = pDXGIOutput->GetDesc(&outputDesc); CHECK_HR(hr);
 
-		std::wstringstream stream;
+		wostringstream stream;
 
-		stream <<             "Output: "    << i                                            << std::endl;
-		stream <<         "DeviceName: "    << outputDesc.DeviceName                        << std::endl;
+		stream <<             "Output: "    << i                                            << endl;
+		stream <<         "DeviceName: "    << outputDesc.DeviceName                        << endl;
 		stream << "DesktopCoordinates: (L:" << outputDesc.DesktopCoordinates.left
 		                         << L", T:" << outputDesc.DesktopCoordinates.top
 		                         << L", R:" << outputDesc.DesktopCoordinates.right
-		                         << L", B:" << outputDesc.DesktopCoordinates.bottom << L")" << std::endl;
-		stream <<  "AttachedToDesktop: "    << outputDesc.AttachedToDesktop                 << std::endl;
-		stream <<           "Rotation: "    << outputDesc.Rotation                          << std::endl;
-		stream <<            "Monitor: "    << outputDesc.Monitor                           << std::endl;
+		                         << L", B:" << outputDesc.DesktopCoordinates.bottom << L")" << endl;
+		stream <<  "AttachedToDesktop: "    << outputDesc.AttachedToDesktop                 << endl;
+		stream <<           "Rotation: "    << outputDesc.Rotation                          << endl;
+		stream <<            "Monitor: "    << outputDesc.Monitor                           << endl;
 
 		Logging::Log(stream);
 
@@ -416,14 +417,14 @@ bool RendererBase::LogDisplayModes(IDXGIOutput* pDXGIOutput)
 	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, arrModeDesc); CHECK_HR(hr);
 
 	{
-		std::wstringstream stream;
+		wostringstream stream;
 		for ( UINT i = 0; i < numModes; ++i )
 		{
 			UINT  width = arrModeDesc[i].Width;
 			UINT  height = arrModeDesc[i].Height;
 			float refreshRate = arrModeDesc[i].RefreshRate.Numerator / (float) arrModeDesc[i].RefreshRate.Denominator;
 
-			stream << width << L"x" << height << L" @ " << refreshRate << L" Hz" << std::endl;
+			stream << width << L"x" << height << L" @ " << refreshRate << L" Hz" << endl;
 		}
 		Logging::Log(stream);
 	}
@@ -441,7 +442,7 @@ bool RendererBase::Resize()
 {
 	HRESULT hr;
 
-	throw_assert(pSwapChain && "Failed. The swap chain has not been initialized.");
+	throw_assert(pSwapChain, L"Failed. The swap chain has not been initialized.");
 
 	//Get the new window size
 	RECT rect;
@@ -549,9 +550,9 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 	{
 		lastFPSUpdateTime = gameTimer.RealTime();
 
-		std::wostringstream outs;
-		outs << L"FPS: " << std::setprecision(0) << std::fixed << (1000 / averageFrameTime);
-		outs << L"   Frame Time: " << std::setprecision(2) << averageFrameTime << L" ms";
+		wostringstream outs;
+		outs << L"FPS: " << setprecision(0) << fixed << (1000 / averageFrameTime);
+		outs << L"   Frame Time: " << setprecision(2) << averageFrameTime << L" ms";
 		outs << L"   (" << width << L" x " << height << L")";
 
 		SetWindowText(hwnd, outs.str().c_str());

@@ -1,61 +1,79 @@
 #include "stdafx.h"
 #include "Logging.h"
 
+using namespace std;
+
 //TODO: Make implementation DRYer
 namespace Logging
 {
-	void Log(std::wstring message)
+	void Log(wstring message)
 	{
-		std::wstringstream stream;
+		wostringstream stream;
 
-		stream << message << std::endl;
+		stream << message << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 	}
 
-	void Log(std::wstringstream& stream)
+	void Log(wostringstream& stream)
 	{
-		stream << std::endl;
+		stream << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 	}
 
-	void Log(std::wstring message, char* file, long line, char* function)
+	void Log(wstring message, char* file, long line, char* function)
 	{
-		std::wstringstream stream;
+		wostringstream stream;
 
-		stream << function << " - " << message << std::endl;
+		stream << function << " - " << message << endl;
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << std::endl;
+		stream << "\t" << file << "(" << line << ")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 	}
 
-	void LogWarning(std::wstring message, char* file, long line, char* function)
+	void LogWarning(wstring message, char* file, long line, char* function)
 	{
-		std::wstringstream stream;
+		wostringstream stream;
 
-		stream << "WARNING: " << function << " - " << message << std::endl;
+		stream << "WARNING: " << function << " - " << message << endl;
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << std::endl;
+		stream << "\t" << file << "(" << line << ")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
 	}
 
-	void LogError(std::wstring message, char* file, long line, char* function)
+	void LogError(wstring message, char* file, long line, char* function)
 	{
-		std::wstringstream stream;
+		wostringstream stream;
 
-		stream << "ERROR: " << function << " - " << message << std::endl;
+		stream << "ERROR: " << function << " - " << message << endl;
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << std::endl;
+		stream << "\t" << file << "(" << line << ")" << endl;
+
+		//Send it all to the VS Output window
+		OutputDebugString(stream.str().c_str());
+
+		__debugbreak();
+	}
+
+	void LogAssert(wstring expression, wstring message, const char* file, long line, const char* function)
+	{
+		wostringstream stream;
+
+		stream << "ASSERT FAILED: " << function << " - " << expression << endl
+		       << message << endl;
+
+		//Append the error location (it's clickable!)
+		stream << "\t" << file << "(" << line << ")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
@@ -80,7 +98,7 @@ namespace Logging
 			nullptr
 		);
 
-		std::wstringstream stream;
+		wostringstream stream;
 
 		//Log the friendly error message
 		if ( ret != 0 )
@@ -90,12 +108,12 @@ namespace Logging
 		//FormatMessage failed, log that too
 		else
 		{
-			stream << "ERROR: Failed to format error message from HRESULT: " << hr << ". FormatMessage error: " << GetLastError() << std::endl;
+			stream << "ERROR: Failed to format error message from HRESULT: " << hr << ". FormatMessage error: " << GetLastError() << endl;
 		}
 		HeapFree(GetProcessHeap(), NULL, errorMessage);
 
 		//Append the error location (it's clickable!)
-		stream << "\t" << file << "(" << line << ")" << std::endl;
+		stream << "\t" << file << "(" << line << ")" << endl;
 
 		//Send it all to the VS Output window
 		OutputDebugString(stream.str().c_str());
