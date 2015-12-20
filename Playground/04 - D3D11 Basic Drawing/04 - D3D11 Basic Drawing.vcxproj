@@ -14,6 +14,7 @@
     <ProjectGuid>{A4224B45-BB3A-4654-B1B9-5DA8610140A7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>My04D3D11BasicDrawing</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
