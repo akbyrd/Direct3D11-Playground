@@ -18,4 +18,3 @@
 #include <string>
 
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
-#define LOG_ERROR(x) { std::cout << "Error: " << x; }
