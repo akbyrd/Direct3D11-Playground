@@ -1,13 +1,15 @@
 #pragma once
 
 #include "Window.h"
+#undef IsMinimized
+
 #include "MessageQueue.h"
 
 class HostWindow final : public Window
 {
 public:
 	bool   IsActive()      const;
-	bool   HostWindow::IsMinimized()   const;
+	bool   IsMinimized()   const;
 	bool   IsResizing()    const;
 	HWND   GetHWND()       const;
 	POINTS MousePosition() const;
