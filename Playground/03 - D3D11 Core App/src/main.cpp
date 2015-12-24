@@ -5,9 +5,8 @@
 #include "RendererBase.h"
 #include "Logging.h"
 #include "GameTimer.h"
-#include "ExitCode.h"
 
-long ProcessMessage(Message&, GameTimer&, RendererBase&, const HostWindow&);
+void ProcessMessage(Message&, GameTimer&, RendererBase&, const HostWindow&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -16,8 +15,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
-	long ret;
-
 	//Create game components
 	MessageQueue messageQueue;
 	HostWindow window;
@@ -25,26 +22,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	GameTimer gameTimer;
 
 	//Initialize game components
-	ret = window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()); CHECK_RET(ret);
-	ret = renderer.Initialize(window.GetHWND()); CHECK_RET(ret);
+	if ( !window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()) ) { goto Cleanup; }
+	if ( !renderer.Initialize(window.GetHWND()) ) { goto Cleanup; }
 	gameTimer.Start();
 
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 
-	//Message and render loop
+	long ret;
 	bool quit = false;
-	while ( ret == 0 )
-	{
-		while ( ret = PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) )
-		{
-			if ( ret == -1 )
-			{
-				LOG_ERROR(L"PeekMessage failed");
-				ret = ExitCode::PeekMessageFailed;
-				goto Cleanup;
-			}
 
+	//Message and render loop
+	while ( !quit )
+	{
+		while ( PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) )
+		{
 			//Dispatch messages to the appropriate window
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
@@ -69,11 +61,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		//Process messages
 		Message message;
 		while ( messageQueue.PopMessage(message) ) {
-			ret = ProcessMessage(message, gameTimer, renderer, window); CHECK_RET(ret);
+			ProcessMessage(message, gameTimer, renderer, window);
 		}
 
 		//The fun stuff!
-		ret = renderer.Update(gameTimer); CHECK_RET(ret);
+		if ( !renderer.Update(gameTimer) ) { goto Cleanup; }
 	}
 
 	//Cleanup and shutdown
@@ -84,10 +76,8 @@ Cleanup:
 	return ret;
 }
 
-long ProcessMessage(Message& message, GameTimer &gameTimer, RendererBase &renderer, const HostWindow &window)
+void ProcessMessage(Message& message, GameTimer &gameTimer, RendererBase &renderer, const HostWindow &window)
 {
-	long ret = ExitCode::Success;
-
 	switch ( message )
 	{
 	case Message::WindowResizingBegin:
@@ -99,7 +89,8 @@ long ProcessMessage(Message& message, GameTimer &gameTimer, RendererBase &render
 		break;
 
 	case Message::WindowSizeChanged:
-		ret = renderer.Resize();
+		//TODO: Handle return
+		renderer.Resize();
 		break;
 
 	case Message::WindowMinimized:
@@ -128,6 +119,4 @@ long ProcessMessage(Message& message, GameTimer &gameTimer, RendererBase &render
 		//TODO: Handle if closing was unexpected
 		break;
 	}
-
-	return ret;
 }

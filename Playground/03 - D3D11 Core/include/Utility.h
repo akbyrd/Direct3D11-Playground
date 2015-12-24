@@ -51,5 +51,5 @@ namespace Utility
 		#endif
 	}
 
-	long LoadFile(const std::wstring fileName, char* &data, SIZE_T &dataSize);
+	bool LoadFile(const std::wstring fileName, char* &data, SIZE_T &dataSize);
 }

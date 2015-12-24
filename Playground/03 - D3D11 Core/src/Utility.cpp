@@ -1,22 +1,19 @@
 #include "stdafx.h"
+
 #include "Utility.h"
-#include "Logging.h"
 
 using namespace std;
 
 namespace Utility
 {
-	long LoadFile(const wstring fileName, char* &data, SIZE_T &dataSize)
+	//TODO: Pass in smart pointer?
+	bool LoadFile(const wstring fileName, char* &data, SIZE_T &dataSize)
 	{
-		long ret;
-
 		ifstream inFile(fileName, ios::binary | ios::ate);
 		if ( !inFile.is_open() )
 		{
 			LOG_ERROR(L"Failed to open file: " + fileName);
-
-			ret = ExitCode::FileOpenFailed;
-			goto Cleanup;
+			return false;
 		}
 
 		dataSize = (SIZE_T) inFile.tellg();
@@ -32,15 +29,9 @@ namespace Utility
 			data = nullptr;
 
 			LOG_ERROR(L"Failed to read file: " + fileName);
-
-			ret = ExitCode::FileReadFailed;
-			goto Cleanup;
+			return false;
 		}
 
-		ret = ExitCode::Success;
-
-	Cleanup:
-
-		return ret;
+		return true;
 	}
 }

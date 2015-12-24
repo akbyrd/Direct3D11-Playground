@@ -18,12 +18,8 @@
 // Windows Header Files:
 #include <windows.h>
 
-// C++ Header Files
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
+// ATL Header Files
+#include <atlbase.h>
 
 // For some GUID magic in the DirectX/DXGI headers. Must be included before them.
 #include <InitGuid.h>
@@ -35,16 +31,32 @@
 #include <dxgidebug.h>
 #endif
 
+// C++ Header Files
+#include <iomanip>
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <sstream>
+#include <string>
+
 // Project Header Files
-#include "ExitCode.h"
 #include "Logging.h"
 
 // Macros
-#define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
-#define RETURN_IF_FAILED(x)   { long ret = (x); if ( ret < 0 ) { return ret; } }
-#define CHECK_HR(hr) if ( LOG_IF_FAILED(hr) ) { goto Cleanup; }
-#define CHECK_RET(ret) if ( (ret) < 0 ) { goto Cleanup; }
+#define CHECK(x)             \
+do {                         \
+	if ( !(x) )              \
+	{                        \
+		return false;        \
+	}                        \
+} while (0)
 
-// Convert char* to wchar_t*
-#define _WIDE(x) L ## x
-#define WIDE(x) _WIDE(x)
+
+#define CHECK_HR(hr)         \
+do {                         \
+	if ( FAILED(hr) )        \
+	{                        \
+		LOG_IF_FAILED(hr);   \
+		return false;        \
+	}                        \
+} while (0)

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "RendererBase.h"
+#include "LoggedException.h"
 #include "AssertionException.h"
 #include "Utility.h"
 
@@ -13,26 +14,20 @@ using namespace DirectX;
 
 bool RendererBase::Initialize(HWND hwnd)
 {
-	long ret;
-
 	      SetHwnd(hwnd);
-	ret = InitializeDevice();       CHECK_RET(ret);
-	ret = InitializeSwapChain();    CHECK_RET(ret);
-	ret = InitializeDepthBuffer();  CHECK_RET(ret);
+	CHECK(InitializeDevice());
+	CHECK(InitializeSwapChain());
+	CHECK(InitializeDepthBuffer());
 	      InitializeOutputMerger();
 	      InitializeViewport();
-	ret = OnInitialize();           CHECK_RET(ret);
+	CHECK(OnInitialize());
 
-	ret = ExitCode::Success;
-
-Cleanup:
-
-	return ret;
+	return true;
 }
 
 void RendererBase::SetHwnd(HWND hwnd)
 {
-	throw_assert(hwnd, L"Failed. Null HWND was provided.");
+	throw_assert(hwnd, L"Null HWND was provided.");
 
 	RendererBase::hwnd = hwnd;
 }
@@ -63,65 +58,53 @@ bool RendererBase::InitializeDevice()
 	SetDebugObjectName(pD3DDevice, "Device");
 	SetDebugObjectName(pD3DImmediateContext, "Device Context");
 
-	//TODO: Throw
 	//Check feature level
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
-	{
-		LOG_ERROR(L"Created device does not support D3D 11");
-		hr = ExitCode::D3DFeatureLevelNotSupported;
-		goto Cleanup;
-	}
+		throw_logged(L"Created device does not support D3D 11");
 
 	//It's ok if this fails, it's an optional check
 	CheckForWarpDriver();
 
-	hr = ObtainDXGIFactory(); CHECK_RET(hr);
+	hr = ObtainDXGIFactory(); CHECK_HR(hr);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-
-	return hr;
+	return true;
 }
 
 bool RendererBase::ObtainDXGIFactory()
 {
+	throw_assert(pD3DDevice, L"D3D device not initialized.");
+
 	HRESULT hr;
 
-	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
-
-	//Obtain the DXGI factory used to create the current device
-	IDXGIDevice1* pDXGIDevice = nullptr;
+	/* Obtain the DXGI factory used to create the current device.
+	 * 
+	 * NOTE: It looks like the IDXGIDevice is actually the same object as the ID3D11Device.
+	 * Using SetPrivateData to set it's name clobbers the D3D device name and outputs a warning.
+	 */
+	CComPtr<IDXGIDevice1> pDXGIDevice;
 	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK_HR(hr);
-	SetDebugObjectName(pDXGIDevice, "DXGI Device");
 
-	IDXGIAdapter1* pDXGIAdapter = nullptr;
+	CComPtr<IDXGIAdapter1> pDXGIAdapter;
 	hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter1), (void **) &pDXGIAdapter); CHECK_HR(hr);
 	SetDebugObjectName(pDXGIAdapter, "DXGI Adapter");
 
 	hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK_HR(hr);
 	SetDebugObjectName(pDXGIFactory, "DXGI Factory");
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pDXGIAdapter); 
-	SafeRelease(pDXGIDevice);
-
-	return hr;
+	return true;
 }
 
 bool RendererBase::CheckForWarpDriver()
 {
+	throw_assert(pD3DDevice, L"D3D device not initialized.");
+
 	HRESULT hr;
 
-	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
-
 	//Check for the WARP driver
-	IDXGIDevice1* pDXGIDevice = nullptr;
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), reinterpret_cast<void**>(&pDXGIDevice)); CHECK_HR(hr);
+	CComPtr<IDXGIDevice1> pDXGIDevice;
+	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK_HR(hr);
 
-	IDXGIAdapter* pDXGIAdapter = nullptr;
+	CComPtr<IDXGIAdapter> pDXGIAdapter;
 	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter); CHECK_HR(hr);
 
 	DXGI_ADAPTER_DESC desc;
@@ -136,21 +119,15 @@ bool RendererBase::CheckForWarpDriver()
 		LOG_WARNING(L"WARP driver in use.");
 	}
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pDXGIAdapter);
-	SafeRelease(pDXGIDevice);
-
-	return hr;
+	return true;
 }
 
 bool RendererBase::InitializeSwapChain()
 {
-	HRESULT hr;
+	throw_assert(pD3DDevice, L"D3D device not initialized.");
+	throw_assert(pDXGIFactory, L"DXGI factory not initialized.");
 
-	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
-	throw_assert(pDXGIFactory, L"Failed. DXGI factory not initialized.");
+	HRESULT hr;
 
 	//Query and set MSAA quality levels
 	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK_HR(hr);
@@ -189,24 +166,20 @@ bool RendererBase::InitializeSwapChain()
 	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
 	SetDebugObjectName(pSwapChain, "Swap Chain");
 
-	hr = CreateBackBufferView(); CHECK_RET(hr);
-	hr = UpdateAllowFullscreen(); CHECK_RET(hr);
+	hr = CreateBackBufferView(); CHECK_HR(hr);
+	hr = UpdateAllowFullscreen(); CHECK_HR(hr);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-
-	return hr;
+	return true;
 }
 
 bool RendererBase::CreateBackBufferView()
 {
+	throw_assert(pD3DDevice, L"D3D device not initialized.");
+	throw_assert(pSwapChain, L"The swap chain has not been initialized.");
+
 	HRESULT hr;
 
-	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
-	throw_assert(pSwapChain, L"Failed. The swap chain has not been initialized.");
-
-	ID3D11Texture2D* pBackBuffer = nullptr;
+	CComPtr<ID3D11Texture2D> pBackBuffer;
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pBackBuffer, "Back Buffer");
 
@@ -214,21 +187,16 @@ bool RendererBase::CreateBackBufferView()
 	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView); CHECK_HR(hr);
 	SetDebugObjectName(pRenderTargetView, "Render Target View");
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pBackBuffer);
-
-	return hr;
+	return true;
 }
 
 bool RendererBase::UpdateAllowFullscreen()
 {
-	HRESULT hr;
-
 	//MakeWindowAssociation only works if the swap chain has been created.
-	throw_assert(pSwapChain, L"Failed. The swap chain has not been initialized.");
-	throw_assert(pDXGIFactory, L"Failed. DXGI factory not initialized.");
+	throw_assert(pSwapChain, L"The swap chain has not been initialized.");
+	throw_assert(pDXGIFactory, L"DXGI factory not initialized.");
+
+	HRESULT hr;
 
 	UINT flags = 0;
 	if ( !allowFullscreen )
@@ -236,18 +204,14 @@ bool RendererBase::UpdateAllowFullscreen()
 
 	hr = pDXGIFactory->MakeWindowAssociation(hwnd, flags); CHECK_HR(hr);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-
-	return hr;
+	return true;
 }
 
 bool RendererBase::InitializeDepthBuffer()
 {
-	HRESULT hr;
+	throw_assert(pD3DDevice, L"D3D device not initialized.");
 
-	throw_assert(pD3DDevice, L"Failed. D3D device not initialized.");
+	HRESULT hr;
 
 	D3D11_TEXTURE2D_DESC depthDesc;
 	depthDesc.Width = width;
@@ -262,31 +226,26 @@ bool RendererBase::InitializeDepthBuffer()
 	depthDesc.CPUAccessFlags = 0;
 	depthDesc.MiscFlags = 0;
 
-	ID3D11Texture2D* pDepthBuffer = nullptr;
+	CComPtr<ID3D11Texture2D> pDepthBuffer;
 	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pDepthBuffer, "Depth Buffer");
 
 	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer, nullptr, &pDepthBufferView); CHECK_HR(hr);
 	SetDebugObjectName(pDepthBufferView, "Depth Buffer View");
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pDepthBuffer);
-
-	return hr;
+	return true;
 }
 
 void RendererBase::InitializeOutputMerger()
 {
-	throw_assert(pD3DImmediateContext, L"Failed. D3D context not initialized.");
+	throw_assert(pD3DImmediateContext, L"D3D context not initialized.");
 
-	pD3DImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthBufferView);
+	pD3DImmediateContext->OMSetRenderTargets(1, &pRenderTargetView.p, pDepthBufferView);
 }
 
 void RendererBase::InitializeViewport()
 {
-	throw_assert(pD3DImmediateContext, L"Failed. D3D context not initialized.");
+	throw_assert(pD3DImmediateContext, L"D3D context not initialized.");
 
 	D3D11_VIEWPORT viewport;
 	viewport.TopLeftX = 0;
@@ -304,19 +263,19 @@ bool RendererBase::LogAdapters()
 {
 	HRESULT hr;
 
-	IDXGIFactory1* pDXGIFactory = nullptr;
+	CComPtr<IDXGIFactory1> pDXGIFactory;
 	hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK_HR(hr);
 
 	UINT i = 0;
-	IDXGIAdapter1* pDXGIAdapter = nullptr;
 	while ( true )
 	{
+		CComPtr<IDXGIAdapter1> pDXGIAdapter;
 		hr = pDXGIFactory->EnumAdapters1(i, &pDXGIAdapter);
 
 		//We've run out of adapters
 		if ( hr == DXGI_ERROR_NOT_FOUND ) { break; }
 
-		//Other error
+		//Other errors
 		CHECK_HR(hr);
 
 		//Get adapter description
@@ -341,30 +300,25 @@ bool RendererBase::LogAdapters()
 
 		LogOutputs(pDXGIAdapter);
 
-		SafeRelease(pDXGIAdapter);
 		++i;
 	}
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pDXGIAdapter);
-	SafeRelease(pDXGIFactory);
-
-	return hr;
+	return true;
 }
 
-bool RendererBase::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
+bool RendererBase::LogOutputs(CComPtr<IDXGIAdapter1> pDXGIAdapter)
 {
-	throw_assert(pDXGIAdapter, L"Failed. pDXGIAdapter is null.");
+	throw_assert(pDXGIAdapter, L"pDXGIAdapter is null.");
 
 	HRESULT hr;
 
 	UINT i = 0;
-	IDXGIOutput* pDXGIOutput = nullptr;
 	while ( true )
 	{
+		CComPtr<IDXGIOutput> pDXGIOutput;
 		hr = pDXGIAdapter->EnumOutputs(i, &pDXGIOutput);
+
+		//We've run out of outputs
 		if ( hr == DXGI_ERROR_NOT_FOUND ) { break; }
 
 		CHECK_HR(hr);
@@ -388,19 +342,13 @@ bool RendererBase::LogOutputs(IDXGIAdapter1* pDXGIAdapter)
 
 		LogDisplayModes(pDXGIOutput);
 
-		SafeRelease(pDXGIOutput);
 		++i;
 	}
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pDXGIOutput);
-
-	return hr;
+	return true;
 }
 
-bool RendererBase::LogDisplayModes(IDXGIOutput* pDXGIOutput)
+bool RendererBase::LogDisplayModes(CComPtr<IDXGIOutput> pDXGIOutput)
 {
 	HRESULT hr;
 
@@ -411,38 +359,31 @@ bool RendererBase::LogDisplayModes(IDXGIOutput* pDXGIOutput)
 	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, nullptr); CHECK_HR(hr);
 
 	//Allocate space
-	DXGI_MODE_DESC* arrModeDesc = new DXGI_MODE_DESC[numModes];
+	unique_ptr<DXGI_MODE_DESC[]> arrModeDesc(new DXGI_MODE_DESC[numModes]);
 
 	//Get the actual display modes
-	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, arrModeDesc); CHECK_HR(hr);
+	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, arrModeDesc.get()); CHECK_HR(hr);
 
+	wostringstream stream;
+	for ( UINT i = 0; i < numModes; ++i )
 	{
-		wostringstream stream;
-		for ( UINT i = 0; i < numModes; ++i )
-		{
-			UINT  width = arrModeDesc[i].Width;
-			UINT  height = arrModeDesc[i].Height;
-			float refreshRate = arrModeDesc[i].RefreshRate.Numerator / (float) arrModeDesc[i].RefreshRate.Denominator;
+		UINT  width = arrModeDesc[i].Width;
+		UINT  height = arrModeDesc[i].Height;
+		float refreshRate = arrModeDesc[i].RefreshRate.Numerator / (float) arrModeDesc[i].RefreshRate.Denominator;
 
-			stream << width << L"x" << height << L" @ " << refreshRate << L" Hz" << endl;
-		}
-		Logging::Log(stream);
+		stream << width << L"x" << height << L" @ " << refreshRate << L" Hz" << endl;
 	}
+	Logging::Log(stream);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeDelete(arrModeDesc);
-
-	return hr;
+	return true;
 }
 
 
 bool RendererBase::Resize()
 {
-	HRESULT hr;
+	throw_assert(pSwapChain, L"The swap chain has not been initialized.");
 
-	throw_assert(pSwapChain, L"Failed. The swap chain has not been initialized.");
+	HRESULT hr;
 
 	//Get the new window size
 	RECT rect;
@@ -464,28 +405,23 @@ bool RendererBase::Resize()
 	if ( swapChainDesc.BufferDesc.Width  == width
 	  && swapChainDesc.BufferDesc.Height == height )
 	{
-		hr = ExitCode::Success;
-		goto Cleanup;
+		return true;
 	}
 
 	//Release the old resource views (required to resize)
-	SafeRelease(pRenderTargetView);
-	SafeRelease(pDepthBufferView);
+	pRenderTargetView.Release();
+	pDepthBufferView.Release();
 
 	hr = pSwapChain->ResizeBuffers(1, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags); CHECK_HR(hr);
 
-	hr = CreateBackBufferView(); CHECK_RET(hr);
-	hr = InitializeDepthBuffer(); CHECK_RET(hr);
+	hr = CreateBackBufferView(); CHECK_HR(hr);
+	hr = InitializeDepthBuffer(); CHECK_HR(hr);
 
 	InitializeViewport();
 
-	hr = OnResize(); CHECK_RET(hr);
+	hr = OnResize(); CHECK_HR(hr);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-
-	return hr;
+	return true;
 }
 
 bool RendererBase::Update(const GameTimer &gameTimer)
@@ -506,11 +442,7 @@ bool RendererBase::Update(const GameTimer &gameTimer)
 
 	UpdateFrameStatistics(gameTimer);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-
-	return hr;
+	return true;
 }
 
 void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
@@ -567,22 +499,23 @@ void RendererBase::Teardown()
 
 	hwnd = nullptr;
 
-	SafeRelease(pD3DDevice);
-	SafeRelease(pD3DImmediateContext);
-	SafeRelease(pDXGIFactory);
-	SafeRelease(pSwapChain);
-	SafeRelease(pRenderTargetView);
-	SafeRelease(pDepthBufferView);
+	//TODO: This doesn't need to be done
+	pD3DDevice.Release();
+	pD3DImmediateContext.Release();
+	pDXGIFactory.Release();
+	pSwapChain.Release();
+	pRenderTargetView.Release();
+	pDepthBufferView.Release();
 
 	//Check for leaks
 	LogLiveObjects();
 }
 
-bool RendererBase::OnInitialize() { return ExitCode::Success; }
-bool RendererBase::OnResize()     { return ExitCode::Success; }
+bool RendererBase::OnInitialize() { return true; }
+bool RendererBase::OnResize()     { return true; }
 void RendererBase::OnTeardown()   { }
 
-void RendererBase::LogLiveObjects()
+bool RendererBase::LogLiveObjects()
 {
 	#ifdef _DEBUG
 
@@ -591,19 +524,18 @@ void RendererBase::LogLiveObjects()
 	if ( DXGIGetDebugInterface == nullptr )
 	{
 		LOG_ERROR(L"Failed to obtain dxgidebug.dll module or DXGIGetDebugInterface function pointer");
-		return;
+		return false;
 	}
 
 	HRESULT hr;
 
-	IDXGIDebug* pDXGIDebug = nullptr;
+	CComPtr<IDXGIDebug> pDXGIDebug;
 	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug); CHECK_HR(hr);
 
 	pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 	OutputDebugStringW(L"\n");
 
-Cleanup:
-	SafeRelease(pDXGIDebug);
-
 	#endif
+
+	return true;
 }

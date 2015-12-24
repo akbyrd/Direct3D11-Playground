@@ -93,7 +93,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="private include\ExitCode.h" />
     <ClInclude Include="private include\stdafx.h" />
     <ClInclude Include="private include\targetver.h" />
   </ItemGroup>

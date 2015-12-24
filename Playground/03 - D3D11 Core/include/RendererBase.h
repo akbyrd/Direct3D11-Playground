@@ -17,18 +17,18 @@ protected:
 	bool InitializeDevice();
 	bool CheckForWarpDriver();
 	bool ObtainDXGIFactory();
-	ID3D11Device*        pD3DDevice           = nullptr;
-	ID3D11DeviceContext* pD3DImmediateContext = nullptr;
-	IDXGIFactory1*       pDXGIFactory         = nullptr;
+	CComPtr<ID3D11Device>        pD3DDevice;
+	CComPtr<ID3D11DeviceContext> pD3DImmediateContext;
+	CComPtr<IDXGIFactory1>       pDXGIFactory;
 
 	bool InitializeSwapChain();
 	bool CreateBackBufferView();
 	bool UpdateAllowFullscreen();
-	IDXGISwapChain*         pSwapChain        = nullptr;
-	ID3D11RenderTargetView* pRenderTargetView = nullptr;
+	CComPtr<IDXGISwapChain>         pSwapChain;
+	CComPtr<ID3D11RenderTargetView> pRenderTargetView;
 
 	bool InitializeDepthBuffer();
-	ID3D11DepthStencilView* pDepthBufferView  = nullptr;
+	CComPtr<ID3D11DepthStencilView> pDepthBufferView;
 
 	void InitializeOutputMerger();
 	void InitializeViewport();
@@ -37,9 +37,9 @@ protected:
 	double averageFrameTime = 0;
 
 	bool LogAdapters();
-	bool LogOutputs(IDXGIAdapter1*);
-	bool LogDisplayModes(IDXGIOutput*);
-	void LogLiveObjects();
+	bool LogOutputs(CComPtr<IDXGIAdapter1>);
+	bool LogDisplayModes(CComPtr<IDXGIOutput>);
+	bool LogLiveObjects();
 
 	virtual bool OnInitialize();
 	virtual bool OnResize();
