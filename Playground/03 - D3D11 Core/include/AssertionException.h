@@ -1,5 +1,7 @@
 #pragma once
 
+#include "LoggedException.h"
+
 #define throw_assert(x, msg)                     \
 do { if ( !(x) )                                 \
 {                                                \
@@ -8,7 +10,7 @@ do { if ( !(x) )                                 \
 	          __FILE__, __LINE__, __FUNCTION__); \
 } } while (0)
 
-class AssertionException : public std::exception
+class AssertionException : public LoggedException
 {
 public:
 	AssertionException(std::wstring, std::wstring, const char*, DWORD, const char*);
