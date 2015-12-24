@@ -9,6 +9,8 @@ using namespace std;
 using namespace Utility;
 using namespace DirectX;
 
+//TODO: Refactor error handling
+
 bool Renderer::OnInitialize()
 {
 	long ret;
