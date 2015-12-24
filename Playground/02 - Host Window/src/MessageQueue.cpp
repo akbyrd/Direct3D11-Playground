@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "MessageQueue.h"
 
 MessageQueue::Pusher::Pusher(MessageQueue* messageQueue)

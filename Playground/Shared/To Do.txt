@@ -20,8 +20,6 @@ Topic to Study
 	enums
 	destructors
 	attributes
-	smart pointers
-	Microsoft::WRL::ComPtr
 	Input methods: RawInput, DirectInput (deprecated) http://gamedev.stackexchange.com/questions/72114/how-do-i-handle-directx-mouse-events/72545
 	AI http://gamedev.stackexchange.com/questions/2194/new-to-creating-ai-where-to-start
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
+
 #include "Renderer.h"
 #include "ExitCode.h"
-#include "Logging.h"
 #include "Utility.h"
 #include "Color.h"
 

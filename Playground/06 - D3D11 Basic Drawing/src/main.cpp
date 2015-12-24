@@ -3,7 +3,6 @@
 #include "MessageQueue.h"
 #include "HostWindow.h"
 #include "Renderer.h"
-#include "Logging.h"
 #include "GameTimer.h"
 #include "ExitCode.h"
 

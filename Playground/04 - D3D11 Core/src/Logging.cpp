@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "Logging.h"
 
 using namespace std;

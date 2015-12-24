@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "Window.h"
 
 LRESULT CALLBACK Window::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

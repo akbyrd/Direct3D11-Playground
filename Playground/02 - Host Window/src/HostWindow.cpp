@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include "HostWindow.h"
 
 bool   HostWindow::IsActive()      const { return isActive;      }
