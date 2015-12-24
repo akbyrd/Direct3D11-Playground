@@ -78,7 +78,7 @@ bool HostWindow::ClientSizeToWindowSize(int &width, int &height,
 	BOOL ret = AdjustWindowRect(&windowRect, windowStyle, false);
 	if ( !ret )
 	{
-		LogLastError(L"WARNING: Failed to translate client size to window size");
+		LOG_WARNING(L"WARNING: Failed to translate client size to window size");
 		return false;
 	}
 
@@ -104,19 +104,6 @@ void HostWindow::Teardown()
 	//Remove the application instance
 	UnregisterClassW(applicationName, hInstance);
 	hInstance = nullptr;
-}
-
-void HostWindow::LogLastError(std::wstring message)
-{
-	DWORD ret = GetLastError();
-
-	message += L". Last Error: ";
-	message += std::to_wstring(ret);
-	message += L"\n";
-
-	OutputDebugStringW(message.c_str());
-
-	__debugbreak();
 }
 
 LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)

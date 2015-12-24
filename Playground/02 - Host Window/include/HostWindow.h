@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Window.h"
 #undef IsMinimized
 
+#include "Window.h"
 #include "MessageQueue.h"
 
 class HostWindow final : public Window
@@ -19,7 +19,6 @@ public:
 
 protected:
 	virtual LRESULT MessageHandler(UINT, WPARAM, LPARAM);
-	void LogLastError(std::wstring);
 
 private:
 	bool ClientSizeToWindowSize(int&, int&, int, int, DWORD);

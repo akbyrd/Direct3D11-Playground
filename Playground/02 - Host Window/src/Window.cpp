@@ -36,6 +36,7 @@ LRESULT Window::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_NCDESTROY:
 		//Clear stored pointer
 		SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
+		//TODO: Understand this
 		//delete this;
 		//Fall through
 

@@ -17,4 +17,7 @@
 #include <algorithm>
 #include <string>
 
+// Project Header Files
+#include "Logging.h"
+
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
