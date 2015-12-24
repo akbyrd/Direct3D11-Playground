@@ -12,8 +12,7 @@ void MessageQueue::Pusher::PushMessage(Message message)
 	messageQueue->PushMessage(message);
 }
 
-MessageQueue::Pusher*
-MessageQueue::GetQueuePusher()
+MessageQueue::Pusher* MessageQueue::GetQueuePusher()
 {
 	return &queuePusher;
 }

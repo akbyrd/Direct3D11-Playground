@@ -5,10 +5,19 @@
 
 #pragma once
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
+
+// Modify Windows Header Files
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include "targetver.h"
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+// Windows Header Files:
+#include <windows.h>
 
-
-
-// TODO: reference additional headers your program requires here
+// C++ Header Files
+#include <sstream>
+#include <string>
