@@ -17,17 +17,3 @@
 
 // Windows Header Files:
 #include <windows.h>
-
-// C RunTime Header Files
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
-
-// For some GUID magic in the DirectX headers. Must be included before them.
-#include <InitGuid.h>
-
-// Direct3D 11 Header Files
-
-// Macros
-#define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
