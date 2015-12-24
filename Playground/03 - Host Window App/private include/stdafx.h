@@ -20,6 +20,9 @@
 // C++ Header Files
 #include <iostream>
 
+// Project Header Files
+#include "Logging.h"
+
 // Macros
 #define RETURN_IF_FALSE(x, r) { if ( !(x) ) { return r; } }
 #define LOG_ERROR(x) { std::cout << "Error: " << x; }

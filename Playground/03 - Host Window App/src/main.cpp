@@ -41,7 +41,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 			//I wonder what kind of messages wouldn't have a window pointer...
 			if ( msg.hwnd == nullptr )
-				std::cout << "Found non-window message: " << msg.message << std::endl;
+				Logging::Log(L"Found non-window message: " + msg.message);
 
 			//Clean quit
 			if ( msg.message == WM_QUIT ) { ret = ExitCode::Quit; break; }
