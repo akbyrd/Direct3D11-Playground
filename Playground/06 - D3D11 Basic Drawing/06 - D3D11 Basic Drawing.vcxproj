@@ -11,21 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{55D6565C-D542-464B-9485-FA681672B4D8}</ProjectGuid>
+    <ProjectGuid>{A4224B45-BB3A-4654-B1B9-5DA8610140A7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Direct3D11Playground</RootNamespace>
-    <ProjectName>01 - Host Window</ProjectName>
+    <RootNamespace>My04D3D11BasicDrawing</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -37,10 +36,14 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
+    <Import Project="..\Shared\D3D11 Core.props" />
+    <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
+    <Import Project="..\Shared\D3D11 Core.props" />
+    <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -78,17 +81,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\MessageQueue.h" />
-    <ClInclude Include="private include\stdafx.h" />
-    <ClInclude Include="include\HostWindow.h" />
-    <ClInclude Include="private include\targetver.h" />
-    <ClInclude Include="include\Window.h" />
+    <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
+      <Project>{04b467ba-0d82-495a-86fc-38f3da5e0e3d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\02 - Host Window\02 - Host Window.vcxproj">
+      <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\04 - D3D11 Core\04 - D3D11 Core.vcxproj">
+      <Project>{1feb782b-c79e-4a6d-be07-d1e0787a75c9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\HostWindow.cpp" />
-    <ClCompile Include="src\MessageQueue.cpp" />
-    <ClCompile Include="src\stdafx.cpp" />
-    <ClCompile Include="src\Window.cpp" />
+    <ClInclude Include="include\Renderer.h" />
+    <ClInclude Include="private include\ExitCode.h" />
+    <ClInclude Include="private include\stdafx.h" />
+    <ClInclude Include="private include\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shaders\Basic Pixel Shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shaders\Basic Vertex Shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

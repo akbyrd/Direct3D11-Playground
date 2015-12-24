@@ -17,7 +17,10 @@
     <ClInclude Include="private include\ExitCode.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\01 - Host Window\01 - Host Window.vcxproj">
+    <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
+      <Project>{04b467ba-0d82-495a-86fc-38f3da5e0e3d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\02 - Host Window\02 - Host Window.vcxproj">
       <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -25,7 +28,7 @@
     <ProjectGuid>{98846D11-7687-4106-8BCB-F4B232817496}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>TestApplication</RootNamespace>
-    <ProjectName>02 - Host Window App</ProjectName>
+    <ProjectName>03 - Host Window App</ProjectName>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

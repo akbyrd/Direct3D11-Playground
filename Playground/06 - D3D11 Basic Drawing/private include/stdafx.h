@@ -18,13 +18,8 @@
 // Windows Header Files:
 #include <windows.h>
 
-// C++ Header Files
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <numeric>
-#include <sstream>
-#include <string>
+// ATL Header Files
+#include <atlbase.h>
 
 // For some GUID magic in the DirectX/DXGI headers. Must be included before them.
 #include <InitGuid.h>
@@ -35,6 +30,17 @@
 #ifdef _DEBUG
 #include <dxgidebug.h>
 #endif
+
+// C++ Header Files
+#include <iomanip>
+#include <iostream>
+#include <fstream>
+#include <numeric>
+#include <sstream>
+#include <string>
+
+// Project Header Files
+#include "Logging.h"
 
 // Macros
 #define CHECK_HR(hr) if ( LOG_IF_FAILED(hr) ) { goto Cleanup; }
