@@ -149,7 +149,7 @@ bool RendererBase::InitializeSwapChain()
 	}
 
 	//Set swap chain properties
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferDesc.Width                   = width;
 	swapChainDesc.BufferDesc.Height                  = height;
 	swapChainDesc.BufferDesc.RefreshRate.Numerator   = 60;
@@ -402,7 +402,7 @@ bool RendererBase::Resize()
 	}
 
 	//Preserve the swap chain configuration
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	hr = pSwapChain->GetDesc(&swapChainDesc); CHECK_HR(hr);
 
 	//Skip resizing if it's not necessary
