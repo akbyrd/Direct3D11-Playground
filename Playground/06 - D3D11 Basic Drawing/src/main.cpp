@@ -7,10 +7,10 @@
 #include "Renderer.h"
 #include "GameTimer.h"
 
-//TODO: Fix beep when leaving fullscreen
-//TODO: Switch to constructor/destructor instead of init/teardown
+//TODO: Fix resolution when toggling fullscreen
 //TODO: Window contents are erased when moved offscreen. Stop it.
 //TODO: Window contents are empty when resizing window. Stretch?
+//TODO: Switch to constructor/destructor instead of init/teardown
 //TODO: Handle iCmdshow
 //TODO: Shader syntax coloring
 

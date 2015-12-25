@@ -33,13 +33,14 @@ LRESULT Window::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( uMsg )
 	{
-	case WM_NCDESTROY:
-		//Clear stored pointer, then let Windows do its thing
-		SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
-		return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+		case WM_NCDESTROY: {
+			//Clear stored pointer, then let Windows do its thing
+			SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
+			return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+		}
 
-	default:
-		return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+		default:
+			return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 	}
 }
 

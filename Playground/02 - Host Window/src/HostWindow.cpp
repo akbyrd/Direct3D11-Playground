@@ -110,125 +110,155 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( uMsg )
 	{
-	//TODO: Move to input in game
-	case WM_KEYDOWN:
-	case WM_KEYUP:
-		if ( wParam == VK_ESCAPE )
-			PostQuitMessage(0);
-		return 0;
+		//TODO: Move to input in game
+		case WM_KEYDOWN:
+		case WM_KEYUP: {
+			if ( wParam == VK_ESCAPE )
+				PostQuitMessage(0);
 
-	case WM_ACTIVATE:
-		if ( LOWORD(wParam) == WA_INACTIVE )
-		{
-			isActive = false;
-			messageQueue->PushMessage(Message::WindowInactive);
+			return 0;
 		}
-		else
-		{
-			isActive = true;
-			messageQueue->PushMessage(Message::WindowActive);
+
+		case WM_ACTIVATE: {
+			if ( LOWORD(wParam) == WA_INACTIVE )
+			{
+				isActive = false;
+				messageQueue->PushMessage(Message::WindowInactive);
+			}
+			else
+			{
+				isActive = true;
+				messageQueue->PushMessage(Message::WindowActive);
+			}
+			return 0;
 		}
-		return 0;
 
-	//Includes moves
-	case WM_ENTERSIZEMOVE:
-		isResizing = true;
-		messageQueue->PushMessage(Message::WindowResizingBegin);
-		return 0;
+		//Entering modal loop for move and resize events.
+		case WM_ENTERSIZEMOVE: {
+			isResizing = true;
+			messageQueue->PushMessage(Message::WindowResizingBegin);
+			return 0;
+		}
 
-	//Includes moves
-	case WM_EXITSIZEMOVE:
-		isResizing = false;
-		messageQueue->PushMessage(Message::WindowResizingEnd);
-		messageQueue->PushMessage(Message::WindowSizeChanged);
-		return 0;
-
-	case WM_SIZE:
-		switch ( wParam )
-		{
-		case SIZE_MINIMIZED:
-			isMinimized = true;
-			messageQueue->PushMessage(Message::WindowMinimized);
-			break;
-
-		case SIZE_MAXIMIZED:
-			isMaximized = true;
+		//Exiting modal loop for move and resize events.
+		case WM_EXITSIZEMOVE: {
+			isResizing = false;
+			messageQueue->PushMessage(Message::WindowResizingEnd);
 			messageQueue->PushMessage(Message::WindowSizeChanged);
-			break;
+			return 0;
+		}
 
-		/* Sent for any size event that isn't covered above, doesn't mean an
-		 * actual 'restore' operation on the window.
-		*/
-		case SIZE_RESTORED:
-			//Actual restore operation
-			if ( isMinimized )
+		case WM_SIZE: {
+			switch ( wParam )
 			{
-				isMinimized = false;
-				messageQueue->PushMessage(Message::WindowUnminimized);
+				case SIZE_MINIMIZED: {
+					isMinimized = true;
+					messageQueue->PushMessage(Message::WindowMinimized);
+					break;
+				}
+
+				case SIZE_MAXIMIZED: {
+					isMaximized = true;
+					messageQueue->PushMessage(Message::WindowSizeChanged);
+					break;
+				}
+
+				/* Sent for any size event that isn't covered above, doesn't mean an
+				 * actual 'restore' operation on the window.
+				*/
+				case SIZE_RESTORED: {
+					//Actual restore operation
+					if ( isMinimized )
+					{
+						isMinimized = false;
+						messageQueue->PushMessage(Message::WindowUnminimized);
+					}
+					//Actual restore operation
+					else if ( isMaximized )
+					{
+						isMaximized = false;
+						messageQueue->PushMessage(Message::WindowSizeChanged);
+					}
+					//Just a resize operation
+					else if ( !isResizing )
+					{
+						messageQueue->PushMessage(Message::WindowSizeChanged);
+					}
+					break;
+				}
 			}
-			//Actual restore operation
-			else if ( isMaximized )
-			{
-				isMaximized = false;
-				messageQueue->PushMessage(Message::WindowSizeChanged);
-			}
-			//Just a resize operation
-			else if ( !isResizing )
-			{
-				messageQueue->PushMessage(Message::WindowSizeChanged);
-			}
+			return 0;
+		}
+
+		case WM_GETMINMAXINFO: {
+			//Limit the minimum window size
+			((MINMAXINFO*) lParam)->ptMinTrackSize.x = minWidth;
+			((MINMAXINFO*) lParam)->ptMinTrackSize.y = minHeight;
+			return 0;
+		}
+
+		//Recieved unhandled keystroke while a menu is active.
+		case WM_MENUCHAR: {
+			UINT menuType = HIWORD(wParam);
+			bool isSystem = menuType == MF_SYSMENU;
+
+			UINT keyPressed = LOWORD(wParam);
+			bool enterPressed = keyPressed == VK_RETURN;
+
+			//Don't beep when exiting fullscreen with Alt+Enter
+			if ( isSystem && enterPressed )
+				return MAKELRESULT(0, MNC_CLOSE);
+
 			break;
 		}
-		return 0;
 
-	case WM_GETMINMAXINFO:
-		//Limit the minimum window size
-		((MINMAXINFO*) lParam)->ptMinTrackSize.x = minWidth;
-		((MINMAXINFO*) lParam)->ptMinTrackSize.y = minHeight;
-		return 0;
+		case WM_CLOSE: {
+			PostQuitMessage(1);
+			return 0;
+		}
 
-	case WM_CLOSE:
-		PostQuitMessage(1);
-		return 0;
+		case WM_DESTROY: {
+			messageQueue->PushMessage(Message::WindowClosed);
+			return 0;
+		}
 
-	case WM_DESTROY:
-		messageQueue->PushMessage(Message::WindowClosed);
-		return 0;
+		case WM_MOUSEWHEEL: {
+			//TODO: Should really check storing and incrementing the offset
+			short delta = GET_WHEEL_DELTA_WPARAM(wParam);
+			if ( delta > WHEEL_DELTA )
+				messageQueue->PushMessage(Message::MouseWheelUp);
+			else if ( delta < -WHEEL_DELTA )
+				messageQueue->PushMessage(Message::MouseWheelDown);
+			goto UpdateMousePosition;
+		}
 
-	case WM_MOUSEWHEEL:
-	{
-		//TODO: Should really check storing and incrementing the offset
-		short delta = GET_WHEEL_DELTA_WPARAM(wParam);
-		if ( delta > WHEEL_DELTA )
-			messageQueue->PushMessage(Message::MouseWheelUp);
-		else if ( delta < -WHEEL_DELTA )
-			messageQueue->PushMessage(Message::MouseWheelDown);
-		goto UpdateMousePosition;
+		case WM_RBUTTONDOWN: {
+			messageQueue->PushMessage(Message::MouseRightDown);
+			goto UpdateMousePosition;
+		}
+
+		case WM_RBUTTONUP: {
+			messageQueue->PushMessage(Message::MouseRightUp);
+			goto UpdateMousePosition;
+		}
+
+		case WM_LBUTTONDOWN: {
+			messageQueue->PushMessage(Message::MouseLeftDown);
+			goto UpdateMousePosition;
+		}
+
+		case WM_LBUTTONUP: {
+			messageQueue->PushMessage(Message::MouseLeftUp);
+			goto UpdateMousePosition;
+		}
+
+		UpdateMousePosition:
+		case WM_MOUSEMOVE: {
+			mousePosition = MAKEPOINTS(lParam);
+			return 0;
+		}
 	}
-
-	case WM_RBUTTONDOWN:
-		messageQueue->PushMessage(Message::MouseRightDown);
-		goto UpdateMousePosition;
-
-	case WM_RBUTTONUP:
-		messageQueue->PushMessage(Message::MouseRightUp);
-		goto UpdateMousePosition;
-
-	case WM_LBUTTONDOWN:
-		messageQueue->PushMessage(Message::MouseLeftDown);
-		goto UpdateMousePosition;
-
-	case WM_LBUTTONUP:
-		messageQueue->PushMessage(Message::MouseLeftUp);
-		goto UpdateMousePosition;
-
-	UpdateMousePosition:
-	case WM_MOUSEMOVE:
-		mousePosition = MAKEPOINTS(lParam);
-		return 0;
 
 	//Send unhandled messages to the base class
-	default:
-		return __super::MessageHandler(uMsg, wParam, lParam);
-	}
+	return __super::MessageHandler(uMsg, wParam, lParam);
 }
