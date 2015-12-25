@@ -13,6 +13,7 @@
 //TODO: Switch to constructor/destructor instead of init/teardown
 //TODO: Handle iCmdshow
 //TODO: Shader syntax coloring
+//TODO: Alt+F4 causes leaks
 
 bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&);
 

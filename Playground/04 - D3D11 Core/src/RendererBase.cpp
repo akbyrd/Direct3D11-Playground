@@ -136,17 +136,8 @@ bool RendererBase::InitializeSwapChain()
 	//Query and set MSAA quality levels
 	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK_HR(hr);
 
-	//Get the actual window size, just in case
-	RECT rect = {};
-	if ( GetClientRect(hwnd, &rect) )
-	{
-		width  = rect.right - rect.left;
-		height = rect.bottom - rect.top;
-	}
-	else
-	{
-		hr = GetLastError(); CHECK_HR(hr);
-	}
+	//Get the actual window size, in case we want it later.
+	CHECK(GetWindowClientSize(width, height));
 
 	//Set swap chain properties
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
@@ -172,6 +163,25 @@ bool RendererBase::InitializeSwapChain()
 
 	hr = CreateBackBufferView(); CHECK_HR(hr);
 	hr = UpdateAllowFullscreen(); CHECK_HR(hr);
+
+	return true;
+}
+
+bool RendererBase::GetWindowClientSize(UINT &width, UINT &height)
+{
+	HRESULT hr;
+
+	RECT rect = {};
+	if ( GetClientRect(hwnd, &rect) )
+	{
+		width  = rect.right - rect.left;
+		height = rect.bottom - rect.top;
+	}
+	else
+	{
+		hr = GetLastError(); CHECK_HR(hr);
+		throw_assert(false, L"GetClientRect failed, but the last error did not FAILED.");
+	}
 
 	return true;
 }
@@ -390,16 +400,7 @@ bool RendererBase::Resize()
 	HRESULT hr;
 
 	//Get the new window size
-	RECT rect = {};
-	if ( GetClientRect(hwnd, &rect) )
-	{
-		width  = rect.right - rect.left;
-		height = rect.bottom - rect.top;
-	}
-	else
-	{
-		hr = GetLastError(); CHECK_HR(hr);
-	}
+	CHECK(GetWindowClientSize(width, height));
 
 	//Preserve the swap chain configuration
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};

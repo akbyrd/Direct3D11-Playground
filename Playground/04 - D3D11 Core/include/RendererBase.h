@@ -22,6 +22,7 @@ protected:
 	CComPtr<IDXGIFactory1>       pDXGIFactory;
 
 	bool InitializeSwapChain();
+	bool GetWindowClientSize(UINT&, UINT&);
 	bool CreateBackBufferView();
 	bool UpdateAllowFullscreen();
 	CComPtr<IDXGISwapChain>         pSwapChain;
