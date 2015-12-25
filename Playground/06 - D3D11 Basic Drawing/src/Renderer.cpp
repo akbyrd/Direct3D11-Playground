@@ -20,7 +20,6 @@ bool Renderer::OnInitialize()
 	XMStoreFloat4x4(&mProj , I);
 
 	ret = InitializeInputLayout(); CHECK(ret);
-	return false;
 	ret = InitializeBuffers();     CHECK(ret);
 
 	//ret = SetWireframeMode(true);  CHECK(ret);
