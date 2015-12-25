@@ -31,14 +31,6 @@
 #include <dxgidebug.h>
 #endif
 
-// C++ Header Files
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <sstream>
-#include <string>
-
 // Project Header Files
 #include "Logging.h"
 

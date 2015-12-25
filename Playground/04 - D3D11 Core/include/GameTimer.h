@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 class GameTimer final
 {
 public:
@@ -18,18 +20,18 @@ private:
 	bool isStopped;
 
 	 double time;
-	__int64 timeTicks;
+	 uint64_t timeTicks;
 
 	 double realTime;
-	__int64 realTimeTicks;
+	 uint64_t realTimeTicks;
 
 	 double deltaTime;
-	__int64 deltaTimeTicks;
+	 uint64_t deltaTimeTicks;
 
 	 double realDeltaTime;
-	__int64 realDeltaTimeTicks;
+	 uint64_t realDeltaTimeTicks;
 
 	double secondsPerTick;
 
-	__int64 previousTick;
+	uint64_t previousTick;
 };

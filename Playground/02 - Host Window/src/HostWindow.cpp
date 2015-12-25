@@ -21,21 +21,21 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	HostWindow::applicationName = applicationName;
 
 	//Setup the windows class with default settings
-	WNDCLASSEX wc;
-	wc.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	WNDCLASSEX wc = {};
+	wc.style         = 0;
 	wc.lpfnWndProc   = WndProc;
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
 	wc.hInstance     = hInstance;
-	wc.hIcon         = LoadIconW(nullptr, IDI_WINLOGO);
+	wc.hIcon         = LoadIconW(nullptr, IDI_APPLICATION);
 	wc.hIconSm       = wc.hIcon;
 	wc.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName  = nullptr;
-	wc.lpszClassName = applicationName;
+	wc.lpszClassName = HostWindow::applicationName;
 	wc.cbSize        = sizeof(WNDCLASSEX);
 
-	DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+	DWORD windowStyle = WS_OVERLAPPEDWINDOW;
 
 	//Determine the resolution of the desktop screen
 	int desktopWidth  = GetSystemMetrics(SM_CXSCREEN);
@@ -69,7 +69,7 @@ bool HostWindow::ClientSizeToWindowSize(int &width, int &height,
                                         int desktopWidth, int desktopHeight, DWORD windowStyle)
 {
 	//Convert the min size to clamp the client area, not the whole window
-	RECT windowRect;
+	RECT windowRect = {};
 	windowRect.left   = 0;
 	windowRect.top    = 0;
 	windowRect.right  = width;
@@ -78,7 +78,7 @@ bool HostWindow::ClientSizeToWindowSize(int &width, int &height,
 	BOOL ret = AdjustWindowRect(&windowRect, windowStyle, false);
 	if ( !ret )
 	{
-		LOG_WARNING(L"WARNING: Failed to translate client size to window size");
+		LOG_WARNING(L"Failed to translate client size to window size");
 		return false;
 	}
 

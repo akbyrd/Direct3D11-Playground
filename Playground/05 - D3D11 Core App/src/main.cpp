@@ -3,7 +3,6 @@
 #include "MessageQueue.h"
 #include "HostWindow.h"
 #include "RendererBase.h"
-#include "Logging.h"
 #include "GameTimer.h"
 
 void ProcessMessage(Message&, GameTimer&, RendererBase&, const HostWindow&);
@@ -26,8 +25,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	if ( !renderer.Initialize(window.GetHWND()) ) { goto Cleanup; }
 	gameTimer.Start();
 
-	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
+	MSG msg = {};
 
 	long ret;
 	bool quit = false;

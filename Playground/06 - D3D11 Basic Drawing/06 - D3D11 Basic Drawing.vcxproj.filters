@@ -20,9 +20,6 @@
     <ClInclude Include="private include\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="private include\ExitCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

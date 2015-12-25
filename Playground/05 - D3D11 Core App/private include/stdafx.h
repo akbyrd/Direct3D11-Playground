@@ -27,9 +27,5 @@
 // Direct3D 11 Header Files
 #include <d3d11.h>
 
-// C++ Header Files
-#include <algorithm>
-#include <iostream>
-#include <string>
-
-#define CHECK_RET(ret) if ( (ret) < 0 ) { goto Cleanup; }
+// Project Header Files
+#include "Logging.h"

@@ -23,11 +23,11 @@ private:
 		DirectX::XMFLOAT4 Color;
 	};
 
-	long InitializeInputLayout();
-	ID3D11InputLayout* pInputLayout = nullptr;
+	bool InitializeInputLayout();
+	CComPtr<ID3D11InputLayout> pInputLayout;
 
-	long InitializeBuffers();
-	ID3D11Buffer* pVSConstBuffer = nullptr;
+	bool InitializeBuffers();
+	CComPtr<ID3D11Buffer> pVSConstBuffer;
 
 	DirectX::XMFLOAT4X4 mWorld;
 	DirectX::XMFLOAT4X4 mView;
@@ -38,7 +38,7 @@ private:
 	float radius = 5;
 
 	//Debugging
-	long SetWireframeMode(bool enableWireframe);
+	bool SetWireframeMode(bool enableWireframe);
 
 	POINTS lastMousePosition;
 };

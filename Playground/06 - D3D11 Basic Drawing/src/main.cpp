@@ -1,18 +1,19 @@
 #include "stdafx.h"
 
+#include <string>
+
 #include "MessageQueue.h"
 #include "HostWindow.h"
 #include "Renderer.h"
 #include "GameTimer.h"
-#include "ExitCode.h"
 
-//TODO: Refactor error handling pattern. Choose:
-//      1) Declare variables at top of methods
-//     *2) Switch to cascaded-ifs with smart pointers
-//      3) Switch to throw-on-fail
+//TODO: Resizing/fullscreening is fucked.
+//TODO: Switch to constructor/destructor instead of init/teardown
+//TODO: Window contents are erased when moved offscreen. Stop it.
+//TODO: Handle iCmdshow
 //TODO: Shader syntax coloring
 
-long ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&);
+bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -21,7 +22,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
-	long ret;
 
 	//Create game components
 	MessageQueue messageQueue;
@@ -33,26 +33,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	bool rightMouseDown = false;
 
 	//Initialize game components
-	ret = window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()); CHECK_RET(ret);
-	ret = renderer.Initialize(window.GetHWND()); CHECK_RET(ret);
+	if ( !window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()) ) { goto Cleanup; }
+	if ( !renderer.Initialize(window.GetHWND()) ) { goto Cleanup; }
 	gameTimer.Start();
 
-	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
+	bool success;
+	long ret;
+	MSG msg = {};
 
 	//Message and render loop
 	bool quit = false;
-	while ( ret == 0 )
+	while ( !quit )
 	{
-		while ( ret = PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) )
+		while ( PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) )
 		{
-			if ( ret == -1 )
-			{
-				LOG_ERROR(L"PeekMessage failed");
-				ret = ExitCode::PeekMessageFailed;
-				goto Cleanup;
-			}
-
 			//Dispatch messages to the appropriate window
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
@@ -75,16 +69,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		gameTimer.Tick();
 
 		//Process messages
-		Message message;
+		Message message = {};
 		while ( messageQueue.PopMessage(message) )
 		{
-			ret = ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown); CHECK_RET(ret);
+			success = ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown); CHECK(success);
 		}
 		renderer.HandleInput(leftMouseDown, rightMouseDown, window.MousePosition());
 
 		//The fun stuff!
-		ret = renderer.Update(gameTimer); CHECK_RET(ret);
-		ret = renderer.Render(); CHECK_RET(ret);
+		success = renderer.Update(gameTimer); CHECK(success);
+		success = renderer.Render(); CHECK(success);
 	}
 
 	//Cleanup and shutdown
@@ -95,10 +89,13 @@ Cleanup:
 	return ret;
 }
 
-long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, const HostWindow &window, bool &leftMouseDown, bool &rightMouseDown)
+bool ProcessMessage(Message    &message,
+                    GameTimer  &gameTimer,
+                    Renderer   &renderer,
+              const HostWindow &window,
+                    bool       &leftMouseDown,
+                    bool       &rightMouseDown)
 {
-	long ret = ExitCode::Success;
-
 	switch ( message )
 	{
 	case Message::WindowResizingBegin:
@@ -110,8 +107,7 @@ long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, 
 		break;
 
 	case Message::WindowSizeChanged:
-		ret = renderer.Resize();
-		break;
+		return renderer.Resize();
 
 	case Message::WindowMinimized:
 		gameTimer.Stop();
@@ -160,5 +156,5 @@ long ProcessMessage(Message& message, GameTimer &gameTimer, Renderer &renderer, 
 		break;
 	}
 
-	return ret;
+	return true;
 }

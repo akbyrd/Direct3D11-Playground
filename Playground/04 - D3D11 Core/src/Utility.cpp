@@ -1,13 +1,15 @@
 #include "stdafx.h"
 
+#include <fstream>
+#include <memory>
+
 #include "Utility.h"
 
 using namespace std;
 
 namespace Utility
 {
-	//TODO: Pass in smart pointer?
-	bool LoadFile(const wstring fileName, char* &data, SIZE_T &dataSize)
+	bool LoadFile(const wstring fileName, unique_ptr<char[]> &data, SIZE_T &dataSize)
 	{
 		ifstream inFile(fileName, ios::binary | ios::ate);
 		if ( !inFile.is_open() )
@@ -17,15 +19,14 @@ namespace Utility
 		}
 
 		dataSize = (SIZE_T) inFile.tellg();
-		data = new char[dataSize];
+		data = make_unique<char[]>(dataSize);
 
 		inFile.seekg(0);
-		inFile.read(data, dataSize);
+		inFile.read(data.get(), dataSize);
 
 		if ( inFile.bad() )
 		{
 			dataSize = 0;
-			delete data;
 			data = nullptr;
 
 			LOG_ERROR(L"Failed to read file: " + fileName);

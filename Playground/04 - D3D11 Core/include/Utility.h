@@ -1,29 +1,9 @@
 #pragma once
 
+#include <memory>
+
 namespace Utility
 {
-	//Safely release a COM object.
-	template<typename T>
-	inline void SafeRelease(T& ptr)
-	{
-		if ( ptr != nullptr )
-		{
-			ptr->Release();
-			ptr = nullptr;
-		}
-	}
-
-	//Safely delete an object
-	template<typename T>
-	inline void SafeDelete(T& ptr)
-	{
-		if ( ptr != nullptr )
-		{
-			delete ptr;
-			ptr = nullptr;
-		}
-	}
-
 	template<UINT TNameLength>
 	inline void SetDebugObjectName(_In_ ID3D11Device* resource,
 		_In_z_ const char (&name)[TNameLength])
@@ -51,5 +31,5 @@ namespace Utility
 		#endif
 	}
 
-	bool LoadFile(const std::wstring fileName, char* &data, SIZE_T &dataSize);
+	bool LoadFile(const std::wstring fileName, std::unique_ptr<char[]> &data, SIZE_T &dataSize);
 }

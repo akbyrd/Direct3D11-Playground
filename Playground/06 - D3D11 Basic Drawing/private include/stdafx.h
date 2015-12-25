@@ -31,17 +31,24 @@
 #include <dxgidebug.h>
 #endif
 
-// C++ Header Files
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <numeric>
-#include <sstream>
-#include <string>
-
 // Project Header Files
 #include "Logging.h"
 
 // Macros
-#define CHECK_HR(hr) if ( LOG_IF_FAILED(hr) ) { goto Cleanup; }
-#define CHECK_RET(ret) if ( (ret) < 0 ) { goto Cleanup; }
+#define CHECK(x)             \
+do {                         \
+	if ( !(x) )              \
+	{                        \
+		return false;        \
+	}                        \
+} while (0)
+
+
+#define CHECK_HR(hr)         \
+do {                         \
+	if ( FAILED(hr) )        \
+	{                        \
+		LOG_IF_FAILED(hr);   \
+		return false;        \
+	}                        \
+} while (0)

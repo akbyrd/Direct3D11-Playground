@@ -14,7 +14,6 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="private include\ExitCode.h" />
     <ClInclude Include="private include\stdafx.h" />
   </ItemGroup>
   <ItemGroup>

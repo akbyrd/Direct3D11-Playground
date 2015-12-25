@@ -1,7 +1,8 @@
 #include "stdafx.h"
 
+#include <memory>
+
 #include "Renderer.h"
-#include "ExitCode.h"
 #include "Utility.h"
 #include "Color.h"
 
@@ -9,32 +10,28 @@ using namespace std;
 using namespace Utility;
 using namespace DirectX;
 
-//TODO: Refactor error handling
-
 bool Renderer::OnInitialize()
 {
-	long ret;
+	bool ret;
 
 	XMMATRIX I = XMMatrixIdentity();
 	XMStoreFloat4x4(&mWorld, I);
 	XMStoreFloat4x4(&mView , I);
 	XMStoreFloat4x4(&mProj , I);
 
-	ret = InitializeInputLayout(); CHECK_RET(ret);
-	ret = InitializeBuffers();     CHECK_RET(ret);
+	ret = InitializeInputLayout(); CHECK(ret);
+	return false;
+	ret = InitializeBuffers();     CHECK(ret);
 
-	//ret = SetWireframeMode(true);  CHECK_RET(ret);
-	ret = OnResize(); CHECK_RET(ret);
-
-	ret = ExitCode::Success;
-
-Cleanup:
+	//ret = SetWireframeMode(true);  CHECK(ret);
+	ret = OnResize(); CHECK(ret);
 
 	return ret;
 }
 
-long Renderer::InitializeInputLayout()
+bool Renderer::InitializeInputLayout()
 {
+	bool ret;
 	HRESULT hr;
 
 	const D3D11_INPUT_ELEMENT_DESC arrVertShaderInputDescs[] = {
@@ -43,48 +40,40 @@ long Renderer::InitializeInputLayout()
 	};
 
 	//Load vertex shader bytecode
-	char*  vertShaderBytes = nullptr;
+	unique_ptr<char[]> vertShaderBytes;
 	SIZE_T vertShaderBytesLength;
-	hr = LoadFile(L"Basic Vertex Shader.cso", vertShaderBytes, vertShaderBytesLength); CHECK_RET(hr);
+	ret = LoadFile(L"Basic Vertex Shader.cso", vertShaderBytes, vertShaderBytesLength); CHECK(ret);
 
 	//Create and set input layout
-	hr = pD3DDevice->CreateInputLayout(arrVertShaderInputDescs, 2, vertShaderBytes, vertShaderBytesLength, &pInputLayout); CHECK_HR(hr);
+	hr = pD3DDevice->CreateInputLayout(arrVertShaderInputDescs, 2, vertShaderBytes.get(), vertShaderBytesLength, &pInputLayout); CHECK_HR(hr);
 	SetDebugObjectName(pInputLayout, "Input Layout");
 
 	pD3DImmediateContext->IASetInputLayout(pInputLayout);
 	pD3DImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	//Create and set vertex shader
-	ID3D11VertexShader* pVertShader = nullptr;
-	hr = pD3DDevice->CreateVertexShader(vertShaderBytes, vertShaderBytesLength, nullptr, &pVertShader); CHECK_HR(hr);
+	CComPtr<ID3D11VertexShader> pVertShader;
+	hr = pD3DDevice->CreateVertexShader(vertShaderBytes.get(), vertShaderBytesLength, nullptr, &pVertShader); CHECK_HR(hr);
 	SetDebugObjectName(pVertShader, "Basic Vertex Shader");
 
 	pD3DImmediateContext->VSSetShader(pVertShader, nullptr, 0);
 
 	//Load pixel shader bytecode
-	char*  pixelShaderBytes = nullptr;
+	unique_ptr<char[]> pixelShaderBytes;
 	SIZE_T pixelShaderBytesLength;
-	hr = LoadFile(L"Basic Pixel Shader.cso", pixelShaderBytes, pixelShaderBytesLength); CHECK_RET(hr);
+	ret = LoadFile(L"Basic Pixel Shader.cso", pixelShaderBytes, pixelShaderBytesLength); CHECK(ret);
 
 	//Create pixel shader
-	ID3D11PixelShader* pPixelShader = nullptr;
-	hr = pD3DDevice->CreatePixelShader(pixelShaderBytes, pixelShaderBytesLength, nullptr, &pPixelShader); CHECK_HR(hr);
+	CComPtr<ID3D11PixelShader> pPixelShader;
+	hr = pD3DDevice->CreatePixelShader(pixelShaderBytes.get(), pixelShaderBytesLength, nullptr, &pPixelShader); CHECK_HR(hr);
 	SetDebugObjectName(pPixelShader, "Basic Pixel Shader");
 
 	pD3DImmediateContext->PSSetShader(pPixelShader, nullptr, 0);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeDelete(vertShaderBytes);
-	SafeRelease(pVertShader);
-	SafeDelete(pixelShaderBytes);
-	SafeRelease(pPixelShader);
-
-	return hr;
+	return true;
 }
 
-long Renderer::InitializeBuffers()
+bool Renderer::InitializeBuffers()
 {
 	long hr;
 
@@ -101,7 +90,7 @@ long Renderer::InitializeBuffers()
 		{ XMFLOAT3( 1.0f, -1.0f,  1.0f), (XMFLOAT4) Color::White   }
 	};
 
-	D3D11_BUFFER_DESC vertBufDesc;
+	D3D11_BUFFER_DESC vertBufDesc = {};
 	vertBufDesc.ByteWidth           = sizeof(Vertex) * 8;
 	vertBufDesc.Usage               = D3D11_USAGE_IMMUTABLE;
 	vertBufDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
@@ -109,18 +98,18 @@ long Renderer::InitializeBuffers()
 	vertBufDesc.MiscFlags           = 0;
 	vertBufDesc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA vertBufInitData;
+	D3D11_SUBRESOURCE_DATA vertBufInitData = {};
 	vertBufInitData.pSysMem          = cubeVerts;
 	vertBufInitData.SysMemPitch      = 0;
 	vertBufInitData.SysMemSlicePitch = 0;
 
-	ID3D11Buffer* pVertBuffer = nullptr;
+	CComPtr<ID3D11Buffer> pVertBuffer;
 	hr = pD3DDevice->CreateBuffer(&vertBufDesc, &vertBufInitData, &pVertBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pVertBuffer, "Cube Vertex Buffer");
 
 	const UINT stride = sizeof(Vertex);
 	const UINT offset = 0;
-	pD3DImmediateContext->IASetVertexBuffers(0, 1, &pVertBuffer, &stride, &offset);
+	pD3DImmediateContext->IASetVertexBuffers(0, 1, &pVertBuffer.p, &stride, &offset);
 
 
 	//Create and set index buffer
@@ -139,7 +128,7 @@ long Renderer::InitializeBuffers()
 		4, 3, 7
 	};
 
-	D3D11_BUFFER_DESC indexBufDesc;
+	D3D11_BUFFER_DESC indexBufDesc = {};
 	indexBufDesc.ByteWidth           = sizeof(UINT)*3 * 2*6;
 	indexBufDesc.Usage               = D3D11_USAGE_IMMUTABLE;
 	indexBufDesc.BindFlags           = D3D11_BIND_INDEX_BUFFER;
@@ -147,12 +136,12 @@ long Renderer::InitializeBuffers()
 	indexBufDesc.MiscFlags           = 0;
 	indexBufDesc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA indexBufInitData;
+	D3D11_SUBRESOURCE_DATA indexBufInitData = {};
 	indexBufInitData.pSysMem          = cubeIndices;
 	indexBufInitData.SysMemPitch      = 0;
 	indexBufInitData.SysMemSlicePitch = 0;
 
-	ID3D11Buffer* pIndexBuffer = nullptr;
+	CComPtr<ID3D11Buffer> pIndexBuffer;
 	hr = pD3DDevice->CreateBuffer(&indexBufDesc, &indexBufInitData, &pIndexBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pIndexBuffer, "Cube Index Buffer");
 
@@ -160,7 +149,7 @@ long Renderer::InitializeBuffers()
 
 
 	//Create and set vertex shader constant buffer
-	D3D11_BUFFER_DESC vsConstBufDesc;
+	D3D11_BUFFER_DESC vsConstBufDesc = {};
 	vsConstBufDesc.ByteWidth           = sizeof(float) * 16;
 	vsConstBufDesc.Usage               = D3D11_USAGE_DEFAULT;
 	vsConstBufDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
@@ -169,7 +158,7 @@ long Renderer::InitializeBuffers()
 	vsConstBufDesc.StructureByteStride = 0;
 
 	//Junk, it'll get updated before rendering
-	D3D11_SUBRESOURCE_DATA vsConstBufInitData;
+	D3D11_SUBRESOURCE_DATA vsConstBufInitData = {};
 	vsConstBufInitData.pSysMem          = &mWorld;
 	vsConstBufInitData.SysMemPitch      = 0;
 	vsConstBufInitData.SysMemSlicePitch = 0;
@@ -177,29 +166,22 @@ long Renderer::InitializeBuffers()
 	hr = pD3DDevice->CreateBuffer(&vsConstBufDesc, &vsConstBufInitData, &pVSConstBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pVSConstBuffer, "Vertex Shader WVP Constant Buffer");
 
-	pD3DImmediateContext->VSSetConstantBuffers(0, 1, &pVSConstBuffer);
+	pD3DImmediateContext->VSSetConstantBuffers(0, 1, &pVSConstBuffer.p);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pVertBuffer);
-	SafeRelease(pIndexBuffer);
-
-	return hr;
+	return true;
 }
 
-long Renderer::SetWireframeMode(bool enableWireframe)
+bool Renderer::SetWireframeMode(bool enableWireframe)
 {
 	HRESULT hr;
 
-	ID3D11RasterizerState *pRasterizerState = nullptr;
+	CComPtr<ID3D11RasterizerState> pRasterizerState;
 	pD3DImmediateContext->RSGetState(&pRasterizerState);
 
-	D3D11_RASTERIZER_DESC rasterizerDesc;
+	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	if ( pRasterizerState != nullptr )
 	{
 		pRasterizerState->GetDesc(&rasterizerDesc);
-		SafeRelease(pRasterizerState);
 	}
 	else
 	{
@@ -213,36 +195,25 @@ long Renderer::SetWireframeMode(bool enableWireframe)
 		rasterizerDesc.MultisampleEnable     = false;
 		rasterizerDesc.AntialiasedLineEnable = multiSampleCount > 0;
 	}
-
-	if ( enableWireframe )
-		rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
-	else
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.FillMode = enableWireframe
+	                          ? D3D11_FILL_WIREFRAME
+	                          : D3D11_FILL_SOLID;
 
 	hr = pD3DDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerState); CHECK_HR(hr);
 	pD3DImmediateContext->RSSetState(pRasterizerState);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-	SafeRelease(pRasterizerState);
-
-	return hr;
+	return true;
 }
 
 bool Renderer::OnResize()
 {
-	long ret;
-
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// The window resized, so update the aspect ratio and recompute the projection matrix.
 	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float) width / height, 0.1f, 100.0f);
 	XMStoreFloat4x4(&mProj, P);
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-	ret = ExitCode::Success;
-
-	return ret;
+	return true;
 }
 
 bool Renderer::Render()
@@ -258,17 +229,11 @@ bool Renderer::Render()
 
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-
-	return hr;
+	return true;
 }
 
 bool Renderer::Update(const GameTimer &gameTimer)
 {
-	HRESULT hr;
-
 	// Convert Spherical to Cartesian coordinates.
 	float x = radius*sinf(phi)*cosf(theta);
 	float z = radius*sinf(phi)*sinf(theta);
@@ -294,11 +259,7 @@ bool Renderer::Update(const GameTimer &gameTimer)
 
 	UpdateFrameStatistics(gameTimer);
 
-	hr = ExitCode::Success;
-
-Cleanup:
-
-	return hr;
+	return true;
 }
 
 void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, POINTS mousePosition)
@@ -339,6 +300,7 @@ void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, POINTS mouse
 
 void Renderer::OnTeardown()
 {
-	SafeRelease(pVSConstBuffer);
-	SafeRelease(pInputLayout);
+	//TODO: This doesn't need to be done
+	pInputLayout.Release();
+	pVSConstBuffer.Release();
 }

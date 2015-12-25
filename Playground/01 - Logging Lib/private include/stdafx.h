@@ -19,5 +19,3 @@
 #include <windows.h>
 
 // C++ Header Files
-#include <sstream>
-#include <string>

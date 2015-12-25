@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include <iomanip>
+#include <memory>
+#include <sstream>
+
 #include "RendererBase.h"
 #include "LoggedException.h"
 #include "AssertionException.h"
@@ -42,7 +46,7 @@ bool RendererBase::InitializeDevice()
 	//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUGGABLE; //11_1+
 	#endif
 
-	D3D_FEATURE_LEVEL featureLevel;
+	D3D_FEATURE_LEVEL featureLevel = {};
 
 	hr = D3D11CreateDevice(
 		nullptr,
@@ -133,7 +137,7 @@ bool RendererBase::InitializeSwapChain()
 	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels); CHECK_HR(hr);
 
 	//Get the actual window size, just in case
-	RECT rect;
+	RECT rect = {};
 	if ( GetClientRect(hwnd, &rect) )
 	{
 		width  = rect.right - rect.left;
@@ -213,7 +217,7 @@ bool RendererBase::InitializeDepthBuffer()
 
 	HRESULT hr;
 
-	D3D11_TEXTURE2D_DESC depthDesc;
+	D3D11_TEXTURE2D_DESC depthDesc = {};
 	depthDesc.Width = width;
 	depthDesc.Height = height;
 	depthDesc.MipLevels = 1;
@@ -247,7 +251,7 @@ void RendererBase::InitializeViewport()
 {
 	throw_assert(pD3DImmediateContext, L"D3D context not initialized.");
 
-	D3D11_VIEWPORT viewport;
+	D3D11_VIEWPORT viewport = {};
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.Width = (FLOAT) width;
@@ -323,7 +327,7 @@ bool RendererBase::LogOutputs(CComPtr<IDXGIAdapter1> pDXGIAdapter)
 
 		CHECK_HR(hr);
 
-		DXGI_OUTPUT_DESC outputDesc;
+		DXGI_OUTPUT_DESC outputDesc = {};
 		hr = pDXGIOutput->GetDesc(&outputDesc); CHECK_HR(hr);
 
 		wostringstream stream;
@@ -386,7 +390,7 @@ bool RendererBase::Resize()
 	HRESULT hr;
 
 	//Get the new window size
-	RECT rect;
+	RECT rect = {};
 	if ( GetClientRect(hwnd, &rect) )
 	{
 		width  = rect.right - rect.left;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #define LOG(msg)          Logging::Log        (msg, __FILE__, __LINE__, __FUNCTION__)
 #define LOG_WARNING(msg)  Logging::LogWarning (msg, __FILE__, __LINE__, __FUNCTION__)
 #define LOG_ERROR(msg)    Logging::LogError   (msg, __FILE__, __LINE__, __FUNCTION__)

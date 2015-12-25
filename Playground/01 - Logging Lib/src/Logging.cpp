@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include <sstream>
+
 #include "Logging.h"
 
 using namespace std;
