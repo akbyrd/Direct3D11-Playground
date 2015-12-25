@@ -24,6 +24,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
+	long ret = -1;
 
 	//Create game components
 	MessageQueue messageQueue;
@@ -39,8 +40,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	if ( !renderer.Initialize(window.GetHWND()) ) { goto Cleanup; }
 	gameTimer.Start();
 
-	bool success;
-	long ret;
 	MSG msg = {};
 
 	//Message and render loop
@@ -74,13 +73,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		Message message = {};
 		while ( messageQueue.PopMessage(message) )
 		{
-			success = ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown); CHECK(success);
+			if ( !ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown) ) { goto Cleanup; }
 		}
 		renderer.HandleInput(leftMouseDown, rightMouseDown, window.MousePosition());
 
 		//The fun stuff!
-		success = renderer.Update(gameTimer); CHECK(success);
-		success = renderer.Render(); CHECK(success);
+		if ( !renderer.Update(gameTimer) ) { goto Cleanup; }
+		if ( !renderer.Render()          ) { goto Cleanup; }
 	}
 
 	//Cleanup and shutdown

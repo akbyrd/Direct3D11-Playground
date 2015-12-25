@@ -12,25 +12,22 @@ using namespace DirectX;
 
 bool Renderer::OnInitialize()
 {
-	bool ret;
-
 	XMMATRIX I = XMMatrixIdentity();
 	XMStoreFloat4x4(&mWorld, I);
 	XMStoreFloat4x4(&mView , I);
 	XMStoreFloat4x4(&mProj , I);
 
-	ret = InitializeInputLayout(); CHECK(ret);
-	ret = InitializeBuffers();     CHECK(ret);
+	CHECK(InitializeInputLayout());
+	CHECK(InitializeBuffers());
 
-	//ret = SetWireframeMode(true);  CHECK(ret);
-	ret = OnResize(); CHECK(ret);
+	//CHECK(SetWireframeMode(true));
+	CHECK(OnResize());
 
-	return ret;
+	return true;
 }
 
 bool Renderer::InitializeInputLayout()
 {
-	bool ret;
 	HRESULT hr;
 
 	const D3D11_INPUT_ELEMENT_DESC arrVertShaderInputDescs[] = {
@@ -41,7 +38,7 @@ bool Renderer::InitializeInputLayout()
 	//Load vertex shader bytecode
 	unique_ptr<char[]> vertShaderBytes;
 	SIZE_T vertShaderBytesLength;
-	ret = LoadFile(L"Basic Vertex Shader.cso", vertShaderBytes, vertShaderBytesLength); CHECK(ret);
+	CHECK(LoadFile(L"Basic Vertex Shader.cso", vertShaderBytes, vertShaderBytesLength));
 
 	//Create and set input layout
 	hr = pD3DDevice->CreateInputLayout(arrVertShaderInputDescs, 2, vertShaderBytes.get(), vertShaderBytesLength, &pInputLayout); CHECK_HR(hr);
@@ -60,7 +57,7 @@ bool Renderer::InitializeInputLayout()
 	//Load pixel shader bytecode
 	unique_ptr<char[]> pixelShaderBytes;
 	SIZE_T pixelShaderBytesLength;
-	ret = LoadFile(L"Basic Pixel Shader.cso", pixelShaderBytes, pixelShaderBytesLength); CHECK(ret);
+	CHECK(LoadFile(L"Basic Pixel Shader.cso", pixelShaderBytes, pixelShaderBytesLength));
 
 	//Create pixel shader
 	CComPtr<ID3D11PixelShader> pPixelShader;
