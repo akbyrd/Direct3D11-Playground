@@ -524,11 +524,15 @@ bool RendererBase::LogLiveObjects()
 	#ifdef _DEBUG
 
 	typedef HRESULT(WINAPI *fPtr)(const IID&, void**);
-	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(GetModuleHandleW(L"dxgidebug.dll"), "DXGIGetDebugInterface");
+	static fPtr DXGIGetDebugInterface = nullptr;
 	if ( DXGIGetDebugInterface == nullptr )
 	{
-		LOG_ERROR(L"Failed to obtain dxgidebug.dll module or DXGIGetDebugInterface function pointer");
-		return false;
+		DXGIGetDebugInterface = (fPtr) GetProcAddress(GetModuleHandleW(L"dxgidebug.dll"), "DXGIGetDebugInterface");
+		if ( DXGIGetDebugInterface == nullptr )
+		{
+			LOG_ERROR(L"Failed to obtain dxgidebug.dll module or DXGIGetDebugInterface function pointer");
+			return false;
+		}
 	}
 
 	HRESULT hr;
