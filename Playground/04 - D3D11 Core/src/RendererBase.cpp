@@ -421,6 +421,7 @@ bool RendererBase::Resize()
 	hr = CreateBackBufferView(); CHECK_HR(hr);
 	hr = InitializeDepthBuffer(); CHECK_HR(hr);
 
+	InitializeOutputMerger();
 	InitializeViewport();
 
 	hr = OnResize(); CHECK_HR(hr);
