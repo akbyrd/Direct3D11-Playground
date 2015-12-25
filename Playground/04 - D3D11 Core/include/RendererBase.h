@@ -47,7 +47,14 @@ protected:
 	virtual void OnTeardown();
 
 	//TODO: Encapsulate in a struct?
-	//Settings
+	/* Settings
+	 * 
+	 * NOTE:
+	 * DirectX throws exceptions if multiSampleCount > 1 when entering fullscreen. These don't
+	 * crash the application, so I think these are first chance exceptions that are internally
+	 * handled. Still, I don't fully understand why they are occurring or if it indicates a
+	 * problem. I should ask about it on StackOverflow.
+	 */
 	bool startFullscreen   = false;
 	bool allowFullscreen   = true;
 	UINT numQualityLevels  = 0;

@@ -139,7 +139,19 @@ bool RendererBase::InitializeSwapChain()
 	//Get the actual window size, in case we want it later.
 	CHECK(GetWindowClientSize(width, height));
 
-	//Set swap chain properties
+	/* Set swap chain properties
+	 * 
+	 * NOTE:
+	 * If the DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH flag is used, the display mode that most
+	 * closely matches the back buffer will be used when entering fullscreen. If this happens to be
+	 * the same size as the back buffer, no WM_SIZE event is sent to the application (I'm only
+	 * assuming it *does* get sent if the size changes, I haven't tested it). If the flag is not
+	 * used, the display mode will be changed to match that of the desktop (usually the monitors
+	 * native display mode). This generally results in a WM_SIZE event (again, I'm only assuming
+	 * one will not be sent if the window happens to already be the same size as the desktop). For
+	 * now, I think it makes the most sense to use the native display mode when entering
+	 * fullscreen, so I'm removing the flag.
+	 */
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferDesc.Width                   = width;
 	swapChainDesc.BufferDesc.Height                  = height;
@@ -155,7 +167,7 @@ bool RendererBase::InitializeSwapChain()
 	swapChainDesc.OutputWindow                       = hwnd;
 	swapChainDesc.Windowed                           = !startFullscreen;
 	swapChainDesc.SwapEffect                         = DXGI_SWAP_EFFECT_DISCARD;
-	swapChainDesc.Flags                              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	swapChainDesc.Flags                              = 0;//DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	//Create the swap chain
 	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
