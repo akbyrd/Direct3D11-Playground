@@ -467,9 +467,9 @@ bool RendererBase::Update(const GameTimer &gameTimer)
 	const float g = sinf(2.0f * t);
 	const float b = sinf(3.0f * t);
 
-	const XMVECTORF32 color = { r, g, b, 1.0f };
+	backgroundColor = { r, g, b, 1.0f };
 
-	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, color);
+	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, (float*) &backgroundColor);
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);

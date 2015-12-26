@@ -80,14 +80,12 @@
   <ItemGroup>
     <ClCompile Include="src\LoggedException.cpp" />
     <ClCompile Include="src\AssertionException.cpp" />
-    <ClCompile Include="src\Color.cpp" />
     <ClCompile Include="src\GameTimer.cpp" />
     <ClCompile Include="src\RendererBase.cpp" />
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AssertionException.h" />
-    <ClInclude Include="include\Color.h" />
     <ClInclude Include="include\GameTimer.h" />
     <ClInclude Include="include\LoggedException.h" />
     <ClInclude Include="private include\ExitCode.h" />

@@ -27,6 +27,7 @@
 // Direct3D 11 Header Files
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <DirectXColors.h>
 #ifdef _DEBUG
 #include <dxgidebug.h>
 #endif

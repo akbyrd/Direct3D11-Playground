@@ -4,7 +4,6 @@
 
 #include "Renderer.h"
 #include "Utility.h"
-#include "Color.h"
 
 using namespace std;
 using namespace Utility;
@@ -76,14 +75,14 @@ bool Renderer::InitializeBuffers()
 	//TODO: Best practices for types
 	//Create and set vertex buffer
 	const Vertex cubeVerts[] = {
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), (XMFLOAT4) Color::Red     },
-		{ XMFLOAT3(-1.0f,  1.0f, -1.0f), (XMFLOAT4) Color::Green   },
-		{ XMFLOAT3( 1.0f,  1.0f, -1.0f), (XMFLOAT4) Color::Blue    },
-		{ XMFLOAT3( 1.0f, -1.0f, -1.0f), (XMFLOAT4) Color::Cyan    },
-		{ XMFLOAT3(-1.0f, -1.0f,  1.0f), (XMFLOAT4) Color::Magenta },
-		{ XMFLOAT3(-1.0f,  1.0f,  1.0f), (XMFLOAT4) Color::Yellow  },
-		{ XMFLOAT3( 1.0f,  1.0f,  1.0f), (XMFLOAT4) Color::Black   },
-		{ XMFLOAT3( 1.0f, -1.0f,  1.0f), (XMFLOAT4) Color::White   }
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), (XMFLOAT4) Colors::Red     },
+		{ XMFLOAT3(-1.0f,  1.0f, -1.0f), (XMFLOAT4) Colors::Green   },
+		{ XMFLOAT3( 1.0f,  1.0f, -1.0f), (XMFLOAT4) Colors::Blue    },
+		{ XMFLOAT3( 1.0f, -1.0f, -1.0f), (XMFLOAT4) Colors::Cyan    },
+		{ XMFLOAT3(-1.0f, -1.0f,  1.0f), (XMFLOAT4) Colors::Magenta },
+		{ XMFLOAT3(-1.0f,  1.0f,  1.0f), (XMFLOAT4) Colors::Yellow  },
+		{ XMFLOAT3( 1.0f,  1.0f,  1.0f), (XMFLOAT4) Colors::Black   },
+		{ XMFLOAT3( 1.0f, -1.0f,  1.0f), (XMFLOAT4) Colors::White   }
 	};
 
 	D3D11_BUFFER_DESC vertBufDesc = {};

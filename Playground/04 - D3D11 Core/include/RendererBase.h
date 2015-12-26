@@ -4,6 +4,8 @@
 
 #include "GameTimer.h"
 
+using namespace DirectX;
+
 class RendererBase
 {
 public:
@@ -57,10 +59,11 @@ protected:
 
 	//TODO: Encapsulate in a struct?
 	//Settings
-	bool startFullscreen   = false;
-	bool allowFullscreen   = true;
-	UINT numQualityLevels  = 0;
-	UINT multiSampleCount  = 1;
-	UINT width             = 800;
-	UINT height            = 600;
+	bool     startFullscreen  = false;
+	bool     allowFullscreen  = true;
+	UINT     numQualityLevels = 0;
+	UINT     multiSampleCount = 1;
+	UINT     width            = 800;
+	UINT     height           = 600;
+	XMFLOAT4 backgroundColor  = XMFLOAT4();
 };
