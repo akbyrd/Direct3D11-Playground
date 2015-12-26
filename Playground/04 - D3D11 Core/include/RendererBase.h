@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atlbase.h>
+
 #include "GameTimer.h"
 
 class RendererBase
