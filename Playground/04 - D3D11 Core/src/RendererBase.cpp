@@ -142,6 +142,12 @@ bool RendererBase::InitializeSwapChain()
 	//Get the actual window size, in case we want it later.
 	CHECK(GetWindowClientSize(width, height));
 
+	/* TODO: When using fullscreen, the display mode should be chosen by enumerating supported
+	 * modes. If a mode is chosen that isn't supported, a performance penalty will be incurred due
+	 * to Present performing a blit instead of a swap (does this apply to incorrect refresh rates
+	 * or only incorrect reolutions?).
+	 */
+
 	/* Set swap chain properties
 	 * 
 	 * NOTE:
@@ -527,13 +533,27 @@ void RendererBase::Teardown()
 
 	hwnd = nullptr;
 
-	//TODO: This doesn't need to be done
-	pD3DDevice.Release();
-	pD3DImmediateContext.Release();
-	pDXGIFactory.Release();
-	pSwapChain.Release();
+	/* NOTE:
+	 * A swap chain must not be released while fullscreened. That's just how the API works. It
+	 * would also cause a reference count leak on the ID3D11Device. When entering fullscreen
+	 * through Alt+Enter or swapChain->SetFullscreen(true, ...) the ref count is automatically
+	 * incremented. It isn't decremented until leaving fullscreen. Thus closing the application
+	 * while fullscreened leaks the device.
+	 */
+	HRESULT hr = pSwapChain->SetFullscreenState(false, nullptr);
+	if ( FAILED(hr) )
+	{
+		LOG(L"Failed to disable fullscreen before releasing the swap chain. See the next message.");
+		LOG_IF_FAILED(hr);
+	}
+
+	//TODO: This doesn't need to be done, the CComPtrs will handle it.
 	pRenderTargetView.Release();
 	pDepthBufferView.Release();
+	pSwapChain.Release();
+	pDXGIFactory.Release();
+	pD3DImmediateContext.Release();
+	pD3DDevice.Release();
 
 	//Check for leaks
 	LogLiveObjects();
