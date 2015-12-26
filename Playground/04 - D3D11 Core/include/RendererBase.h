@@ -12,6 +12,7 @@ public:
 	bool Initialize(HWND);
 	bool Resize();
 	virtual bool Update(const GameTimer&);
+	virtual bool Render();
 	void Teardown();
 
 protected:

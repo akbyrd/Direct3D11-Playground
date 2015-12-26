@@ -460,8 +460,6 @@ bool RendererBase::Update(const GameTimer &gameTimer)
 	throw_assert(pDepthBufferView, L"pDepthBufferView is not initialized");
 	throw_assert(pSwapChain, L"pSwapChain is not initialized");
 
-	HRESULT hr;
-
 	const float t = (float) gameTimer.Time();
 	const float r = sinf(1.0f * t);
 	const float g = sinf(2.0f * t);
@@ -469,15 +467,23 @@ bool RendererBase::Update(const GameTimer &gameTimer)
 
 	backgroundColor = { r, g, b, 1.0f };
 
+	UpdateFrameStatistics(gameTimer);
+
+	return true;
+}
+
+bool RendererBase::Render()
+{
+	HRESULT hr;
+
 	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, (float*) &backgroundColor);
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
-	UpdateFrameStatistics(gameTimer);
-
 	return true;
 }
+
 
 void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 {
