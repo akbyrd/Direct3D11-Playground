@@ -32,4 +32,6 @@ namespace Utility
 	}
 
 	bool LoadFile(const std::wstring fileName, std::unique_ptr<char[]> &data, SIZE_T &dataSize);
+
+	ULONG GetRefCount(IUnknown *obj);
 }

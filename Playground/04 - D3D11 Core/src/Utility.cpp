@@ -35,4 +35,10 @@ namespace Utility
 
 		return true;
 	}
+
+	ULONG GetRefCount(IUnknown *obj)
+	{
+		obj->AddRef();
+		return obj->Release();
+	}
 }
