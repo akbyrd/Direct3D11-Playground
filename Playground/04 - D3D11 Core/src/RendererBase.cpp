@@ -16,6 +16,8 @@ using namespace std;
 using namespace Utility;
 using namespace DirectX;
 
+//TODO: Errors that prevent this renderer from doing its job should throw instead of returning false?
+
 bool RendererBase::Initialize(HWND hwnd)
 {
 	      SetHwnd(hwnd);
@@ -31,7 +33,8 @@ bool RendererBase::Initialize(HWND hwnd)
 
 void RendererBase::SetHwnd(HWND hwnd)
 {
-	throw_assert(hwnd, L"Null HWND was provided.");
+	if ( !hwnd )
+		throw_logged(L"Null HWND was provided.");
 
 	RendererBase::hwnd = hwnd;
 }
@@ -111,7 +114,7 @@ bool RendererBase::CheckForWarpDriver()
 	CComPtr<IDXGIAdapter> pDXGIAdapter;
 	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter); CHECK_HR(hr);
 
-	DXGI_ADAPTER_DESC desc;
+	DXGI_ADAPTER_DESC desc = {};
 	hr = pDXGIAdapter->GetDesc(&desc); CHECK_HR(hr);
 
 	if ( (desc.VendorId == 0x1414) && (desc.DeviceId == 0x8c) )
@@ -447,6 +450,10 @@ bool RendererBase::Resize()
 
 bool RendererBase::Update(const GameTimer &gameTimer)
 {
+	throw_assert(pRenderTargetView, L"pRenderTargetView is not initialized");
+	throw_assert(pDepthBufferView, L"pDepthBufferView is not initialized");
+	throw_assert(pSwapChain, L"pSwapChain is not initialized");
+
 	HRESULT hr;
 
 	const float t = (float) gameTimer.Time();
