@@ -173,6 +173,9 @@ bool RendererBase::InitializeSwapChain()
 	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
 	SetDebugObjectName(pSwapChain, "Swap Chain");
 
+	if ( hr == DXGI_STATUS_OCCLUDED && !swapChainDesc.Windowed )
+		LOG_WARNING(L"Failed to create a fullscreen swap chain. Falling back to windowed.");
+
 	hr = CreateBackBufferView(); CHECK_HR(hr);
 	hr = UpdateAllowFullscreen(); CHECK_HR(hr);
 
