@@ -14,6 +14,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
+	long ret = -1;
+
 	//Create game components
 	MessageQueue messageQueue;
 	HostWindow window;
@@ -27,7 +29,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 	MSG msg = {};
 
-	long ret;
 	bool quit = false;
 
 	//Message and render loop
