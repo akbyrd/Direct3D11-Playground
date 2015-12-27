@@ -69,10 +69,95 @@ bool RendererBase::InitializeDevice()
 	if ( (featureLevel & D3D_FEATURE_LEVEL_11_0) != D3D_FEATURE_LEVEL_11_0 )
 		throw_logged(L"Created device does not support D3D 11");
 
-	//It's ok if this fails, it's an optional check
+	//It's ok if these fail, they're optional debugging stuff
+	InitializeDebugOptions();
 	CheckForWarpDriver();
 
 	hr = ObtainDXGIFactory(); CHECK_HR(hr);
+
+	return true;
+}
+
+//TODO: Check out this other ComPtr type
+//Microsoft::WRL::ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+
+//TODO: Check out this other, other ComPtr type
+//Microsoft::ComPtr<ID3D11Debug> d3dDebug;
+//pD3DDevice.As(&d3dDebug);
+
+//TODO: Is this IID_PPV_ARGS a better way to get __uuidof?
+//CComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+//DXGIGetDebugInterface(IID_PPV_ARGS(&dxgiInfoQueue));
+
+bool RendererBase::InitializeDebugOptions()
+{
+	#ifdef _DEBUG
+
+	throw_assert(pD3DDevice, L"D3D device not initialized.");
+
+	HRESULT hr;
+
+	//TODO: Debug with the highest available interface
+	//WinXP
+	#if defined(DEBUG_11)
+	CComPtr<ID3D11Debug> pD3DDebug;
+	hr = pD3DDevice->QueryInterface(__uuidof(ID3D11Debug), (void**) &pD3DDebug); CHECK_HR(hr);
+
+	CComPtr<ID3D11InfoQueue> pD3DInfoQueue;
+	hr = pD3DDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**) &pD3DInfoQueue); CHECK_HR(hr);
+
+	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
+	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR     , true); CHECK_HR(hr);
+
+	//Win7
+	#elif defined(DEBUG_11_1)
+	HMODULE dxgiDebugModule = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	if ( !dxgiDebugModule )
+	{
+		LOG_ERROR(L"Failed to load dxgidebug.dll");
+		return false;
+	}
+
+	typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
+	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(dxgiDebugModule, "DXGIGetDebugInterface");
+	if ( !DXGIGetDebugInterface )
+	{
+		LOG_ERROR(L"Failed to obtain DXGIGetDebugInterface function pointer");
+		return false;
+	}
+
+	CComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+	hr = DXGIGetDebugInterface(__uuidof(IDXGIInfoQueue), (void**) &dxgiInfoQueue); CHECK_HR(hr);
+
+	hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR     , true); CHECK_HR(hr);
+	hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
+
+	//TODO: Smart pointer
+	FreeLibrary(dxgiDebugModule);
+
+	//Win8
+	#elif defined(DEBUG_11_1_Plus)
+	CComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
+	hr = DXGIGetDebugInterface(__uuidof(IDXGIInfoQueue), (void**) &pDXGIInfoQueue); CHECK_HR(hr);
+
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); CHECK_HR(hr);
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
+
+	//Win8.1
+	#elif defined(DEBUG_11_2)
+	CComPtr<IDXGIDebug1> pDXGIDebug;
+	hr = DXGIGetDebugInterface1(0, __uuidof(IDXGIDebug1), (void**) &pDXGIDebug); CHECK_HR(hr);
+
+	pDXGIDebug->EnableLeakTrackingForThread();
+
+	CComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
+	hr = DXGIGetDebugInterface1(0, __uuidof(IDXGIInfoQueue), (void**) &pDXGIInfoQueue); CHECK_HR(hr);
+
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); CHECK_HR(hr);
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
+	#endif
+
+	#endif
 
 	return true;
 }
@@ -573,25 +658,72 @@ bool RendererBase::LogLiveObjects()
 {
 	#ifdef _DEBUG
 
-	typedef HRESULT(WINAPI *fPtr)(const IID&, void**);
-	static fPtr DXGIGetDebugInterface = nullptr;
-	if ( DXGIGetDebugInterface == nullptr )
+	HRESULT hr;
+
+	//TODO: Debug with the highest available interface
+	//WinXP
+	#if defined(DEBUG_11)
+	CComPtr<ID3D11Debug> pD3DDebug;
+	hr = pD3DDevice->QueryInterface(__uuidof(ID3D11Debug), (void**) &pD3DDebug); CHECK_HR(hr);
+
+	//TODO: Test the differences in the output
+	//D3D11_RLDO_SUMMARY
+	//D3D11_RLDO_DETAIL
+	//D3D11_RLDO_IGNORE_INTERNAL
+	pD3DDebug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY
+	                                 | D3D11_RLDO_DETAIL
+	                                 | D3D11_RLDO_IGNORE_INTERNAL
+	);
+
+	OutputDebugStringW(L"\n");
+
+	//Win7
+	#elif defined(DEBUG_11_1)
+	HMODULE dxgiDebugModule = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	if ( !dxgiDebugModule )
 	{
-		DXGIGetDebugInterface = (fPtr) GetProcAddress(GetModuleHandleW(L"dxgidebug.dll"), "DXGIGetDebugInterface");
-		if ( DXGIGetDebugInterface == nullptr )
-		{
-			LOG_ERROR(L"Failed to obtain dxgidebug.dll module or DXGIGetDebugInterface function pointer");
-			return false;
-		}
+		LOG_ERROR(L"Failed to load dxgidebug.dll");
+		return false;
 	}
 
-	HRESULT hr;
+	typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
+	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(dxgiDebugModule, "DXGIGetDebugInterface");
+	if ( !DXGIGetDebugInterface )
+	{
+		LOG_ERROR(L"Failed to obtain DXGIGetDebugInterface function pointer");
+		return false;
+	}
 
 	CComPtr<IDXGIDebug> pDXGIDebug;
 	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug); CHECK_HR(hr);
 
-	pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL);
+	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL); CHECK_HR(hr);
 	OutputDebugStringW(L"\n");
+
+	//TODO: Smart pointer
+	//unique_ptr<HMODULE> blah((HMODULE)nullptr, FreeLibrary);
+	FreeLibrary(dxgiDebugModule);
+
+	//Win8
+	#elif defined(DEBUG_11_1_Plus)
+	CComPtr<IDXGIDebug> pDXGIDebug;
+	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug); CHECK_HR(hr);
+
+	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL); CHECK_HR(hr);
+	OutputDebugStringW(L"\n");
+
+	//Win8.1
+	#elif defined(DEBUG_11_2)
+	CComPtr<IDXGIDebug1> pDXGIDebug;
+	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug1), (void**) &pDXGIDebug); CHECK_HR(hr);
+
+	//TODO: Test the differences in the output
+	//DXGI_DEBUG_RLO_ALL
+	//DXGI_DEBUG_RLO_SUMMARY
+	//DXGI_DEBUG_RLO_DETAIL
+	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL); CHECK_HR(hr);
+	OutputDebugStringW(L"\n");
+	#endif
 
 	#endif
 

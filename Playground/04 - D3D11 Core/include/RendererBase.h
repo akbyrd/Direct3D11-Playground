@@ -4,11 +4,10 @@
 
 #include "GameTimer.h"
 
-using namespace DirectX;
-
 class RendererBase
 {
 public:
+	//TODO: Just make all these virtual
 	bool Initialize(HWND);
 	bool Resize();
 	virtual bool Update(const GameTimer&);
@@ -20,6 +19,7 @@ protected:
 
 	void SetHwnd(HWND);
 	bool InitializeDevice();
+	bool InitializeDebugOptions();
 	bool CheckForWarpDriver();
 	bool ObtainDXGIFactory();
 	CComPtr<ID3D11Device>        pD3DDevice;
@@ -60,11 +60,11 @@ protected:
 
 	//TODO: Encapsulate in a struct?
 	//Settings
-	bool     startFullscreen  = false;
-	bool     allowFullscreen  = true;
-	UINT     numQualityLevels = 0;
-	UINT     multiSampleCount = 1;
-	UINT     width            = 800;
-	UINT     height           = 600;
-	XMFLOAT4 backgroundColor  = XMFLOAT4();
+	bool              startFullscreen  = false;
+	bool              allowFullscreen  = true;
+	UINT              numQualityLevels = 0;
+	UINT              multiSampleCount = 1;
+	UINT              width            = 800;
+	UINT              height           = 600;
+	DirectX::XMFLOAT4 backgroundColor  = XMFLOAT4();
 };
