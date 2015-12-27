@@ -65,6 +65,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 		//The fun stuff!
 		if ( !renderer.Update(gameTimer) ) { goto Cleanup; }
+		if ( !renderer.Render() )          { goto Cleanup; }
 	}
 
 	//Cleanup and shutdown
