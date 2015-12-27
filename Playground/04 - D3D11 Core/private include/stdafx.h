@@ -26,22 +26,6 @@
 
 // Direct3D 11 Header Files
 #include <d3d11.h>
-#include <DirectXMath.h>
-
-// Direct3D 11 Header Files For Debugging
-#ifdef _DEBUG
-	#define DEBUG_11_2
-
-	#if defined(DEBUG_11)
-	#elif defined(DEBUG_11_1)
-		#include <dxgidebug.h>
-	#elif defined(DEBUG_11_1_Plus)
-		#include <dxgidebug.h>
-	#elif defined(DEBUG_11_2)
-		#include <dxgi1_3.h>
-	#endif
-#endif
-
 
 // Project Header Files
 #include "Logging.h"

@@ -1,5 +1,27 @@
 #include "stdafx.h"
 
+//TODO: This needs to be tested on WinXP, 7, 8, and 8.1
+#ifdef _DEBUG
+	#define DEBUG_11_2
+
+	#if defined(DEBUG_11)
+		#include <d3d11sdklayers.h>
+	#elif defined(DEBUG_11_1)
+		#include <d3d11sdklayers.h>
+		#include <dxgidebug.h>
+	#elif defined(DEBUG_11_1_Plus)
+		#include <d3d11sdklayers.h>
+		#include <dxgidebug.h>
+	#elif defined(DEBUG_11_2)
+		#include <d3d11sdklayers.h>
+		#include <dxgidebug.h>
+		#include <dxgi1_3.h>
+	#endif
+#endif
+
+#pragma comment(lib, "D3D11.lib")
+#pragma comment(lib,  "DXGI.lib")
+
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -8,9 +30,6 @@
 #include "LoggedException.h"
 #include "AssertionException.h"
 #include "Utility.h"
-
-#pragma comment(lib, "D3D11.lib")
-#pragma comment(lib,  "DXGI.lib")
 
 using namespace std;
 using namespace Utility;
@@ -91,15 +110,13 @@ bool RendererBase::InitializeDevice()
 
 bool RendererBase::InitializeDebugOptions()
 {
-	#ifdef _DEBUG
-
-	throw_assert(pD3DDevice, L"D3D device not initialized.");
-
 	HRESULT hr;
 
 	//TODO: Debug with the highest available interface
 	//WinXP
 	#if defined(DEBUG_11)
+	throw_assert(pD3DDevice, L"D3D device not initialized.");
+
 	CComPtr<ID3D11Debug> pD3DDebug;
 	hr = pD3DDevice->QueryInterface(__uuidof(ID3D11Debug), (void**) &pD3DDebug); CHECK_HR(hr);
 
@@ -110,7 +127,15 @@ bool RendererBase::InitializeDebugOptions()
 	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR     , true); CHECK_HR(hr);
 
 	//Win7
-	#elif defined(DEBUG_11_1)
+	#elif defined(DEBUG_11_1) || defined(DEBUG_11_Plus)
+
+	//Win8
+	#if defined(DEBUG_11_1_Plus)
+	typedef decltype(&DXGIGetDebugInterface) fPtr;
+	#else
+	typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
+	#endif
+
 	HMODULE dxgiDebugModule = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if ( !dxgiDebugModule )
 	{
@@ -118,7 +143,6 @@ bool RendererBase::InitializeDebugOptions()
 		return false;
 	}
 
-	typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
 	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(dxgiDebugModule, "DXGIGetDebugInterface");
 	if ( !DXGIGetDebugInterface )
 	{
@@ -135,14 +159,6 @@ bool RendererBase::InitializeDebugOptions()
 	//TODO: Smart pointer
 	FreeLibrary(dxgiDebugModule);
 
-	//Win8
-	#elif defined(DEBUG_11_1_Plus)
-	CComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
-	hr = DXGIGetDebugInterface(__uuidof(IDXGIInfoQueue), (void**) &pDXGIInfoQueue); CHECK_HR(hr);
-
-	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); CHECK_HR(hr);
-	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
-
 	//Win8.1
 	#elif defined(DEBUG_11_2)
 	CComPtr<IDXGIDebug1> pDXGIDebug;
@@ -155,8 +171,9 @@ bool RendererBase::InitializeDebugOptions()
 
 	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); CHECK_HR(hr);
 	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
-	#endif
 
+	#else
+	UNREFERENCED_PARAMETER(hr);
 	#endif
 
 	return true;
@@ -634,7 +651,7 @@ void RendererBase::Teardown()
 	HRESULT hr = pSwapChain->SetFullscreenState(false, nullptr);
 	if ( FAILED(hr) )
 	{
-		LOG(L"Failed to disable fullscreen before releasing the swap chain. See the next message.");
+		LOG(L"Failed to disable fullscreen before releasing the swap chain. See the following message for more info.");
 		LOG_IF_FAILED(hr);
 	}
 
@@ -656,13 +673,23 @@ void RendererBase::OnTeardown()   { }
 
 bool RendererBase::LogLiveObjects()
 {
-	#ifdef _DEBUG
-
 	HRESULT hr;
 
-	//TODO: Debug with the highest available interface
 	//WinXP
 	#if defined(DEBUG_11)
+	/* TODO: This D3D API is poorly designed. You need to keep the device around to be able to get
+	 * the debug interface, which means you're guaranteed to have live objects, defeating the
+	 * purpose of even logging them. I could get the debug interface before releasing the device
+	 * and then use it here, but that's ugly and requires a different code path. Since this is just
+	 * debug code, I'd rather use the newest, most capable debug interface anyway, so this code
+	 * path won't be used and is effectively unsupported.
+	 */
+	if ( !pD3DDevice )
+	{
+		LOG_WARNING(L"Failed to log live objects because the D3D device is not initialized.");
+		return false;
+	}
+
 	CComPtr<ID3D11Debug> pD3DDebug;
 	hr = pD3DDevice->QueryInterface(__uuidof(ID3D11Debug), (void**) &pD3DDebug); CHECK_HR(hr);
 
@@ -678,7 +705,15 @@ bool RendererBase::LogLiveObjects()
 	OutputDebugStringW(L"\n");
 
 	//Win7
-	#elif defined(DEBUG_11_1)
+	#elif defined(DEBUG_11_1) || defined(DEBUG_11_1_Plus)
+
+	//Win8
+	#if defined(DEBUG_11_1_Plus)
+	typedef decltype(&DXGIGetDebugInterface) fPtr;
+	#else
+	typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
+	#endif
+
 	HMODULE dxgiDebugModule = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if ( !dxgiDebugModule )
 	{
@@ -686,7 +721,6 @@ bool RendererBase::LogLiveObjects()
 		return false;
 	}
 
-	typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
 	fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(dxgiDebugModule, "DXGIGetDebugInterface");
 	if ( !DXGIGetDebugInterface )
 	{
@@ -704,18 +738,10 @@ bool RendererBase::LogLiveObjects()
 	//unique_ptr<HMODULE> blah((HMODULE)nullptr, FreeLibrary);
 	FreeLibrary(dxgiDebugModule);
 
-	//Win8
-	#elif defined(DEBUG_11_1_Plus)
-	CComPtr<IDXGIDebug> pDXGIDebug;
-	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug); CHECK_HR(hr);
-
-	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL); CHECK_HR(hr);
-	OutputDebugStringW(L"\n");
-
 	//Win8.1
 	#elif defined(DEBUG_11_2)
 	CComPtr<IDXGIDebug1> pDXGIDebug;
-	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug1), (void**) &pDXGIDebug); CHECK_HR(hr);
+	hr = DXGIGetDebugInterface1(0, __uuidof(IDXGIDebug1), (void**) &pDXGIDebug); CHECK_HR(hr);
 
 	//TODO: Test the differences in the output
 	//DXGI_DEBUG_RLO_ALL
@@ -723,8 +749,9 @@ bool RendererBase::LogLiveObjects()
 	//DXGI_DEBUG_RLO_DETAIL
 	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL); CHECK_HR(hr);
 	OutputDebugStringW(L"\n");
-	#endif
 
+	#else
+	UNREFERENCED_PARAMETER(hr);
 	#endif
 
 	return true;
