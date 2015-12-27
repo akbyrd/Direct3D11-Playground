@@ -104,10 +104,6 @@ bool RendererBase::InitializeDevice()
 //Microsoft::ComPtr<ID3D11Debug> d3dDebug;
 //pD3DDevice.As(&d3dDebug);
 
-//TODO: Is this IID_PPV_ARGS a better way to get __uuidof?
-//CComPtr<IDXGIInfoQueue> dxgiInfoQueue;
-//DXGIGetDebugInterface(IID_PPV_ARGS(&dxgiInfoQueue));
-
 bool RendererBase::InitializeDebugOptions()
 {
 	HRESULT hr;
@@ -118,10 +114,10 @@ bool RendererBase::InitializeDebugOptions()
 	throw_assert(pD3DDevice, L"D3D device not initialized.");
 
 	CComPtr<ID3D11Debug> pD3DDebug;
-	hr = pD3DDevice->QueryInterface(__uuidof(ID3D11Debug), (void**) &pD3DDebug); CHECK_HR(hr);
+	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug)); CHECK_HR(hr);
 
 	CComPtr<ID3D11InfoQueue> pD3DInfoQueue;
-	hr = pD3DDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**) &pD3DInfoQueue); CHECK_HR(hr);
+	hr = pD3DDebug->QueryInterface(IID_PPV_ARGS(&pD3DInfoQueue)); CHECK_HR(hr);
 
 	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
 	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR     , true); CHECK_HR(hr);
@@ -151,7 +147,7 @@ bool RendererBase::InitializeDebugOptions()
 	}
 
 	CComPtr<IDXGIInfoQueue> dxgiInfoQueue;
-	hr = DXGIGetDebugInterface(__uuidof(IDXGIInfoQueue), (void**) &dxgiInfoQueue); CHECK_HR(hr);
+	hr = DXGIGetDebugInterface(IID_PPV_ARGS(&dxgiInfoQueue)); CHECK_HR(hr);
 
 	hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR     , true); CHECK_HR(hr);
 	hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
@@ -162,12 +158,12 @@ bool RendererBase::InitializeDebugOptions()
 	//Win8.1
 	#elif defined(DEBUG_11_2)
 	CComPtr<IDXGIDebug1> pDXGIDebug;
-	hr = DXGIGetDebugInterface1(0, __uuidof(IDXGIDebug1), (void**) &pDXGIDebug); CHECK_HR(hr);
+	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug)); CHECK_HR(hr);
 
 	pDXGIDebug->EnableLeakTrackingForThread();
 
 	CComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
-	hr = DXGIGetDebugInterface1(0, __uuidof(IDXGIInfoQueue), (void**) &pDXGIInfoQueue); CHECK_HR(hr);
+	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIInfoQueue)); CHECK_HR(hr);
 
 	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); CHECK_HR(hr);
 	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
@@ -191,13 +187,13 @@ bool RendererBase::ObtainDXGIFactory()
 	 * Using SetPrivateData to set it's name clobbers the D3D device name and outputs a warning.
 	 */
 	CComPtr<IDXGIDevice1> pDXGIDevice;
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK_HR(hr);
+	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pDXGIDevice)); CHECK_HR(hr);
 
 	CComPtr<IDXGIAdapter1> pDXGIAdapter;
-	hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter1), (void **) &pDXGIAdapter); CHECK_HR(hr);
+	hr = pDXGIDevice->GetParent(IID_PPV_ARGS(&pDXGIAdapter)); CHECK_HR(hr);
 	SetDebugObjectName(pDXGIAdapter, "DXGI Adapter");
 
-	hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK_HR(hr);
+	hr = pDXGIAdapter->GetParent(IID_PPV_ARGS(&pDXGIFactory)); CHECK_HR(hr);
 	SetDebugObjectName(pDXGIFactory, "DXGI Factory");
 
 	return true;
@@ -211,7 +207,7 @@ bool RendererBase::CheckForWarpDriver()
 
 	//Check for the WARP driver
 	CComPtr<IDXGIDevice1> pDXGIDevice;
-	hr = pD3DDevice->QueryInterface(__uuidof(IDXGIDevice1), (void**) &pDXGIDevice); CHECK_HR(hr);
+	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pDXGIDevice)); CHECK_HR(hr);
 
 	CComPtr<IDXGIAdapter> pDXGIAdapter;
 	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter); CHECK_HR(hr);
@@ -320,7 +316,7 @@ bool RendererBase::CreateBackBufferView()
 	HRESULT hr;
 
 	CComPtr<ID3D11Texture2D> pBackBuffer;
-	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &pBackBuffer); CHECK_HR(hr);
+	hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer)); CHECK_HR(hr);
 	SetDebugObjectName(pBackBuffer, "Back Buffer");
 
 	//Create a render target view to the back buffer
@@ -404,7 +400,7 @@ bool RendererBase::LogAdapters()
 	HRESULT hr;
 
 	CComPtr<IDXGIFactory1> pDXGIFactory;
-	hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**) &pDXGIFactory); CHECK_HR(hr);
+	hr = CreateDXGIFactory1(IID_PPV_ARGS(&pDXGIFactory)); CHECK_HR(hr);
 
 	UINT i = 0;
 	while ( true )
@@ -691,7 +687,7 @@ bool RendererBase::LogLiveObjects()
 	}
 
 	CComPtr<ID3D11Debug> pD3DDebug;
-	hr = pD3DDevice->QueryInterface(__uuidof(ID3D11Debug), (void**) &pD3DDebug); CHECK_HR(hr);
+	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug)); CHECK_HR(hr);
 
 	//TODO: Test the differences in the output
 	//D3D11_RLDO_SUMMARY
@@ -729,7 +725,7 @@ bool RendererBase::LogLiveObjects()
 	}
 
 	CComPtr<IDXGIDebug> pDXGIDebug;
-	hr = DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**) &pDXGIDebug); CHECK_HR(hr);
+	hr = DXGIGetDebugInterface(IID_PPV_ARGS(&pDXGIDebug)); CHECK_HR(hr);
 
 	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL); CHECK_HR(hr);
 	OutputDebugStringW(L"\n");
@@ -741,7 +737,7 @@ bool RendererBase::LogLiveObjects()
 	//Win8.1
 	#elif defined(DEBUG_11_2)
 	CComPtr<IDXGIDebug1> pDXGIDebug;
-	hr = DXGIGetDebugInterface1(0, __uuidof(IDXGIDebug1), (void**) &pDXGIDebug); CHECK_HR(hr);
+	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug)); CHECK_HR(hr);
 
 	//TODO: Test the differences in the output
 	//DXGI_DEBUG_RLO_ALL
