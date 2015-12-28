@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wrl\client.h>
+
 #include "RendererBase.h"
 
 class Renderer : public RendererBase
@@ -17,6 +19,9 @@ protected:
 	virtual void OnTeardown();
 
 private:
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
 	struct Vertex
 	{
 		DirectX::XMFLOAT3 Pos;
@@ -24,10 +29,10 @@ private:
 	};
 
 	bool InitializeInputLayout();
-	CComPtr<ID3D11InputLayout> pInputLayout;
+	ComPtr<ID3D11InputLayout> pInputLayout;
 
 	bool InitializeBuffers();
-	CComPtr<ID3D11Buffer> pVSConstBuffer;
+	ComPtr<ID3D11Buffer> pVSConstBuffer;
 
 	DirectX::XMFLOAT4X4 mWorld;
 	DirectX::XMFLOAT4X4 mView;

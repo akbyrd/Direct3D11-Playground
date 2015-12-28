@@ -1,6 +1,6 @@
 #pragma once
 
-#include <atlbase.h>
+#include <wrl\client.h>
 #include <DirectXMath.h>
 
 #include "GameTimer.h"
@@ -16,6 +16,9 @@ public:
 	void Teardown();
 
 protected:
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
 	HWND hwnd = nullptr;
 
 	void SetHwnd(HWND);
@@ -23,19 +26,19 @@ protected:
 	bool InitializeDebugOptions();
 	bool CheckForWarpDriver();
 	bool ObtainDXGIFactory();
-	CComPtr<ID3D11Device>        pD3DDevice;
-	CComPtr<ID3D11DeviceContext> pD3DImmediateContext;
-	CComPtr<IDXGIFactory1>       pDXGIFactory;
+	ComPtr<ID3D11Device>        pD3DDevice;
+	ComPtr<ID3D11DeviceContext> pD3DImmediateContext;
+	ComPtr<IDXGIFactory1>       pDXGIFactory;
 
 	bool InitializeSwapChain();
 	bool GetWindowClientSize(UINT&, UINT&);
 	bool CreateBackBufferView();
 	bool UpdateAllowFullscreen();
-	CComPtr<IDXGISwapChain>         pSwapChain;
-	CComPtr<ID3D11RenderTargetView> pRenderTargetView;
+	ComPtr<IDXGISwapChain>         pSwapChain;
+	ComPtr<ID3D11RenderTargetView> pRenderTargetView;
 
 	bool InitializeDepthBuffer();
-	CComPtr<ID3D11DepthStencilView> pDepthBufferView;
+	ComPtr<ID3D11DepthStencilView> pDepthBufferView;
 
 	void InitializeOutputMerger();
 	void InitializeViewport();
@@ -44,8 +47,8 @@ protected:
 	double averageFrameTime = 0;
 
 	bool LogAdapters();
-	bool LogOutputs(CComPtr<IDXGIAdapter1>);
-	bool LogDisplayModes(CComPtr<IDXGIOutput>);
+	bool LogOutputs(ComPtr<IDXGIAdapter1>);
+	bool LogDisplayModes(ComPtr<IDXGIOutput>);
 	bool LogLiveObjects();
 
 	virtual bool OnInitialize();

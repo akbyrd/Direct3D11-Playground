@@ -113,10 +113,10 @@ bool RendererBase::InitializeDebugOptions()
 	#if defined(DEBUG_11)
 	throw_assert(pD3DDevice, L"D3D device not initialized.");
 
-	CComPtr<ID3D11Debug> pD3DDebug;
+	ComPtr<ID3D11Debug> pD3DDebug;
 	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug)); CHECK_HR(hr);
 
-	CComPtr<ID3D11InfoQueue> pD3DInfoQueue;
+	ComPtr<ID3D11InfoQueue> pD3DInfoQueue;
 	hr = pD3DDebug->QueryInterface(IID_PPV_ARGS(&pD3DInfoQueue)); CHECK_HR(hr);
 
 	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
@@ -146,7 +146,7 @@ bool RendererBase::InitializeDebugOptions()
 		return false;
 	}
 
-	CComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+	ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
 	hr = DXGIGetDebugInterface(IID_PPV_ARGS(&dxgiInfoQueue)); CHECK_HR(hr);
 
 	hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR     , true); CHECK_HR(hr);
@@ -157,12 +157,12 @@ bool RendererBase::InitializeDebugOptions()
 
 	//Win8.1
 	#elif defined(DEBUG_11_2)
-	CComPtr<IDXGIDebug1> pDXGIDebug;
+	ComPtr<IDXGIDebug1> pDXGIDebug;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug)); CHECK_HR(hr);
 
 	pDXGIDebug->EnableLeakTrackingForThread();
 
-	CComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
+	ComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIInfoQueue)); CHECK_HR(hr);
 
 	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); CHECK_HR(hr);
@@ -186,10 +186,10 @@ bool RendererBase::ObtainDXGIFactory()
 	 * NOTE: It looks like the IDXGIDevice is actually the same object as the ID3D11Device.
 	 * Using SetPrivateData to set it's name clobbers the D3D device name and outputs a warning.
 	 */
-	CComPtr<IDXGIDevice1> pDXGIDevice;
-	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pDXGIDevice)); CHECK_HR(hr);
+	ComPtr<IDXGIDevice1> pDXGIDevice;
+	hr = pD3DDevice.As(&pDXGIDevice); CHECK_HR(hr);
 
-	CComPtr<IDXGIAdapter1> pDXGIAdapter;
+	ComPtr<IDXGIAdapter1> pDXGIAdapter;
 	hr = pDXGIDevice->GetParent(IID_PPV_ARGS(&pDXGIAdapter)); CHECK_HR(hr);
 	SetDebugObjectName(pDXGIAdapter, "DXGI Adapter");
 
@@ -206,10 +206,10 @@ bool RendererBase::CheckForWarpDriver()
 	HRESULT hr;
 
 	//Check for the WARP driver
-	CComPtr<IDXGIDevice1> pDXGIDevice;
-	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pDXGIDevice)); CHECK_HR(hr);
+	ComPtr<IDXGIDevice1> pDXGIDevice;
+	hr = pD3DDevice.As(&pDXGIDevice); CHECK_HR(hr);
 
-	CComPtr<IDXGIAdapter> pDXGIAdapter;
+	ComPtr<IDXGIAdapter> pDXGIAdapter;
 	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter); CHECK_HR(hr);
 
 	DXGI_ADAPTER_DESC desc = {};
@@ -277,7 +277,7 @@ bool RendererBase::InitializeSwapChain()
 	swapChainDesc.Flags                              = 0;//DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	//Create the swap chain
-	hr = pDXGIFactory->CreateSwapChain(pD3DDevice, &swapChainDesc, &pSwapChain); CHECK_HR(hr);
+	hr = pDXGIFactory->CreateSwapChain(pD3DDevice.Get(), &swapChainDesc, &pSwapChain); CHECK_HR(hr);
 	SetDebugObjectName(pSwapChain, "Swap Chain");
 
 	if ( hr == DXGI_STATUS_OCCLUDED && !swapChainDesc.Windowed )
@@ -315,12 +315,12 @@ bool RendererBase::CreateBackBufferView()
 
 	HRESULT hr;
 
-	CComPtr<ID3D11Texture2D> pBackBuffer;
+	ComPtr<ID3D11Texture2D> pBackBuffer;
 	hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer)); CHECK_HR(hr);
 	SetDebugObjectName(pBackBuffer, "Back Buffer");
 
 	//Create a render target view to the back buffer
-	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView); CHECK_HR(hr);
+	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pRenderTargetView); CHECK_HR(hr);
 	SetDebugObjectName(pRenderTargetView, "Render Target View");
 
 	return true;
@@ -362,11 +362,11 @@ bool RendererBase::InitializeDepthBuffer()
 	depthDesc.CPUAccessFlags = 0;
 	depthDesc.MiscFlags = 0;
 
-	CComPtr<ID3D11Texture2D> pDepthBuffer;
+	ComPtr<ID3D11Texture2D> pDepthBuffer;
 	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pDepthBuffer, "Depth Buffer");
 
-	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer, nullptr, &pDepthBufferView); CHECK_HR(hr);
+	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer.Get(), nullptr, &pDepthBufferView); CHECK_HR(hr);
 	SetDebugObjectName(pDepthBufferView, "Depth Buffer View");
 
 	return true;
@@ -376,7 +376,7 @@ void RendererBase::InitializeOutputMerger()
 {
 	throw_assert(pD3DImmediateContext, L"D3D context not initialized.");
 
-	pD3DImmediateContext->OMSetRenderTargets(1, &pRenderTargetView.p, pDepthBufferView);
+	pD3DImmediateContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), pDepthBufferView.Get());
 }
 
 void RendererBase::InitializeViewport()
@@ -399,13 +399,13 @@ bool RendererBase::LogAdapters()
 {
 	HRESULT hr;
 
-	CComPtr<IDXGIFactory1> pDXGIFactory;
+	ComPtr<IDXGIFactory1> pDXGIFactory;
 	hr = CreateDXGIFactory1(IID_PPV_ARGS(&pDXGIFactory)); CHECK_HR(hr);
 
 	UINT i = 0;
 	while ( true )
 	{
-		CComPtr<IDXGIAdapter1> pDXGIAdapter;
+		ComPtr<IDXGIAdapter1> pDXGIAdapter;
 		hr = pDXGIFactory->EnumAdapters1(i, &pDXGIAdapter);
 
 		//We've run out of adapters
@@ -442,7 +442,7 @@ bool RendererBase::LogAdapters()
 	return true;
 }
 
-bool RendererBase::LogOutputs(CComPtr<IDXGIAdapter1> pDXGIAdapter)
+bool RendererBase::LogOutputs(ComPtr<IDXGIAdapter1> pDXGIAdapter)
 {
 	throw_assert(pDXGIAdapter, L"pDXGIAdapter is null.");
 
@@ -451,7 +451,7 @@ bool RendererBase::LogOutputs(CComPtr<IDXGIAdapter1> pDXGIAdapter)
 	UINT i = 0;
 	while ( true )
 	{
-		CComPtr<IDXGIOutput> pDXGIOutput;
+		ComPtr<IDXGIOutput> pDXGIOutput;
 		hr = pDXGIAdapter->EnumOutputs(i, &pDXGIOutput);
 
 		//We've run out of outputs
@@ -484,7 +484,7 @@ bool RendererBase::LogOutputs(CComPtr<IDXGIAdapter1> pDXGIAdapter)
 	return true;
 }
 
-bool RendererBase::LogDisplayModes(CComPtr<IDXGIOutput> pDXGIOutput)
+bool RendererBase::LogDisplayModes(ComPtr<IDXGIOutput> pDXGIOutput)
 {
 	HRESULT hr;
 
@@ -536,8 +536,8 @@ bool RendererBase::Resize()
 	}
 
 	//Release the old resource views (required to resize)
-	pRenderTargetView.Release();
-	pDepthBufferView.Release();
+	pRenderTargetView.Reset();
+	pDepthBufferView.Reset();
 
 	hr = pSwapChain->ResizeBuffers(1, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags); CHECK_HR(hr);
 
@@ -574,8 +574,8 @@ bool RendererBase::Render()
 {
 	HRESULT hr;
 
-	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView, (float*) &backgroundColor);
-	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView.Get(), (float*) &backgroundColor);
+	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
@@ -651,13 +651,13 @@ void RendererBase::Teardown()
 		LOG_IF_FAILED(hr);
 	}
 
-	//TODO: This doesn't need to be done, the CComPtrs will handle it.
-	pRenderTargetView.Release();
-	pDepthBufferView.Release();
-	pSwapChain.Release();
-	pDXGIFactory.Release();
-	pD3DImmediateContext.Release();
-	pD3DDevice.Release();
+	//TODO: This doesn't need to be done, the ComPtrs will handle it.
+	pRenderTargetView.Reset();
+	pDepthBufferView.Reset();
+	pSwapChain.Reset();
+	pDXGIFactory.Reset();
+	pD3DImmediateContext.Reset();
+	pD3DDevice.Reset();
 
 	//Check for leaks
 	LogLiveObjects();
@@ -686,7 +686,7 @@ bool RendererBase::LogLiveObjects()
 		return false;
 	}
 
-	CComPtr<ID3D11Debug> pD3DDebug;
+	ComPtr<ID3D11Debug> pD3DDebug;
 	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug)); CHECK_HR(hr);
 
 	//TODO: Test the differences in the output
@@ -724,7 +724,7 @@ bool RendererBase::LogLiveObjects()
 		return false;
 	}
 
-	CComPtr<IDXGIDebug> pDXGIDebug;
+	ComPtr<IDXGIDebug> pDXGIDebug;
 	hr = DXGIGetDebugInterface(IID_PPV_ARGS(&pDXGIDebug)); CHECK_HR(hr);
 
 	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL); CHECK_HR(hr);
@@ -736,7 +736,7 @@ bool RendererBase::LogLiveObjects()
 
 	//Win8.1
 	#elif defined(DEBUG_11_2)
-	CComPtr<IDXGIDebug1> pDXGIDebug;
+	ComPtr<IDXGIDebug1> pDXGIDebug;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug)); CHECK_HR(hr);
 
 	//TODO: Test the differences in the output

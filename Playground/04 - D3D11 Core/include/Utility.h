@@ -1,12 +1,16 @@
 #pragma once
 
+#include <wrl\client.h>
 #include <memory>
 
 namespace Utility
 {
+	template<typename T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
 	template<UINT TNameLength>
-	inline void SetDebugObjectName(_In_ ID3D11Device* resource,
-		_In_z_ const char (&name)[TNameLength])
+	inline void SetDebugObjectName(const ComPtr<ID3D11Device> &resource,
+		const char (&name)[TNameLength])
 	{
 		#if defined(_DEBUG)
 		resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
@@ -14,8 +18,8 @@ namespace Utility
 	}
 
 	template<UINT TNameLength>
-	inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource,
-		_In_z_ const char (&name)[TNameLength])
+	inline void SetDebugObjectName(const ComPtr<ID3D11DeviceChild> &resource,
+		const char (&name)[TNameLength])
 	{
 		#if defined(_DEBUG)
 		resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
@@ -23,8 +27,8 @@ namespace Utility
 	}
 
 	template<UINT TNameLength>
-	inline void SetDebugObjectName(_In_ IDXGIObject* resource,
-		_In_z_ const char (&name)[TNameLength])
+	inline void SetDebugObjectName(const ComPtr<IDXGIObject> &resource,
+		const char (&name)[TNameLength])
 	{
 		#if defined(_DEBUG)
 		resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);

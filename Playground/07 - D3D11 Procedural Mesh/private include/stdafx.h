@@ -17,9 +17,6 @@
 // Windows Header Files:
 #include <windows.h>
 
-// ATL Header Files
-#include <atlbase.h>
-
 // For some GUID magic in the DirectX/DXGI headers. Must be included before them.
 #include <InitGuid.h>
 

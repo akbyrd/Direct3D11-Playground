@@ -18,8 +18,8 @@
 // Windows Header Files:
 #include <windows.h>
 
-// ATL Header Files
-#include <atlbase.h>
+// WRL Header Files
+#include <wrl\client.h>
 
 // For some GUID magic in the DirectX/DXGI headers. Must be included before them.
 #include <InitGuid.h>
