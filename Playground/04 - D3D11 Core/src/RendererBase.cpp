@@ -92,7 +92,7 @@ bool RendererBase::InitializeDevice()
 	InitializeDebugOptions();
 	CheckForWarpDriver();
 
-	hr = ObtainDXGIFactory(); CHECK_HR(hr);
+	CHECK(ObtainDXGIFactory());
 
 	return true;
 }
@@ -165,8 +165,8 @@ bool RendererBase::InitializeDebugOptions()
 	ComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIInfoQueue)); CHECK_HR(hr);
 
-	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); CHECK_HR(hr);
-	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); CHECK_HR(hr);
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); LOG_IF_FAILED(hr);
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); LOG_IF_FAILED(hr);
 
 	#else
 	UNREFERENCED_PARAMETER(hr);
@@ -283,8 +283,8 @@ bool RendererBase::InitializeSwapChain()
 	if ( hr == DXGI_STATUS_OCCLUDED && !swapChainDesc.Windowed )
 		LOG_WARNING(L"Failed to create a fullscreen swap chain. Falling back to windowed.");
 
-	hr = CreateBackBufferView(); CHECK_HR(hr);
-	hr = UpdateAllowFullscreen(); CHECK_HR(hr);
+	CHECK(CreateBackBufferView());
+	CHECK(UpdateAllowFullscreen());
 
 	return true;
 }
@@ -541,8 +541,8 @@ bool RendererBase::Resize()
 
 	hr = pSwapChain->ResizeBuffers(1, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags); CHECK_HR(hr);
 
-	hr = CreateBackBufferView(); CHECK_HR(hr);
-	hr = InitializeDepthBuffer(); CHECK_HR(hr);
+	CHECK(CreateBackBufferView());
+	CHECK(InitializeDepthBuffer());
 
 	InitializeOutputMerger();
 	InitializeViewport();
