@@ -11,8 +11,10 @@ using namespace DirectX;
 
 //TODO: Asserts
 
-bool Renderer::OnInitialize()
+bool Renderer::Initialize(HWND hwnd)
 {
+	CHECK(__super::Initialize(hwnd));
+
 	XMMATRIX I = XMMatrixIdentity();
 	XMStoreFloat4x4(&mWorld, I);
 	XMStoreFloat4x4(&mView , I);
@@ -22,7 +24,7 @@ bool Renderer::OnInitialize()
 	CHECK(InitializeBuffers());
 
 	//CHECK(SetWireframeMode(true));
-	CHECK(OnResize());
+	CHECK(Resize());
 
 	return true;
 }
@@ -202,8 +204,10 @@ bool Renderer::SetWireframeMode(bool enableWireframe)
 	return true;
 }
 
-bool Renderer::OnResize()
+bool Renderer::Resize()
 {
+	CHECK(__super::Resize());
+
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// The window resized, so update the aspect ratio and recompute the projection matrix.
 	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float) width / height, 0.1f, 100.0f);
@@ -295,9 +299,11 @@ void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, POINTS mouse
 	lastMousePosition = mousePosition;
 }
 
-void Renderer::OnTeardown()
+void Renderer::Teardown()
 {
 	//TODO: This doesn't need to be done
 	pInputLayout.Reset();
 	pVSConstBuffer.Reset();
+
+	__super::Teardown();
 }

@@ -45,7 +45,6 @@ bool RendererBase::Initialize(HWND hwnd)
 	CHECK(InitializeDepthBuffer());
 	      InitializeOutputMerger();
 	      InitializeViewport();
-	CHECK(OnInitialize());
 
 	return true;
 }
@@ -540,7 +539,7 @@ bool RendererBase::Resize()
 	InitializeOutputMerger();
 	InitializeViewport();
 
-	hr = OnResize(); CHECK_HR(hr);
+	CHECK(Resize());
 
 	return true;
 }
@@ -626,7 +625,6 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 
 void RendererBase::Teardown()
 {
-	OnTeardown();
 	HRESULT hr;
 
 	hwnd = nullptr;
@@ -656,10 +654,6 @@ void RendererBase::Teardown()
 	//Check for leaks
 	LogLiveObjects();
 }
-
-bool RendererBase::OnInitialize() { return true; }
-bool RendererBase::OnResize()     { return true; }
-void RendererBase::OnTeardown()   { }
 
 bool RendererBase::LogLiveObjects()
 {

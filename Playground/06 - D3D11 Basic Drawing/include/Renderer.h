@@ -7,16 +7,14 @@
 class Renderer : public RendererBase
 {
 public:
+	virtual bool Initialize(HWND);
+	virtual bool Resize();
 	virtual bool Update(const GameTimer&);
 	virtual bool Render();
+	virtual void Teardown();
 
 	//TODO: This is awful. Implement proper input handling.
 	void HandleInput(bool, bool, POINTS);
-
-protected:
-	virtual bool OnInitialize();
-	virtual bool OnResize();
-	virtual void OnTeardown();
 
 private:
 	template<typename T>

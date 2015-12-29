@@ -9,11 +9,11 @@ class RendererBase
 {
 public:
 	//TODO: Just make all these virtual
-	bool Initialize(HWND);
-	bool Resize();
+	virtual bool Initialize(HWND);
+	virtual bool Resize();
 	virtual bool Update(const GameTimer&);
 	virtual bool Render();
-	void Teardown();
+	virtual void Teardown();
 
 protected:
 	template<typename T>
@@ -50,10 +50,6 @@ protected:
 	bool LogOutputs(ComPtr<IDXGIAdapter1>);
 	bool LogDisplayModes(ComPtr<IDXGIOutput>);
 	bool LogLiveObjects();
-
-	virtual bool OnInitialize();
-	virtual bool OnResize();
-	virtual void OnTeardown();
 
 	/* NOTE:
 	 * DirectX throws exceptions if multiSampleCount > 1 when entering fullscreen. These don't
