@@ -97,13 +97,6 @@ bool RendererBase::InitializeDevice()
 	return true;
 }
 
-//TODO: Check out this other ComPtr type
-//Microsoft::WRL::ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
-
-//TODO: Check out this other, other ComPtr type
-//Microsoft::ComPtr<ID3D11Debug> d3dDebug;
-//pD3DDevice.As(&d3dDebug);
-
 bool RendererBase::InitializeDebugOptions()
 {
 	HRESULT hr;
@@ -184,7 +177,7 @@ bool RendererBase::ObtainDXGIFactory()
 	/* Obtain the DXGI factory used to create the current device.
 	 * 
 	 * NOTE: It looks like the IDXGIDevice is actually the same object as the ID3D11Device.
-	 * Using SetPrivateData to set it's name clobbers the D3D device name and outputs a warning.
+	 * Using SetPrivateData to set its name clobbers the D3D device name and outputs a warning.
 	 */
 	ComPtr<IDXGIDevice1> pDXGIDevice;
 	hr = pD3DDevice.As(&pDXGIDevice); CHECK_HR(hr);
@@ -634,6 +627,7 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 void RendererBase::Teardown()
 {
 	OnTeardown();
+	HRESULT hr;
 
 	hwnd = nullptr;
 
@@ -644,7 +638,7 @@ void RendererBase::Teardown()
 	 * incremented. It isn't decremented until leaving fullscreen. Thus closing the application
 	 * while fullscreened leaks the device.
 	 */
-	HRESULT hr = pSwapChain->SetFullscreenState(false, nullptr);
+	hr = pSwapChain->SetFullscreenState(false, nullptr);
 	if ( FAILED(hr) )
 	{
 		LOG(L"Failed to disable fullscreen before releasing the swap chain. See the following message for more info.");
