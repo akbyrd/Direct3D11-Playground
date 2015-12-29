@@ -29,3 +29,17 @@ General Reading Material
 	Chuck Walbourns Blog http://blogs.msdn.com/b/chuckw/
 	Fabian Giesen's Blog https://fgiesen.wordpress.com/
 	Fabien Sanglard's Site http://fabiensanglard.net/
+
+Better Error Return Macro
+	MACRO(expression) => can log the expression with L##expression
+
+	#define IGNORE;
+	#define FALSE!
+
+	#define IF(expression, check, action) \
+	do {                                  \
+		if ( check(expression) )          \
+		{                                 \
+			action;                       \
+		}                                 \
+	} while ( 0 )                         \
