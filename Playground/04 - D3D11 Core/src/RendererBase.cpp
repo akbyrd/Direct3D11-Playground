@@ -35,9 +35,6 @@ using namespace std;
 using namespace Utility;
 using namespace DirectX;
 
-#define LOG_FAILED(x) LOG_IF_FAILED(x)
-#undef CHECK_HR
-
 //TODO: Errors that prevent this renderer from doing its job should throw instead of returning false?
 
 bool RendererBase::Initialize(HWND hwnd)

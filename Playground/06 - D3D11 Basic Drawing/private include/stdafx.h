@@ -49,7 +49,7 @@ do {                         \
 do {                         \
 	if ( FAILED(hr) )        \
 	{                        \
-		LOG_IF_FAILED(hr);   \
+		LOG_FAILED(hr);   \
 		return false;        \
 	}                        \
 } while (0)
