@@ -283,7 +283,7 @@ bool RendererBase::InitializeSwapChain()
 
 bool RendererBase::GetWindowClientSize(UINT &width, UINT &height)
 {
-	HRESULT hr;
+	HRESULT hr = -1;
 
 	RECT rect = {};
 	if ( GetClientRect(hwnd, &rect) )
@@ -293,8 +293,11 @@ bool RendererBase::GetWindowClientSize(UINT &width, UINT &height)
 	}
 	else
 	{
-		hr = GetLastError(); CHECK_HR(hr);
-		throw_assert(false, L"GetClientRect failed, but the last error did not FAILED.");
+		hr = GetLastError();
+		if ( !LOG_IF_FAILED(hr) )
+		{
+			LOG_WARNING(L"GetClientRect failed, but the last error passed a FAILED. HR = " + to_wstring(hr));
+		}
 	}
 
 	return true;
