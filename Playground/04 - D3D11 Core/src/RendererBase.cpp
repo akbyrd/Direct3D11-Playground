@@ -46,6 +46,8 @@ bool RendererBase::Initialize(HWND hwnd)
 	      InitializeOutputMerger();
 	      InitializeViewport();
 
+	LogAdapters();
+
 	return true;
 }
 
@@ -413,7 +415,7 @@ bool RendererBase::LogAdapters()
 		DXGI_ADAPTER_DESC1 adapterDesc;
 		hr = pDXGIAdapter->GetDesc1(&adapterDesc); CHECK_HR(hr);
 
-		const float BytesInAMB = 1048576.0f;
+		static const float BytesInAMB = 1048576.0f;
 
 		//Log the adapter description
 		wostringstream stream;
