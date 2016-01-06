@@ -46,8 +46,6 @@ bool RendererBase::Initialize(HWND hwnd)
 	      InitializeOutputMerger();
 	      InitializeViewport();
 
-	LogAdapters();
-
 	return true;
 }
 
