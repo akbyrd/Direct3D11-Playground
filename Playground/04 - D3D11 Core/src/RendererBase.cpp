@@ -413,6 +413,8 @@ bool RendererBase::LogAdapters()
 		DXGI_ADAPTER_DESC1 adapterDesc;
 		hr = pDXGIAdapter->GetDesc1(&adapterDesc); CHECK_HR(hr);
 
+		const float BytesInAMB = 1048576.0f;
+
 		//Log the adapter description
 		wostringstream stream;
 		stream <<               L"Adapter: " << i                                                        << endl;
@@ -423,9 +425,9 @@ bool RendererBase::LogAdapters()
 		stream <<              L"DeviceId: " << adapterDesc.DeviceId                                     << endl;
 		stream <<              L"SubSysId: " << adapterDesc.SubSysId                                     << endl;
 		stream <<              L"Revision: " << adapterDesc.Revision                                     << endl;
-		stream <<  L"DedicatedVideoMemory: " << adapterDesc.DedicatedVideoMemory  / 1048576.0f << L" MB" << endl;
-		stream << L"DedicatedSystemMemory: " << adapterDesc.DedicatedSystemMemory / 1048576.0f << L" MB" << endl;
-		stream <<    L"SharedSystemMemory: " << adapterDesc.SharedSystemMemory    / 1048576.0f << L" MB" << endl;
+		stream <<  L"DedicatedVideoMemory: " << adapterDesc.DedicatedVideoMemory  / BytesInAMB << L" MB" << endl;
+		stream << L"DedicatedSystemMemory: " << adapterDesc.DedicatedSystemMemory / BytesInAMB << L" MB" << endl;
+		stream <<    L"SharedSystemMemory: " << adapterDesc.SharedSystemMemory    / BytesInAMB << L" MB" << endl;
 		stream <<                 L"Flags: " << adapterDesc.Flags                                        << endl;
 		Logging::Log(stream);
 
