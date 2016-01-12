@@ -33,8 +33,8 @@ General Reading Material
 Better Error Return Macro
 	MACRO(expression) => can log the expression with L##expression
 
-	#define IGNORE;
-	#define FALSE!
+	#define IGNORE
+	#define FALSE !
 
 	#define IF(expression, check, action) \
 	do {                                  \
@@ -42,4 +42,9 @@ Better Error Return Macro
 		{                                 \
 			action;                       \
 		}                                 \
-	} while ( 0 )                         \
+	} while ( 0 )                         
+
+Things to Try
+	Experiment with different error checking patterns
+	More procedural approach (less OOP)
+	Data objects vs function classes

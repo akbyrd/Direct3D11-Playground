@@ -31,20 +31,13 @@
 #include "Logging.h"
 
 // Macros
-#define CHECK(x)             \
-do {                         \
-	if ( !(x) )              \
-	{                        \
-		return false;        \
-	}                        \
-} while (0)
+#define IGNORE
+#define FALSE !
 
-
-#define CHECK_HR(hr)         \
-do {                         \
-	if ( FAILED(hr) )        \
-	{                        \
-		LOG_FAILED(hr);   \
-		return false;        \
-	}                        \
-} while (0)
+#define IF(expression, check, action) \
+do {                                  \
+	if ( check(expression) )          \
+	{                                 \
+		action;                       \
+	}                                 \
+} while ( 0 )                         
