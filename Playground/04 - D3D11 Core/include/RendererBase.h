@@ -8,7 +8,6 @@
 class RendererBase
 {
 public:
-	//TODO: Just make all these virtual
 	virtual bool Initialize(HWND);
 	virtual bool Resize();
 	virtual bool Update(const GameTimer&);
@@ -19,6 +18,9 @@ protected:
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
+	RendererBase();
+	virtual ~RendererBase();
+
 	HWND hwnd = nullptr;
 
 	void SetHwnd(HWND);
@@ -26,6 +28,7 @@ protected:
 	bool InitializeDebugOptions();
 	bool CheckForWarpDriver();
 	bool ObtainDXGIFactory();
+	bool isInitialized = false;
 	ComPtr<ID3D11Device>        pD3DDevice;
 	ComPtr<ID3D11DeviceContext> pD3DImmediateContext;
 	ComPtr<IDXGIFactory1>       pDXGIFactory;
@@ -67,4 +70,8 @@ protected:
 	UINT              width            = 800;
 	UINT              height           = 600;
 	DirectX::XMFLOAT4 backgroundColor  = DirectX::XMFLOAT4();
+
+private:
+	RendererBase(const RendererBase&) = delete;
+	RendererBase& operator =(const RendererBase&) = delete;
 };

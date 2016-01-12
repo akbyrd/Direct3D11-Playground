@@ -37,9 +37,13 @@ using namespace DirectX;
 
 //TODO: Errors that prevent this renderer from doing its job should throw instead of returning false?
 
+RendererBase::RendererBase() { }
+
 bool RendererBase::Initialize(HWND hwnd)
 {
 	bool ret;
+
+	isInitialized = true;
 
 	SetHwnd(hwnd);
 
@@ -713,6 +717,8 @@ void RendererBase::Teardown()
 	pD3DImmediateContext.Reset();
 	pD3DDevice.Reset();
 
+	isInitialized = false;
+
 	//Check for leaks
 	LogLiveObjects();
 }
@@ -807,4 +813,12 @@ bool RendererBase::LogLiveObjects()
 	#endif
 
 	return true;
+}
+
+RendererBase::~RendererBase()
+{
+	if ( isInitialized )
+	{
+		Teardown();
+	}
 }
