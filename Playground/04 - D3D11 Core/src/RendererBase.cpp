@@ -695,11 +695,14 @@ void RendererBase::Teardown()
 	 * incremented. It isn't decremented until leaving fullscreen. Thus closing the application
 	 * while fullscreened leaks the device.
 	 */
-	hr = pSwapChain->SetFullscreenState(false, nullptr);
-	if ( FAILED(hr) )
+	if ( pSwapChain )
 	{
-		LOG(L"Failed to disable fullscreen before releasing the swap chain. See the following message for more info.");
-		LOG_FAILED(hr);
+		hr = pSwapChain->SetFullscreenState(false, nullptr);
+		if ( FAILED(hr) )
+		{
+			LOG(L"Failed to disable fullscreen before releasing the swap chain. See the following message for more info.");
+			LOG_FAILED(hr);
+		}
 	}
 
 	//TODO: This doesn't need to be done, the ComPtrs will handle it.
