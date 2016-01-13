@@ -87,6 +87,7 @@
   <ItemGroup>
     <ClInclude Include="include\AssertionException.h" />
     <ClInclude Include="include\GameTimer.h" />
+    <ClInclude Include="include\HLSL.h" />
     <ClInclude Include="include\LoggedException.h" />
     <ClInclude Include="private include\ExitCode.h" />
     <ClInclude Include="private include\stdafx.h" />
