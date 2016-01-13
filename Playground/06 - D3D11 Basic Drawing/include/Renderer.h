@@ -19,11 +19,14 @@ public:
 private:
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+	using XMFLOAT4X4 = DirectX::XMFLOAT4X4;
 
 	struct Vertex
 	{
-		DirectX::XMFLOAT3 Pos;
-		DirectX::XMFLOAT4 Color;
+		XMFLOAT3 Pos;
+		XMFLOAT4 Color;
 	};
 
 	bool InitializeInputLayout();
@@ -32,9 +35,9 @@ private:
 	bool InitializeBuffers();
 	ComPtr<ID3D11Buffer> pVSConstBuffer;
 
-	DirectX::XMFLOAT4X4 mWorld;
-	DirectX::XMFLOAT4X4 mView;
-	DirectX::XMFLOAT4X4 mProj;
+	XMFLOAT4X4 mWorld;
+	XMFLOAT4X4 mView;
+	XMFLOAT4X4 mProj;
 
 	float theta  = DirectX::XM_PIDIV2*3;
 	float phi    = DirectX::XM_PIDIV4;

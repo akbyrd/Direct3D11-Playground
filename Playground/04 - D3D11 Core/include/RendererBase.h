@@ -17,6 +17,7 @@ public:
 protected:
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
 
 	RendererBase();
 	virtual ~RendererBase();
@@ -63,13 +64,13 @@ protected:
 
 	//TODO: Encapsulate in a struct?
 	//Settings
-	bool              startFullscreen  = false;
-	bool              allowFullscreen  = true;
-	UINT              numQualityLevels = 0;
-	UINT              multiSampleCount = 1;
-	UINT              width            = 800;
-	UINT              height           = 600;
-	DirectX::XMFLOAT4 backgroundColor  = DirectX::XMFLOAT4();
+	bool     startFullscreen  = false;
+	bool     allowFullscreen  = true;
+	UINT     numQualityLevels = 0;
+	UINT     multiSampleCount = 1;
+	UINT     width            = 800;
+	UINT     height           = 600;
+	XMFLOAT4 backgroundColor  = XMFLOAT4();
 
 private:
 	RendererBase(const RendererBase&) = delete;
