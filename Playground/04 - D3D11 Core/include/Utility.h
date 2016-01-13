@@ -5,6 +5,12 @@
 
 namespace Utility
 {
+	template<typename T, size_t S>
+	inline size_t ArraySize(const T (&arr)[S])
+	{
+		return S;
+	}
+
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
