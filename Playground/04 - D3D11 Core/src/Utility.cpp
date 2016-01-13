@@ -11,6 +11,7 @@ namespace Utility
 {
 	bool LoadFile(const wstring &fileName, unique_ptr<char[]> &data, size_t &dataSize)
 	{
+		//TODO: Add cwd to error
 		ifstream inFile(fileName, ios::binary | ios::ate);
 		if ( !inFile.is_open() )
 		{

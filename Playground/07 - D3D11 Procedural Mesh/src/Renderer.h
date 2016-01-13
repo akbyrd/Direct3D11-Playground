@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "RendererBase.h"
 
 class Renderer : public RendererBase
@@ -10,7 +12,7 @@ public:
 	virtual bool Render();
 
 private:
-	using XMFLOAT3  = DirectX::XMFLOAT3;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
 
 	struct Vertex
 	{
@@ -20,18 +22,16 @@ private:
 
 	struct Mesh
 	{
+		//UINT     indices[];
 		XMFLOAT3 vertices[];
-		UINT     indices[];
 	};
 
-	bool VSLoadCreateSet(const wstring&);
+	bool VSLoadCreateSet(const std::wstring&);
 	ComPtr<ID3D11VertexShader> vs;
-
-	bool PSLoadCreateSet(const wstring&);
-	ComPtr<ID3D11PixelShader> ps;
-
-	bool InitializeInputLayout();
 	ComPtr<ID3D11InputLayout> vsInputLayout;
+
+	bool PSLoadCreateSet(const std::wstring&);
+	ComPtr<ID3D11PixelShader> ps;
 
 	bool InitializeMesh();
 	ComPtr<ID3D11Buffer> meshVertexBuffer;

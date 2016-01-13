@@ -17,17 +17,16 @@ bool Renderer::Initialize(HWND hwnd)
 	IF( __super::Initialize(hwnd),
 		FALSE, return false);
 
-	IF( VSLoadCreateSet(L"Basic Vertex Shader"),
+	IF( VSLoadCreateSet(L"Basic Vertex Shader.cso"),
 		FALSE, return false);
 
-	IF( PSLoadCreateSet(L"Basic Pixel Shader"),
-		FALSE, return false);
-
-	IF( InitializeInputLayout(),
+	IF( PSLoadCreateSet(L"Basic Pixel Shader.cso"),
 		FALSE, return false);
 
 	IF( InitializeMesh(),
 		FALSE, return false);
+
+	return true;
 }
 
 bool Renderer::VSLoadCreateSet(const wstring &filename)
@@ -47,6 +46,19 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 
 	//Set
 	pD3DImmediateContext->VSSetShader(vs.Get(), nullptr, 0);
+
+
+	//Input layout
+	const D3D11_INPUT_ELEMENT_DESC vsInputDescs[] = {
+		{ Semantic::Position, 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ Semantic::Color   , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	IF( pD3DDevice->CreateInputLayout(vsInputDescs, ArraySize(vsInputDescs), vsBytes.get(), vsBytesLength, &vsInputLayout),
+		LOG_FAILED, return false);
+	SetDebugObjectName(vsInputLayout, "Input Layout");
+
+	pD3DImmediateContext->IASetInputLayout(vsInputLayout.Get());
 
 	return true;
 }
@@ -72,25 +84,11 @@ bool Renderer::PSLoadCreateSet(const wstring &filename)
 	return true;
 }
 
-bool Renderer::InitializeInputLayout() { return true; }
-
 bool Renderer::InitializeMesh()
 {
 	const Vertex meshVerts[] = {
 		{ XMFLOAT3(0, 0, 0), XMFLOAT4(0, 0, 0, 0) } //TODO: Fill
 	};
-
-	const D3D11_INPUT_ELEMENT_DESC vsInputDescs[] = {
-		{ Semantic::Position, 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ Semantic::Color   , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	IF( pD3DDevice->CreateInputLayout(vsInputDescs, ArraySize(vsInputDescs), vsBytes, vsBytesLength, &vsInputLayout),
-		LOG_FAILED, return false);
-	SetDebugObjectName(vsInputLayout, "Input Layout");
-
-
-	pD3DImmediateContext->IASetInputLayout(vsInputLayout.Get());
 
 	D3D11_BUFFER_DESC vertBuffDesc = {};
 	vertBuffDesc.ByteWidth           = sizeof(meshVerts);
