@@ -9,7 +9,7 @@ using namespace std;
 
 namespace Utility
 {
-	bool LoadFile(const wstring fileName, unique_ptr<char[]> &data, SIZE_T &dataSize)
+	bool LoadFile(const wstring &fileName, unique_ptr<char[]> &data, size_t &dataSize)
 	{
 		ifstream inFile(fileName, ios::binary | ios::ate);
 		if ( !inFile.is_open() )
@@ -18,7 +18,7 @@ namespace Utility
 			return false;
 		}
 
-		dataSize = (SIZE_T) inFile.tellg();
+		dataSize = (size_t) inFile.tellg();
 		data = make_unique<char[]>(dataSize);
 
 		inFile.seekg(0);

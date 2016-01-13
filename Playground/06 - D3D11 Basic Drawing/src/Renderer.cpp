@@ -4,9 +4,11 @@
 
 #include "Renderer.h"
 #include "Utility.h"
+#include "HLSL.h"
 
 using namespace std;
 using namespace Utility;
+using namespace HLSL;
 using namespace DirectX;
 
 //TODO: Asserts
@@ -33,18 +35,18 @@ bool Renderer::InitializeInputLayout()
 {
 	HRESULT hr;
 
-	const D3D11_INPUT_ELEMENT_DESC arrVertShaderInputDescs[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR"   , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	const D3D11_INPUT_ELEMENT_DESC vsInputDescs[] = {
+		{ Semantic::Position, 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ Semantic::Color   , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	//Load vertex shader bytecode
-	unique_ptr<char[]> vertShaderBytes;
-	SIZE_T vertShaderBytesLength;
-	CHECK(LoadFile(L"Basic Vertex Shader.cso", vertShaderBytes, vertShaderBytesLength));
+	unique_ptr<char[]> vsBytes;
+	size_t vsBytesLength;
+	CHECK(LoadFile(L"Basic Vertex Shader.cso", vsBytes, vsBytesLength));
 
 	//Create and set input layout
-	hr = pD3DDevice->CreateInputLayout(arrVertShaderInputDescs, 2, vertShaderBytes.get(), vertShaderBytesLength, &pInputLayout); CHECK_HR(hr);
+	hr = pD3DDevice->CreateInputLayout(vsInputDescs, ArraySize(vsInputDescs), vsBytes.get(), vsBytesLength, &pInputLayout); CHECK_HR(hr);
 	SetDebugObjectName(pInputLayout, "Input Layout");
 
 	pD3DImmediateContext->IASetInputLayout(pInputLayout.Get());
@@ -52,19 +54,19 @@ bool Renderer::InitializeInputLayout()
 
 	//Create and set vertex shader
 	ComPtr<ID3D11VertexShader> pVertShader;
-	hr = pD3DDevice->CreateVertexShader(vertShaderBytes.get(), vertShaderBytesLength, nullptr, &pVertShader); CHECK_HR(hr);
+	hr = pD3DDevice->CreateVertexShader(vsBytes.get(), vsBytesLength, nullptr, &pVertShader); CHECK_HR(hr);
 	SetDebugObjectName(pVertShader, "Basic Vertex Shader");
 
 	pD3DImmediateContext->VSSetShader(pVertShader.Get(), nullptr, 0);
 
 	//Load pixel shader bytecode
-	unique_ptr<char[]> pixelShaderBytes;
-	SIZE_T pixelShaderBytesLength;
-	CHECK(LoadFile(L"Basic Pixel Shader.cso", pixelShaderBytes, pixelShaderBytesLength));
+	unique_ptr<char[]> psBytes;
+	size_t psBytesLength;
+	CHECK(LoadFile(L"Basic Pixel Shader.cso", psBytes, psBytesLength));
 
 	//Create pixel shader
 	ComPtr<ID3D11PixelShader> pPixelShader;
-	hr = pD3DDevice->CreatePixelShader(pixelShaderBytes.get(), pixelShaderBytesLength, nullptr, &pPixelShader); CHECK_HR(hr);
+	hr = pD3DDevice->CreatePixelShader(psBytes.get(), psBytesLength, nullptr, &pPixelShader); CHECK_HR(hr);
 	SetDebugObjectName(pPixelShader, "Basic Pixel Shader");
 
 	pD3DImmediateContext->PSSetShader(pPixelShader.Get(), nullptr, 0);
@@ -90,7 +92,7 @@ bool Renderer::InitializeBuffers()
 	};
 
 	D3D11_BUFFER_DESC vertBufDesc = {};
-	vertBufDesc.ByteWidth           = sizeof(Vertex) * 8;
+	vertBufDesc.ByteWidth           = sizeof(cubeVerts);
 	vertBufDesc.Usage               = D3D11_USAGE_IMMUTABLE;
 	vertBufDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
 	vertBufDesc.CPUAccessFlags      = 0;
@@ -128,7 +130,7 @@ bool Renderer::InitializeBuffers()
 	};
 
 	D3D11_BUFFER_DESC indexBufDesc = {};
-	indexBufDesc.ByteWidth           = sizeof(UINT)*3 * 2*6;
+	indexBufDesc.ByteWidth           = sizeof(cubeIndices);
 	indexBufDesc.Usage               = D3D11_USAGE_IMMUTABLE;
 	indexBufDesc.BindFlags           = D3D11_BIND_INDEX_BUFFER;
 	indexBufDesc.CPUAccessFlags      = 0;
@@ -149,7 +151,7 @@ bool Renderer::InitializeBuffers()
 
 	//Create and set vertex shader constant buffer
 	D3D11_BUFFER_DESC vsConstBufDesc = {};
-	vsConstBufDesc.ByteWidth           = sizeof(float) * 16;
+	vsConstBufDesc.ByteWidth           = sizeof(mWorld);
 	vsConstBufDesc.Usage               = D3D11_USAGE_DEFAULT;
 	vsConstBufDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
 	vsConstBufDesc.CPUAccessFlags      = 0;
@@ -217,22 +219,6 @@ bool Renderer::Resize()
 	return true;
 }
 
-bool Renderer::Render()
-{
-	HRESULT hr;
-
-	const XMVECTORF32 color = { 0.5f, 0.5f, 0.5f, 1.0f };
-
-	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView.Get(), color);
-	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-
-	pD3DImmediateContext->DrawIndexed(36, 0, 0);
-
-	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
-
-	return true;
-}
-
 bool Renderer::Update(const GameTimer &gameTimer)
 {
 	// Convert Spherical to Cartesian coordinates.
@@ -259,6 +245,22 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	pD3DImmediateContext->UpdateSubresource(pVSConstBuffer.Get(), 0, nullptr, &worldViewProj, 0, 0);
 
 	UpdateFrameStatistics(gameTimer);
+
+	return true;
+}
+
+bool Renderer::Render()
+{
+	HRESULT hr;
+
+	const XMVECTORF32 color = { 0.5f, 0.5f, 0.5f, 1.0f };
+
+	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView.Get(), color);
+	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+
+	pD3DImmediateContext->DrawIndexed(36, 0, 0);
+
+	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
 	return true;
 }

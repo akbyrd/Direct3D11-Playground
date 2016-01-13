@@ -41,7 +41,15 @@ namespace Utility
 		#endif
 	}
 
-	bool LoadFile(const std::wstring fileName, std::unique_ptr<char[]> &data, SIZE_T &dataSize);
+	inline void SetDebugObjectName(const ComPtr<ID3D11DeviceChild> &resource,
+		const std::string &name)
+	{
+		#if defined(_DEBUG)
+		resource->SetPrivateData(WKPDID_D3DDebugObjectName, name.length(), name.c_str());
+		#endif
+	}
+
+	bool LoadFile(const std::wstring &fileName, std::unique_ptr<char[]> &data, size_t &dataSize);
 
 	ULONG GetRefCount(IUnknown *obj);
 }
