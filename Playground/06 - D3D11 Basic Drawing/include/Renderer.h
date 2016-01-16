@@ -19,8 +19,8 @@ public:
 private:
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
-	using XMFLOAT3 = DirectX::XMFLOAT3;
-	using XMFLOAT4 = DirectX::XMFLOAT4;
+	using XMFLOAT3   = DirectX::XMFLOAT3;
+	using XMFLOAT4   = DirectX::XMFLOAT4;
 	using XMFLOAT4X4 = DirectX::XMFLOAT4X4;
 
 	struct Vertex

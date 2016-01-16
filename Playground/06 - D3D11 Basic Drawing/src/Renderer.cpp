@@ -151,20 +151,14 @@ bool Renderer::InitializeBuffers()
 
 	//Create and set vertex shader constant buffer
 	D3D11_BUFFER_DESC vsConstBufDesc = {};
-	vsConstBufDesc.ByteWidth           = sizeof(mWorld);
+	vsConstBufDesc.ByteWidth           = sizeof(XMFLOAT4X4);
 	vsConstBufDesc.Usage               = D3D11_USAGE_DEFAULT;
 	vsConstBufDesc.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
 	vsConstBufDesc.CPUAccessFlags      = 0;
 	vsConstBufDesc.MiscFlags           = 0;
 	vsConstBufDesc.StructureByteStride = 0;
 
-	//Junk, it'll get updated before rendering
-	D3D11_SUBRESOURCE_DATA vsConstBufInitData = {};
-	vsConstBufInitData.pSysMem          = &mWorld;
-	vsConstBufInitData.SysMemPitch      = 0;
-	vsConstBufInitData.SysMemSlicePitch = 0;
-
-	hr = pD3DDevice->CreateBuffer(&vsConstBufDesc, &vsConstBufInitData, &pVSConstBuffer); CHECK_HR(hr);
+	hr = pD3DDevice->CreateBuffer(&vsConstBufDesc, nullptr, &pVSConstBuffer); CHECK_HR(hr);
 	SetDebugObjectName(pVSConstBuffer, "Vertex Shader WVP Constant Buffer");
 
 	pD3DImmediateContext->VSSetConstantBuffers(0, 1, pVSConstBuffer.GetAddressOf());

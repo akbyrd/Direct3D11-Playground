@@ -26,6 +26,8 @@ bool Renderer::Initialize(HWND hwnd)
 	IF( InitializeMesh(),
 		FALSE, return false);
 
+	XMStoreFloat4x4(&world, XMMatrixIdentity());
+
 	return true;
 }
 
@@ -48,6 +50,20 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 	pD3DImmediateContext->VSSetShader(vs.Get(), nullptr, 0);
 
 
+	//Per-object constant buffer
+	D3D11_BUFFER_DESC vsConstBuffDes = {};
+	vsConstBuffDes.ByteWidth           = sizeof(XMFLOAT4X4);
+	vsConstBuffDes.Usage               = D3D11_USAGE_DEFAULT;
+	vsConstBuffDes.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
+	vsConstBuffDes.CPUAccessFlags      = 0;
+	vsConstBuffDes.MiscFlags           = 0;
+	vsConstBuffDes.StructureByteStride = 0;
+
+	IF( pD3DDevice->CreateBuffer(&vsConstBuffDes, nullptr, &vsConstBuffer),
+		LOG_FAILED, return false);
+	SetDebugObjectName(vsConstBuffer, "VS Constant Buffer (PO)");
+
+
 	//Input layout
 	const D3D11_INPUT_ELEMENT_DESC vsInputDescs[] = {
 		{ Semantic::Position, 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -59,6 +75,7 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 	SetDebugObjectName(vsInputLayout, "Input Layout");
 
 	pD3DImmediateContext->IASetInputLayout(vsInputLayout.Get());
+	pD3DImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	return true;
 }
@@ -146,6 +163,12 @@ bool Renderer::InitializeMesh()
 
 	IF( pD3DDevice->CreateBuffer(&vertBuffDesc, &vertBuffInitData, &meshVertexBuffer),
 		LOG_FAILED, return false);
+	SetDebugObjectName(meshVertexBuffer, "Mesh Vertex Buffer");
+
+	const UINT stride = sizeof(Vertex);
+	const UINT offset = 0;
+	pD3DImmediateContext->IASetVertexBuffers(0, 1, meshVertexBuffer.GetAddressOf(), &stride, &offset);
+	pD3DImmediateContext->VSSetConstantBuffers(0, 1, vsConstBuffer.GetAddressOf());
 
 
 	//Indices
@@ -188,6 +211,20 @@ bool Renderer::InitializeMesh()
 
 	IF( pD3DDevice->CreateBuffer(&indexBuffDesc, &indexBuffInitData, &meshIndexBuffer),
 		LOG_FAILED, return false);
+	SetDebugObjectName(meshIndexBuffer, "Mesh Index Buffer");
+
+	pD3DImmediateContext->IASetIndexBuffer(meshIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+	return true;
+}
+
+bool Renderer::Resize()
+{
+	IF( __super::Resize(),
+		FALSE, return false);
+
+	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float) width / height, 0.1f, 100.0f);
+	XMStoreFloat4x4(&proj, P);
 
 	return true;
 }
@@ -197,6 +234,7 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	IF( __super::Update(gameTimer),
 		FALSE, return false);
 
+	//Animate mesh
 	double t = gameTimer.Time();
 	float scaledT = (float) t / meshAmplitudePeriod;
 
@@ -218,15 +256,42 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	//SLOW! ~.14ms
 	pD3DImmediateContext->UpdateSubresource(meshVertexBuffer.Get(), 0, nullptr, meshVerts.get(), 0, 0);
 
+
+	//Update Camera
+	float r     = 20;
+	float theta = XM_PIDIV2*3;;
+	float phi   = XM_PIDIV4;
+
+	float x = r*sinf(phi)*cosf(theta);
+	float z = r*sinf(phi)*sinf(theta);
+	float y = r*cosf(phi);
+
+	XMVECTOR pos    = XMVectorSet(x, y, z, 1);
+	XMVECTOR target = XMVectorZero();
+	XMVECTOR up     = XMVectorSet(0, 1, 0, 0);
+	XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
+	XMStoreFloat4x4(&view, V);
+
+	XMMATRIX W = XMLoadFloat4x4(&world);
+	XMMATRIX P = XMLoadFloat4x4(&proj);
+	XMMATRIX WVP = XMMatrixTranspose(W * V * P);
+
+	//Update VS cbuffer
+	pD3DImmediateContext->UpdateSubresource(vsConstBuffer.Get(), 0, nullptr, &WVP, 0, 0);
+
 	return true;
 }
 
 bool Renderer::Render()
 {
-	IF( __super::Render(),
-		FALSE, return false);
+	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView.Get(), Colors::Black);
+	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
-	//...
+	size_t indexCount = meshResolutionX * meshResolutionY * 6;
+	pD3DImmediateContext->DrawIndexed(indexCount, 0, 0);
+
+	IF( pSwapChain->Present(0, 0),
+		LOG_FAILED, return false);
 
 	return true;
 }
