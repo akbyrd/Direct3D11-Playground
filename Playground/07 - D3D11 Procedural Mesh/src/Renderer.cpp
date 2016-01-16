@@ -86,25 +86,49 @@ bool Renderer::PSLoadCreateSet(const wstring &filename)
 
 bool Renderer::InitializeMesh()
 {
-	size_t vertexCount = (meshWidth + 1) * (meshHeight + 1);
-	size_t  indexCount = meshWidth * meshHeight * 6;
+	size_t vertexCount = (meshResolutionX + 1) * (meshResolutionY + 1);
+	size_t  indexCount = meshResolutionX * meshResolutionY * 6;
 
 	//Vertices
-	float dx = 10.0f / meshWidth;
-	float dy = 10.0f / meshHeight;
+	float meshWidth  = 10;
+	float meshHeight = 10;
+
+	float inverseArea = 1 / (meshWidth*meshHeight);
+
+	float dx = meshWidth / meshResolutionX;
+	float dy = meshHeight / meshResolutionY;
 
 	meshVerts.reset(new Vertex[vertexCount]);
 	IF( meshVerts,
 		FALSE, return false);
 
-	for ( size_t y = 0; y <= meshHeight; ++y )
+	for ( size_t y = 0; y <= meshResolutionY; ++y )
 	{
-		size_t stride = y*meshWidth;
+		size_t stride = y*meshResolutionX;
 
-		for ( size_t x = 0; x <= meshWidth; ++x )
+		for ( size_t x = 0; x <= meshResolutionX; ++x )
 		{
-			meshVerts[x + stride].position = XMFLOAT3(x*dx, y*dy, 0);
-			meshVerts[x + stride].color    = XMFLOAT4(1, 1, 1, 1);
+			float vx = x*dx;
+			float vy = y*dy;
+
+			meshVerts[x + stride].position = XMFLOAT3(vx, vy, 0);
+
+			float xl = vx;
+			float xr = meshWidth - vx;
+			float yt = vy;
+			float yb = meshHeight - vy;
+
+			XMVECTORF32 tl = Colors::Red;
+			XMVECTORF32 tr = Colors::Green;
+			XMVECTORF32 bl = Colors::Blue;
+			XMVECTORF32 br = Colors::White;
+
+			XMStoreFloat4(&meshVerts[x + stride].color, (
+				  tl * (xr * yb * inverseArea)
+				+ tr * (xl * yb * inverseArea)
+				+ bl * (xr * yt * inverseArea)
+				+ br * (xl * yt * inverseArea)
+			));
 		}
 	}
 
@@ -131,22 +155,22 @@ bool Renderer::InitializeMesh()
 	IF( meshIndices,
 		FALSE, return false);
 
-	for ( size_t y = 0; y < meshHeight; ++y )
+	for ( size_t y = 0; y < meshResolutionY; ++y )
 	{
-		size_t rowOffset = y*meshWidth;
+		size_t rowOffset = y*meshResolutionX;
 
-		for ( size_t x = 0; x < meshWidth; ++x )
+		for ( size_t x = 0; x < meshResolutionX; ++x )
 		{
 			size_t offset = 6*x + rowOffset;
 
 			//Top left triangle
-			meshIndices[offset + 0] = (y+1)*(meshWidth+1) + x;
-			meshIndices[offset + 1] = (y  )*(meshWidth+1) + x;
-			meshIndices[offset + 2] = (y  )*(meshWidth+1) + x + 1;
+			meshIndices[offset + 0] = (y+1)*(meshResolutionX+1) + x;
+			meshIndices[offset + 1] = (y  )*(meshResolutionX+1) + x;
+			meshIndices[offset + 2] = (y  )*(meshResolutionX+1) + x + 1;
 
 			//Bottom right triangle
 			meshIndices[offset + 3] = meshIndices[offset + 2];
-			meshIndices[offset + 4] = (y+1)*(meshWidth+1) + x + 1;
+			meshIndices[offset + 4] = (y+1)*(meshResolutionX+1) + x + 1;
 			meshIndices[offset + 5] = meshIndices[offset + 0];
 		}
 	}
