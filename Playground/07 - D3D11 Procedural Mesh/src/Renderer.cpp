@@ -90,12 +90,16 @@ bool Renderer::InitializeMesh()
 	size_t  indexCount = meshResolutionX * meshResolutionY * 6;
 
 	//Vertices
-	float meshWidth  = 10;
-	float meshHeight = 10;
-
 	float inverseArea = 1 / (meshWidth*meshHeight);
+	float halfWidth  = .5f * meshWidth;
+	float halfHeight = .5f * meshHeight;
 
-	float dx = meshWidth / meshResolutionX;
+	XMVECTORF32 tl = Colors::Red;
+	XMVECTORF32 tr = Colors::Green;
+	XMVECTORF32 bl = Colors::Blue;
+	XMVECTORF32 br = Colors::White;
+
+	float dx = meshWidth  / meshResolutionX;
 	float dy = meshHeight / meshResolutionY;
 
 	meshVerts.reset(new Vertex[vertexCount]);
@@ -111,17 +115,12 @@ bool Renderer::InitializeMesh()
 			float vx = x*dx;
 			float vy = y*dy;
 
-			meshVerts[x + stride].position = XMFLOAT3(vx, vy, 0);
+			meshVerts[x + stride].position = XMFLOAT3(vx - halfWidth, vy - halfHeight, 0);
 
 			float xl = vx;
 			float xr = meshWidth - vx;
 			float yt = vy;
 			float yb = meshHeight - vy;
-
-			XMVECTORF32 tl = Colors::Red;
-			XMVECTORF32 tr = Colors::Green;
-			XMVECTORF32 bl = Colors::Blue;
-			XMVECTORF32 br = Colors::White;
 
 			XMStoreFloat4(&meshVerts[x + stride].color, (
 				  tl * (xr * yb * inverseArea)
@@ -134,7 +133,7 @@ bool Renderer::InitializeMesh()
 
 	D3D11_BUFFER_DESC vertBuffDesc = {};
 	vertBuffDesc.ByteWidth           = sizeof(Vertex) * vertexCount;
-	vertBuffDesc.Usage               = D3D11_USAGE_IMMUTABLE;
+	vertBuffDesc.Usage               = D3D11_USAGE_DEFAULT;
 	vertBuffDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
 	vertBuffDesc.CPUAccessFlags      = 0;
 	vertBuffDesc.MiscFlags           = 0;
@@ -145,8 +144,7 @@ bool Renderer::InitializeMesh()
 	vertBuffInitData.SysMemPitch      = 0;
 	vertBuffInitData.SysMemSlicePitch = 0;
 
-	ComPtr<ID3D11Buffer> vertBuffer;
-	IF( pD3DDevice->CreateBuffer(&vertBuffDesc, &vertBuffInitData, &vertBuffer),
+	IF( pD3DDevice->CreateBuffer(&vertBuffDesc, &vertBuffInitData, &meshVertexBuffer),
 		LOG_FAILED, return false);
 
 
@@ -188,8 +186,7 @@ bool Renderer::InitializeMesh()
 	indexBuffInitData.SysMemPitch      = 0;
 	indexBuffInitData.SysMemSlicePitch = 0;
 
-	ComPtr<ID3D11Buffer> indexBuffer;
-	IF( pD3DDevice->CreateBuffer(&indexBuffDesc, &indexBuffInitData, &indexBuffer),
+	IF( pD3DDevice->CreateBuffer(&indexBuffDesc, &indexBuffInitData, &meshIndexBuffer),
 		LOG_FAILED, return false);
 
 	return true;
@@ -200,8 +197,26 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	IF( __super::Update(gameTimer),
 		FALSE, return false);
 
-	//TODO: pD3DImmediateContext->UpdateSubresource
+	double t = gameTimer.Time();
+	float scaledT = (float) t / meshAmplitudePeriod;
+
+	for ( size_t y = 0; y < meshHeight; ++y )
+	{
+		size_t  rowOffset = y*meshWidth;
+
+		for ( size_t x = 0; x < meshWidth; ++x )
+		{
+			//Noticeable. ~.03ms
+			meshVerts[x + rowOffset].position.y = meshMaxAmplitude * (
+				  sinf(scaledT + ((float) x / meshWidth))
+				+ sinf(scaledT + ((float) y / meshHeight))
+			);
+		}
+	}
+
 	//TODO: It might be faster to use a dynamic buffer and map/unmap
+	//SLOW! ~.14ms
+	pD3DImmediateContext->UpdateSubresource(meshVertexBuffer.Get(), 0, nullptr, meshVerts.get(), 0, 0);
 
 	return true;
 }

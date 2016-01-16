@@ -35,6 +35,10 @@ private:
 	ComPtr<ID3D11Buffer> meshIndexBuffer;
 	std::unique_ptr<Vertex[]> meshVerts;
 
-	uint16_t meshResolutionX  = 256;
-	uint16_t meshResolutionY = 256;
+	uint16_t meshResolutionX     = 256;
+	uint16_t meshResolutionY     = 256;
+	float    meshWidth           = 10;
+	float    meshHeight          = 10;
+	float    meshMaxAmplitude    = 1;
+	float    meshAmplitudePeriod = 2;
 };
