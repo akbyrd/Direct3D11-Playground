@@ -86,25 +86,96 @@ bool Renderer::PSLoadCreateSet(const wstring &filename)
 
 bool Renderer::InitializeMesh()
 {
-	const Vertex meshVerts[] = {
-		{ XMFLOAT3(0, 0, 0), XMFLOAT4(0, 0, 0, 0) } //TODO: Fill
-	};
+	size_t vertexCount = (meshWidth + 1) * (meshHeight + 1);
+	size_t  indexCount = meshWidth * meshHeight * 6;
+
+	//Vertices
+	float dx = 10.0f / meshWidth;
+	float dy = 10.0f / meshHeight;
+
+	//mesh.reset(new Mesh(vertexCount, indexCount));
+	//IF( mesh,
+	//	FALSE, return false);
+
+	meshVerts.reset(new Vertex[vertexCount]);
+	IF( meshVerts,
+		FALSE, return false);
+
+	for ( size_t y = 0; y <= meshHeight; ++y )
+	{
+		size_t stride = y*meshWidth;
+
+		for ( size_t x = 0; x <= meshWidth; ++x )
+		{
+			//TODO: Is this less efficient than offsetting the pointer directly? Check the asm.
+			//Vertex *v = &meshVerts[x + stride];
+			//
+			//v->position = XMFLOAT3(x*dx, y*dy, 0);
+			//v->color    = XMFLOAT4(1, 1, 1, 1);
+
+			meshVerts[x + stride].position = XMFLOAT3(x*dx, y*dy, 0);
+			meshVerts[x + stride].color    = XMFLOAT4(1, 1, 1, 1);
+		}
+	}
 
 	D3D11_BUFFER_DESC vertBuffDesc = {};
-	vertBuffDesc.ByteWidth           = sizeof(meshVerts);
+	vertBuffDesc.ByteWidth           = sizeof(Vertex) * vertexCount;
 	vertBuffDesc.Usage               = D3D11_USAGE_IMMUTABLE;
 	vertBuffDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
 	vertBuffDesc.CPUAccessFlags      = 0;
 	vertBuffDesc.MiscFlags           = 0;
 	vertBuffDesc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA vertBufInitData = {};
-	vertBufInitData.pSysMem          = meshVerts;
-	vertBufInitData.SysMemPitch      = 0;
-	vertBufInitData.SysMemSlicePitch = 0;
+	D3D11_SUBRESOURCE_DATA vertBuffInitData = {};
+	vertBuffInitData.pSysMem          = meshVerts.get();
+	vertBuffInitData.SysMemPitch      = 0;
+	vertBuffInitData.SysMemSlicePitch = 0;
 
-	ComPtr<ID3D11Buffer> pVertBuffer;
-	IF( pD3DDevice->CreateBuffer(&vertBuffDesc, &vertBufInitData, &pVertBuffer),
+	ComPtr<ID3D11Buffer> vertBuffer;
+	IF( pD3DDevice->CreateBuffer(&vertBuffDesc, &vertBuffInitData, &vertBuffer),
+		LOG_FAILED, return false);
+
+
+	//Indices
+	unique_ptr<UINT[]> meshIndices(new UINT[indexCount]);
+	IF( meshIndices,
+		FALSE, return false);
+
+	for ( size_t y = 0; y < meshHeight; ++y )
+	{
+		size_t rowOffset = y*meshWidth;
+
+		for ( size_t x = 0; x < meshWidth; ++x )
+		{
+			size_t offset = 6*x + rowOffset;
+
+			//Top left triangle
+			meshIndices[offset + 0] = (y+1)*(meshWidth+1) + x;
+			meshIndices[offset + 1] = (y  )*(meshWidth+1) + x;
+			meshIndices[offset + 2] = (y  )*(meshWidth+1) + x + 1;
+
+			//Bottom right triangle
+			meshIndices[offset + 3] = meshIndices[offset + 2];
+			meshIndices[offset + 4] = (y+1)*(meshWidth+1) + x + 1;
+			meshIndices[offset + 5] = meshIndices[offset + 0];
+		}
+	}
+
+	D3D11_BUFFER_DESC indexBuffDesc = {};
+	indexBuffDesc.ByteWidth           = sizeof(UINT) * indexCount;
+	indexBuffDesc.Usage               = D3D11_USAGE_IMMUTABLE;
+	indexBuffDesc.BindFlags           = D3D11_BIND_INDEX_BUFFER;
+	indexBuffDesc.CPUAccessFlags      = 0;
+	indexBuffDesc.MiscFlags           = 0;
+	indexBuffDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA indexBuffInitData = {};
+	indexBuffInitData.pSysMem          = meshIndices.get();
+	indexBuffInitData.SysMemPitch      = 0;
+	indexBuffInitData.SysMemSlicePitch = 0;
+
+	ComPtr<ID3D11Buffer> indexBuffer;
+	IF( pD3DDevice->CreateBuffer(&indexBuffDesc, &indexBuffInitData, &indexBuffer),
 		LOG_FAILED, return false);
 
 	return true;
@@ -112,10 +183,33 @@ bool Renderer::InitializeMesh()
 
 bool Renderer::Update(const GameTimer &gameTimer)
 {
-	return __super::Update(gameTimer);
+	IF( __super::Update(gameTimer),
+		FALSE, return false);
+
+	//TODO: pD3DImmediateContext->UpdateSubresource
+	//TODO: It might be faster to use a dynamic buffer and map/unmap
+
+	return true;
 }
 
 bool Renderer::Render()
 {
-	return __super::Render();;
+	IF( __super::Render(),
+		FALSE, return false);
+
+	//...
+
+	return true;
+}
+
+void Renderer::Teardown()
+{
+	vs.Reset();
+	vsInputLayout.Reset();
+	ps.Reset();
+	meshVertexBuffer.Reset();
+	meshIndexBuffer.Reset();
+	meshVerts.reset();
+
+	__super::Teardown();
 }
