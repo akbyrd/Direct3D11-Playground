@@ -8,6 +8,9 @@
 class RendererBase
 {
 public:
+	RendererBase();
+	virtual ~RendererBase();
+
 	virtual bool Initialize(HWND);
 	virtual bool Resize();
 	virtual bool Update(const GameTimer&);
@@ -18,9 +21,6 @@ protected:
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 	using XMFLOAT4 = DirectX::XMFLOAT4;
-
-	RendererBase();
-	virtual ~RendererBase();
 
 	HWND hwnd = nullptr;
 
@@ -56,10 +56,8 @@ protected:
 	bool LogLiveObjects();
 
 	/* NOTE:
-	 * DirectX throws exceptions if multiSampleCount > 1 when entering fullscreen. These don't
-	 * crash the application, so I think these are first chance exceptions that are internally
-	 * handled. Still, I don't fully understand why they are occurring or if it indicates a
-	 * problem. I should ask about it on StackOverflow.
+	 * DirectX throws exceptions if multiSampleCount > 1 when entering fullscreen. These
+	 * are first chance exceptions that get handled internally. Still, they're annoying.
 	 */
 
 	//TODO: Encapsulate in a struct?
