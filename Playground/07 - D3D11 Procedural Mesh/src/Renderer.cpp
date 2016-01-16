@@ -93,10 +93,6 @@ bool Renderer::InitializeMesh()
 	float dx = 10.0f / meshWidth;
 	float dy = 10.0f / meshHeight;
 
-	//mesh.reset(new Mesh(vertexCount, indexCount));
-	//IF( mesh,
-	//	FALSE, return false);
-
 	meshVerts.reset(new Vertex[vertexCount]);
 	IF( meshVerts,
 		FALSE, return false);
@@ -107,12 +103,6 @@ bool Renderer::InitializeMesh()
 
 		for ( size_t x = 0; x <= meshWidth; ++x )
 		{
-			//TODO: Is this less efficient than offsetting the pointer directly? Check the asm.
-			//Vertex *v = &meshVerts[x + stride];
-			//
-			//v->position = XMFLOAT3(x*dx, y*dy, 0);
-			//v->color    = XMFLOAT4(1, 1, 1, 1);
-
 			meshVerts[x + stride].position = XMFLOAT3(x*dx, y*dy, 0);
 			meshVerts[x + stride].color    = XMFLOAT4(1, 1, 1, 1);
 		}
