@@ -244,6 +244,9 @@ bool Renderer::InitializeRasterizerStates()
 	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateWireframe),
 		LOG_FAILED, return false);
 
+	//Ensure we start off with the correct rasterizer
+	UpdateRasterizeState();
+
 	return true;
 }
 
@@ -294,19 +297,23 @@ void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, bool middleM
 		if ( middleMouseClicked )
 		{
 			isWireframeEnabled = !isWireframeEnabled;
-
-			if ( isWireframeEnabled )
-			{
-				pD3DImmediateContext->RSSetState(rasterizerStateWireframe.Get());
-			}
-			else
-			{
-				pD3DImmediateContext->RSSetState(rasterizerStateSolid.Get());
-			}
+			UpdateRasterizeState();
 		}
 	}
 
 	lastMousePosition = mousePosition;
+}
+
+void Renderer::UpdateRasterizeState()
+{
+	if ( isWireframeEnabled )
+	{
+		pD3DImmediateContext->RSSetState(rasterizerStateWireframe.Get());
+	}
+	else
+	{
+		pD3DImmediateContext->RSSetState(rasterizerStateSolid.Get());
+	}
 }
 
 bool Renderer::Update(const GameTimer &gameTimer)

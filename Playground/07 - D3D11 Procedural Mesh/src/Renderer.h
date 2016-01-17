@@ -41,6 +41,7 @@ private:
 	std::unique_ptr<Vertex[]> meshVerts;
 
 	bool InitializeRasterizerStates();
+	void UpdateRasterizeState();
 	ComPtr<ID3D11RasterizerState> rasterizerStateSolid;
 	ComPtr<ID3D11RasterizerState> rasterizerStateWireframe;
 
