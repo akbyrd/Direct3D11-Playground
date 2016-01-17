@@ -106,8 +106,8 @@ bool Renderer::PSLoadCreateSet(const wstring &filename)
 
 bool Renderer::InitializeMesh()
 {
-	size_t vertexCount = (meshResolutionX + 1) * (meshResolutionY + 1);
-	size_t  indexCount = meshResolutionX * meshResolutionY * 6;
+	size_t vertexCount = (meshResolutionX + 1) * (meshResolutionZ + 1);
+	size_t  indexCount = meshResolutionX * meshResolutionZ * 6;
 
 	//Vertices
 	float inverseArea = 1 / (meshWidth*meshHeight);
@@ -120,33 +120,33 @@ bool Renderer::InitializeMesh()
 	XMVECTORF32 br = Colors::White;
 
 	float dx = meshWidth  / meshResolutionX;
-	float dy = meshHeight / meshResolutionY;
+	float dz = meshHeight / meshResolutionZ;
 
 	meshVerts.reset(new Vertex[vertexCount]);
 	IF( meshVerts,
 		FALSE, return false);
 
-	for ( size_t y = 0; y <= meshResolutionY; ++y )
+	for ( size_t z = 0; z <= meshResolutionZ; ++z )
 	{
-		size_t stride = y*meshResolutionX;
+		size_t stride = z*(meshResolutionX + 1);
 
 		for ( size_t x = 0; x <= meshResolutionX; ++x )
 		{
 			float vx = x*dx;
-			float vy = y*dy;
+			float vz = z*dz;
 
-			meshVerts[x + stride].position = XMFLOAT3(vx - halfWidth, vy - halfHeight, 0);
+			meshVerts[x + stride].position = XMFLOAT3(vx - halfWidth, 0, vz - halfHeight);
 
 			float xl = vx;
 			float xr = meshWidth - vx;
-			float yt = vy;
-			float yb = meshHeight - vy;
+			float zt = vz;
+			float zb = meshHeight - vz;
 
 			XMStoreFloat4(&meshVerts[x + stride].color, (
-				  tl * (xr * yb * inverseArea)
-				+ tr * (xl * yb * inverseArea)
-				+ bl * (xr * yt * inverseArea)
-				+ br * (xl * yt * inverseArea)
+				  tl * (xr * zb * inverseArea)
+				+ tr * (xl * zb * inverseArea)
+				+ bl * (xr * zt * inverseArea)
+				+ br * (xl * zt * inverseArea)
 			));
 		}
 	}
@@ -179,22 +179,22 @@ bool Renderer::InitializeMesh()
 	IF( meshIndices,
 		FALSE, return false);
 
-	for ( size_t y = 0; y < meshResolutionY; ++y )
+	for ( size_t z = 0; z < meshResolutionZ; ++z )
 	{
-		size_t rowOffset = y*meshResolutionX;
+		size_t rowOffset = z*6*meshResolutionX;
 
 		for ( size_t x = 0; x < meshResolutionX; ++x )
 		{
 			size_t offset = 6*x + rowOffset;
 
 			//Top left triangle
-			meshIndices[offset + 0] = (y+1)*(meshResolutionX+1) + x;
-			meshIndices[offset + 1] = (y  )*(meshResolutionX+1) + x;
-			meshIndices[offset + 2] = (y  )*(meshResolutionX+1) + x + 1;
+			meshIndices[offset + 0] = (z+1)*(meshResolutionX+1) + x;
+			meshIndices[offset + 1] = (z  )*(meshResolutionX+1) + x;
+			meshIndices[offset + 2] = (z  )*(meshResolutionX+1) + x + 1;
 
 			//Bottom right triangle
 			meshIndices[offset + 3] = meshIndices[offset + 2];
-			meshIndices[offset + 4] = (y+1)*(meshResolutionX+1) + x + 1;
+			meshIndices[offset + 4] = (z+1)*(meshResolutionX+1) + x + 1;
 			meshIndices[offset + 5] = meshIndices[offset + 0];
 		}
 	}
@@ -267,16 +267,16 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	double t = gameTimer.Time();
 	float scaledT = (float) t / meshAmplitudePeriod;
 
-	for ( size_t y = 0; y < meshHeight; ++y )
+	for ( size_t z = 0; z < meshHeight; ++z )
 	{
-		size_t  rowOffset = y*meshWidth;
+		size_t  rowOffset = z*(meshWidth+1);
 
 		for ( size_t x = 0; x < meshWidth; ++x )
 		{
 			//Noticeable. ~.03ms
 			meshVerts[x + rowOffset].position.y = meshMaxAmplitude * (
 				  sinf(scaledT + ((float) x / meshWidth))
-				+ sinf(scaledT + ((float) y / meshHeight))
+				+ sinf(scaledT + ((float) z / meshHeight))
 			);
 		}
 	}
@@ -298,6 +298,7 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	XMVECTOR pos    = XMVectorSet(x, y, z, 1);
 	XMVECTOR target = XMVectorZero();
 	XMVECTOR up     = XMVectorSet(0, 1, 0, 0);
+
 	XMMATRIX V = XMMatrixLookAtLH(pos, target, up);
 	XMStoreFloat4x4(&view, V);
 
@@ -316,7 +317,7 @@ bool Renderer::Render()
 	pD3DImmediateContext->ClearRenderTargetView(pRenderTargetView.Get(), Colors::Black);
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
-	size_t indexCount = meshResolutionX * meshResolutionY * 6;
+	size_t indexCount = meshResolutionX * meshResolutionZ * 6;
 	pD3DImmediateContext->DrawIndexed(indexCount, 0, 0);
 
 	IF( pSwapChain->Present(0, 0),

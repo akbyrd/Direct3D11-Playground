@@ -38,12 +38,12 @@ private:
 	ComPtr<ID3D11Buffer> meshIndexBuffer;
 	std::unique_ptr<Vertex[]> meshVerts;
 
-	uint16_t meshResolutionX     = 128;
-	uint16_t meshResolutionY     = 128;
 	bool InitializeRasterizerStates();
 	ComPtr<ID3D11RasterizerState> rasterizerStateSolid;
 	ComPtr<ID3D11RasterizerState> rasterizerStateWireframe;
 
+	uint16_t meshResolutionX     = 10;
+	uint16_t meshResolutionZ     = 10;
 	float    meshWidth           = 10;
 	float    meshHeight          = 10;
 	float    meshMaxAmplitude    = 1;
