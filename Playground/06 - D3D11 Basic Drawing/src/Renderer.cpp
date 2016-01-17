@@ -173,6 +173,10 @@ bool Renderer::SetWireframeMode(bool enableWireframe)
 	ComPtr<ID3D11RasterizerState> pRasterizerState;
 	pD3DImmediateContext->RSGetState(&pRasterizerState);
 
+	/* NOTE: If the state has not been explicitly set, the rasterizer is automatically
+	 * initialized to a default state and RSGetState will return nullptr.
+	 */
+
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	if ( pRasterizerState )
 	{
@@ -180,6 +184,7 @@ bool Renderer::SetWireframeMode(bool enableWireframe)
 	}
 	else
 	{
+		//rasterizerDesc.FillMode           // Set below
 		rasterizerDesc.CullMode              = D3D11_CULL_BACK;
 		rasterizerDesc.FrontCounterClockwise = false;
 		rasterizerDesc.DepthBias             = 0;
@@ -265,25 +270,26 @@ void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, POINTS mouse
 
 	if ( leftMouseDown )
 	{
-		short dx = lastMousePosition.x - mousePosition.x;
-		short dy = lastMousePosition.y - mousePosition.y;
+		short dx = mousePosition.x - lastMousePosition.x;
+		short dy = mousePosition.y - lastMousePosition.y;
 
-		theta += .006f * dx;
-		  phi += .006f * dy;
+		theta -= .006f * dx;
+		  phi -= .006f * dy;
 
-		if ( phi <     0 ) phi = epsilon;
-		if ( phi > XM_PI ) phi = XM_PI - epsilon;
+		if ( phi < epsilon ) phi = epsilon;
+		if ( phi > XM_PI   ) phi = XM_PI;
+
 		SetCapture(hwnd);
 	}
 	else if ( rightMouseDown )
 	{
-		short dx = lastMousePosition.x - mousePosition.x;
-		short dy = lastMousePosition.y - mousePosition.y;
+		short dx = mousePosition.x - lastMousePosition.x;
+		short dy = mousePosition.y - lastMousePosition.y;
 
-		radius += .01f * (dx - dy);
+		radius += .01f * (dy - dx);
 
-		if ( radius <  0 ) radius = epsilon;
-		if ( radius > 50 ) radius = 50;
+		if ( radius < epsilon ) radius = epsilon;
+		if ( radius > 50      ) radius = 50;
 
 		SetCapture(hwnd);
 	}
