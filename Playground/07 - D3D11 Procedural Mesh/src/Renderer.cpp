@@ -26,6 +26,9 @@ bool Renderer::Initialize(HWND hwnd)
 	IF( InitializeMesh(),
 		FALSE, return false);
 
+	IF( InitializeRasterizerStates(),
+		FALSE, return false);
+
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 
 	return true;
@@ -214,6 +217,32 @@ bool Renderer::InitializeMesh()
 	SetDebugObjectName(meshIndexBuffer, "Mesh Index Buffer");
 
 	pD3DImmediateContext->IASetIndexBuffer(meshIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+	return true;
+}
+
+bool Renderer::InitializeRasterizerStates()
+{
+	D3D11_RASTERIZER_DESC rasterizerDesc = {};
+	rasterizerDesc.FillMode              = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode              = D3D11_CULL_NONE;
+	rasterizerDesc.FrontCounterClockwise = false;
+	rasterizerDesc.DepthBias             = 0;
+	rasterizerDesc.DepthBiasClamp        = 0;
+	rasterizerDesc.SlopeScaledDepthBias  = 0;
+	rasterizerDesc.DepthClipEnable       = true;
+	rasterizerDesc.ScissorEnable         = false;
+	rasterizerDesc.MultisampleEnable     = false;
+	rasterizerDesc.AntialiasedLineEnable = multiSampleCount > 0;
+
+	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateSolid),
+		LOG_FAILED, return false);
+
+
+	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+
+	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateWireframe),
+		LOG_FAILED, return false);
 
 	return true;
 }

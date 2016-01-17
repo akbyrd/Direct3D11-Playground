@@ -40,10 +40,16 @@ private:
 
 	uint16_t meshResolutionX     = 128;
 	uint16_t meshResolutionY     = 128;
+	bool InitializeRasterizerStates();
+	ComPtr<ID3D11RasterizerState> rasterizerStateSolid;
+	ComPtr<ID3D11RasterizerState> rasterizerStateWireframe;
+
 	float    meshWidth           = 10;
 	float    meshHeight          = 10;
 	float    meshMaxAmplitude    = 1;
 	float    meshAmplitudePeriod = 2;
+
+	bool  isWireframeEnabled = true;
 
 	XMFLOAT4X4 world;
 	XMFLOAT4X4 view;
