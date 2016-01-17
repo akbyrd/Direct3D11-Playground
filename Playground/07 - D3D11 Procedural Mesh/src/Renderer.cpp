@@ -223,6 +223,7 @@ bool Renderer::InitializeMesh()
 
 bool Renderer::InitializeRasterizerStates()
 {
+	//Solid
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	rasterizerDesc.FillMode              = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode              = D3D11_CULL_NONE;
@@ -239,12 +240,13 @@ bool Renderer::InitializeRasterizerStates()
 		LOG_FAILED, return false);
 
 
+	//Wireframe
 	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 
 	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateWireframe),
 		LOG_FAILED, return false);
 
-	//Ensure we start off with the correct rasterizer
+	//Start off in correct state
 	UpdateRasterizeState();
 
 	return true;
