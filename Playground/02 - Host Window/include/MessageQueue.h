@@ -19,6 +19,8 @@ enum class Message
 	MouseLeftUp,
 	MouseRightDown,
 	MouseRightUp,
+	MouseMiddleDown,
+	MouseMiddleUp,
 	MouseWheelDown,
 	MouseWheelUp,
 };

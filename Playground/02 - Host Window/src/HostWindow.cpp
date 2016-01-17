@@ -252,6 +252,16 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			goto UpdateMousePosition;
 		}
 
+		case WM_MBUTTONDOWN: {
+			messageQueue->PushMessage(Message::MouseMiddleDown);
+			goto UpdateMousePosition;
+		}
+
+		case WM_MBUTTONUP: {
+			messageQueue->PushMessage(Message::MouseMiddleUp);
+			goto UpdateMousePosition;
+		}
+
 		UpdateMousePosition:
 		case WM_MOUSEMOVE: {
 			mousePosition = MAKEPOINTS(lParam);
