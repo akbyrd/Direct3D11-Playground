@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #include "GameTimer.h"
 
-bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&);
+bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&, bool&, bool&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -24,6 +24,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 	bool leftMouseDown = false;
 	bool rightMouseDown = false;
+	bool middleMouseDown = false;
+	bool middleMouseClicked = false;
 
 	//Initialize game components
 	if ( !window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()) ) { goto Cleanup; }
@@ -63,13 +65,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		Message message = {};
 		while ( messageQueue.PopMessage(message) )
 		{
-			if ( !ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown) ) { goto Cleanup; }
+			IF( ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown, middleMouseDown, middleMouseClicked),
+				FALSE, goto Cleanup);
 		}
-		//renderer.HandleInput(leftMouseDown, rightMouseDown, window.MousePosition());
+		renderer.HandleInput(leftMouseDown, rightMouseDown, middleMouseClicked, window.MousePosition());
 
 		//The fun stuff!
 		if ( !renderer.Update(gameTimer) ) { goto Cleanup; }
 		if ( !renderer.Render()          ) { goto Cleanup; }
+
+		//Sigh...
+		middleMouseClicked = false;
 	}
 
 	//Cleanup and shutdown
@@ -85,7 +91,9 @@ bool ProcessMessage(Message    &message,
                     Renderer   &renderer,
               const HostWindow &window,
                     bool       &leftMouseDown,
-                    bool       &rightMouseDown)
+                    bool       &rightMouseDown,
+                    bool       &middleMouseDown,
+                    bool       &middleMouseClicked)
 {
 	switch ( message )
 	{
@@ -140,6 +148,15 @@ bool ProcessMessage(Message    &message,
 
 		case Message::MouseRightUp:
 			rightMouseDown = false;
+			break;
+
+		case Message::MouseMiddleDown:
+			middleMouseClicked = true;
+			middleMouseDown = true;
+			break;
+
+		case Message::MouseMiddleUp:
+			middleMouseDown = false;
 			break;
 
 		case Message::MouseWheelDown:

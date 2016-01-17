@@ -14,6 +14,8 @@ public:
 	virtual bool Render();
 	virtual void Teardown();
 
+	void HandleInput(bool, bool, bool, POINTS);
+
 private:
 	using XMFLOAT3   = DirectX::XMFLOAT3;
 	using XMFLOAT4   = DirectX::XMFLOAT4;
@@ -49,6 +51,10 @@ private:
 	float    meshMaxAmplitude    = 1;
 	float    meshAmplitudePeriod = 2;
 
+	float  radius            = 14;
+	float  theta             = 0;
+	float  phi               = DirectX::XM_PIDIV4 * 1.5f;
+	POINTS lastMousePosition = {};
 	bool  isWireframeEnabled = true;
 
 	XMFLOAT4X4 world;

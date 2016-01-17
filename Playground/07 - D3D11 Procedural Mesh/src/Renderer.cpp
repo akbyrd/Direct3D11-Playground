@@ -258,11 +258,63 @@ bool Renderer::Resize()
 	return true;
 }
 
+void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, bool middleMouseClicked, POINTS mousePosition)
+{
+	float epsilon = numeric_limits<float>::epsilon();
+
+	SHORT dx = mousePosition.x - lastMousePosition.x;
+	SHORT dy = mousePosition.y - lastMousePosition.y;
+
+	//Rotate
+	if ( leftMouseDown )
+	{
+		theta -= .006f * dx;
+		phi   -= .006f * dy;
+
+		     if ( phi < epsilon         ) phi = epsilon;
+		else if ( phi > XM_PI - epsilon ) phi = XM_PI - epsilon;
+
+		SetCapture(hwnd);
+	}
+	//Zoom
+	else if ( rightMouseDown )
+	{
+		radius += .01f * (dy - dx);
+
+		     if ( radius < epsilon ) radius = epsilon;
+		else if ( radius > 50      ) radius = 50;
+
+		SetCapture(hwnd);
+	}
+	else
+	{
+		ReleaseCapture();
+
+		//Toggle wireframe
+		if ( middleMouseClicked )
+		{
+			isWireframeEnabled = !isWireframeEnabled;
+
+			if ( isWireframeEnabled )
+			{
+				pD3DImmediateContext->RSSetState(rasterizerStateWireframe.Get());
+			}
+			else
+			{
+				pD3DImmediateContext->RSSetState(rasterizerStateSolid.Get());
+			}
+		}
+	}
+
+	lastMousePosition = mousePosition;
+}
+
 bool Renderer::Update(const GameTimer &gameTimer)
 {
 	IF( __super::Update(gameTimer),
 		FALSE, return false);
 
+	//*
 	//Animate mesh
 	double t = gameTimer.Time();
 	float scaledT = (float) t / meshAmplitudePeriod;
@@ -280,6 +332,7 @@ bool Renderer::Update(const GameTimer &gameTimer)
 			);
 		}
 	}
+	//*/
 
 	//TODO: It might be faster to use a dynamic buffer and map/unmap
 	//SLOW! ~.14ms
@@ -287,13 +340,9 @@ bool Renderer::Update(const GameTimer &gameTimer)
 
 
 	//Update Camera
-	float r     = 20;
-	float theta = XM_PIDIV2*3;;
-	float phi   = XM_PIDIV4;
-
-	float x = r*sinf(phi)*cosf(theta);
-	float z = r*sinf(phi)*sinf(theta);
-	float y = r*cosf(phi);
+	float x = radius*sinf(phi)*cosf(theta);
+	float z = radius*sinf(phi)*sinf(theta);
+	float y = radius*cosf(phi);
 
 	XMVECTOR pos    = XMVectorSet(x, y, z, 1);
 	XMVECTOR target = XMVectorZero();
