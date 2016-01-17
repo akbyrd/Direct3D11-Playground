@@ -45,15 +45,15 @@ private:
 	ComPtr<ID3D11RasterizerState> rasterizerStateSolid;
 	ComPtr<ID3D11RasterizerState> rasterizerStateWireframe;
 
-	uint16_t meshResolutionX     = 10;
-	uint16_t meshResolutionZ     = 10;
+	uint16_t meshResolutionX     = 64;
+	uint16_t meshResolutionZ     = 64;
 	float    meshWidth           = 10;
 	float    meshHeight          = 10;
 	float    meshMaxAmplitude    = 1;
-	float    meshAmplitudePeriod = 2;
+	float    meshAmplitudePeriod = 4;
 
 	float  radius            = 14;
-	float  theta             = 0;
+	float  theta             = DirectX::XM_PIDIV4;
 	float  phi               = DirectX::XM_PIDIV4 * 1.5f;
 	POINTS lastMousePosition = {};
 	bool  isWireframeEnabled = true;

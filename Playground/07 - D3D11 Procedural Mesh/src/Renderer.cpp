@@ -328,16 +328,16 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	double t = gameTimer.Time();
 	float scaledT = (float) t / meshAmplitudePeriod;
 
-	for ( size_t z = 0; z < meshHeight; ++z )
+	for ( size_t z = 0; z <= meshResolutionZ; ++z )
 	{
-		size_t  rowOffset = z*(meshWidth+1);
+		size_t rowOffset = z*(meshResolutionX+1);
 
-		for ( size_t x = 0; x < meshWidth; ++x )
+		for ( size_t x = 0; x <= meshResolutionX; ++x )
 		{
 			//Noticeable. ~.03ms
 			meshVerts[x + rowOffset].position.y = meshMaxAmplitude * (
-				  sinf(scaledT + ((float) x / meshWidth))
-				+ sinf(scaledT + ((float) z / meshHeight))
+				  sinf(XM_2PI * (scaledT + ((float) x / meshResolutionX)))
+				+ sinf(XM_2PI * (scaledT + ((float) z / meshResolutionZ)))
 			);
 		}
 	}
