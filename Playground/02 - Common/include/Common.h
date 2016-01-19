@@ -24,6 +24,11 @@ typedef int_fast32_t int32f;
 typedef int_fast64_t int64f;
 
 // Macros
+#ifdef IGNORE
+	//WinBase
+	#undef IGNORE
+#endif
+
 #define IGNORE
 #define IS_FALSE !
 

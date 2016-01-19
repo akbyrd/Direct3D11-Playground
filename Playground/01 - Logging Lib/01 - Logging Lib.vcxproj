@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{04B467BA-0D82-495A-86FC-38F3DA5E0E3D}</ProjectGuid>
+    <ProjectGuid>{C549347E-282A-408D-9557-5F7959D387F1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>LoggingLib</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>

@@ -10,6 +10,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	#endif
 
 	bool success = false;
+	long ret = 0;
+	bool quit = false;
+	MSG msg = {};
 
 	//Create a message queue
 	MessageQueue messageQueue;
@@ -18,10 +21,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	HostWindow window;
 	success = window.Initialize(L"Empty Window", iCmdshow, 800, 600, messageQueue.GetQueuePusher());
 	if ( !success ) { goto Cleanup; }
-
-	long ret = 0;
-	bool quit = false;
-	MSG msg = {};
 
 	//Message and render loop
 	while ( !quit )

@@ -16,6 +16,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	#endif
 
 	long ret = -1;
+	MSG msg = {};
 
 	//Create game components
 	MessageQueue messageQueue;
@@ -31,8 +32,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		IS_FALSE, goto Cleanup);
 
 	gameTimer.Start();
-
-	MSG msg = {};
 
 	//Message and render loop
 	bool quit = false;

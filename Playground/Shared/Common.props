@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)01 - Logging Lib\include;$(SolutionDir)01 - Common\include;$(ProjectDir)include;$(ProjectDir)private include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)01 - Logging Lib\include;$(SolutionDir)02 - Common\include;$(ProjectDir)include;$(ProjectDir)private include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemDefinitionGroup>

@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1E552DF3-F423-4528-9F91-6B9F9DE64332}</ProjectGuid>
+    <ProjectGuid>{E08839CE-2DCA-4739-8729-37E73A3B83C9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>My02D3D11CoreApp</RootNamespace>
-    <ProjectName>05 - D3D11 Core App</ProjectName>
+    <RootNamespace>My07D3D11ProceduralMesh</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
+    <ProjectName>08 - D3D11 Procedural Mesh</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -33,6 +33,8 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -74,31 +76,43 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\01 - Common\01 - Common.vcxproj">
-      <Project>{2dbc218a-d0df-4802-a38f-6380ceb46247}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
-      <Project>{04b467ba-0d82-495a-86fc-38f3da5e0e3d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\02 - Host Window\02 - Host Window.vcxproj">
-      <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\04 - D3D11 Core\04 - D3D11 Core.vcxproj">
-      <Project>{1feb782b-c79e-4a6d-be07-d1e0787a75c9}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="private include\stdafx.h" />
     <ClInclude Include="private include\targetver.h" />
+    <ClInclude Include="src\Renderer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shaders\Basic Pixel Shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shaders\Basic Vertex Shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
+      <Project>{c549347e-282a-408d-9557-5f7959d387f1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\02 - Common\02 - Common.vcxproj">
+      <Project>{2dbc218a-d0df-4802-a38f-6380ceb46247}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\03 - Host Window\03 - Host Window.vcxproj">
+      <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\05 - D3D11 Core\05 - D3D11 Core.vcxproj">
+      <Project>{1feb782b-c79e-4a6d-be07-d1e0787a75c9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

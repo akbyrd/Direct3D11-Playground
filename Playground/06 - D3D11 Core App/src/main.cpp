@@ -15,6 +15,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	#endif
 
 	long ret = -1;
+	MSG msg = {};
+	bool quit = false;
 
 	//Create game components
 	MessageQueue messageQueue;
@@ -26,10 +28,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	if ( !window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()) ) { goto Cleanup; }
 	if ( !renderer.Initialize(window.GetHWND()) ) { goto Cleanup; }
 	gameTimer.Start();
-
-	MSG msg = {};
-
-	bool quit = false;
 
 	//Message and render loop
 	while ( !quit )

@@ -10,28 +10,11 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="private include\stdafx.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\01 - Common\01 - Common.vcxproj">
-      <Project>{2dbc218a-d0df-4802-a38f-6380ceb46247}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
-      <Project>{04b467ba-0d82-495a-86fc-38f3da5e0e3d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\02 - Host Window\02 - Host Window.vcxproj">
-      <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{98846D11-7687-4106-8BCB-F4B232817496}</ProjectGuid>
+    <ProjectGuid>{1E552DF3-F423-4528-9F91-6B9F9DE64332}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>TestApplication</RootNamespace>
-    <ProjectName>03 - Host Window App</ProjectName>
+    <RootNamespace>My02D3D11CoreApp</RootNamespace>
+    <ProjectName>06 - D3D11 Core App</ProjectName>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -54,11 +37,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
+    <Import Project="..\Shared\D3D11 Core.props" />
     <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
+    <Import Project="..\Shared\D3D11 Core.props" />
     <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -94,6 +79,27 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
+      <Project>{04b467ba-0d82-495a-86fc-38f3da5e0e3d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\02 - Common\02 - Common.vcxproj">
+      <Project>{2dbc218a-d0df-4802-a38f-6380ceb46247}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\03 - Host Window\03 - Host Window.vcxproj">
+      <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\05 - D3D11 Core\05 - D3D11 Core.vcxproj">
+      <Project>{1feb782b-c79e-4a6d-be07-d1e0787a75c9}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="private include\stdafx.h" />
+    <ClInclude Include="private include\targetver.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
