@@ -4,17 +4,17 @@
 #include <memory>
 
 #include "RendererBase.h"
+#include "HostWindow.h"
 
 class Renderer : public RendererBase
 {
 public:
 	virtual bool Initialize(HWND);
 	virtual bool Resize();
-	virtual bool Update(const GameTimer &gameTimer);
+	virtual bool Update(const GameTimer &gameTimer, const HostWindow::Input*);
 	virtual bool Render();
 	virtual void Teardown();
 
-	void HandleInput(bool, bool, bool, POINTS);
 
 private:
 	using XMFLOAT3   = DirectX::XMFLOAT3;
@@ -44,6 +44,8 @@ private:
 	void UpdateRasterizeState();
 	ComPtr<ID3D11RasterizerState> rasterizerStateSolid;
 	ComPtr<ID3D11RasterizerState> rasterizerStateWireframe;
+
+	void ProcessInput(const HostWindow::Input*);
 
 	uint16_t meshResolutionX     = 64;
 	uint16_t meshResolutionZ     = 64;

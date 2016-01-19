@@ -10,12 +10,9 @@ class Renderer : public RendererBase
 public:
 	virtual bool Initialize(HWND);
 	virtual bool Resize();
-	virtual bool Update(const GameTimer&);
+	virtual bool Update(const GameTimer&, const HostWindow::Input*);
 	virtual bool Render();
 	virtual void Teardown();
-
-	//TODO: This is awful. Implement proper input handling.
-	void HandleInput(bool, bool, POINTS);
 
 private:
 	template<typename T>
@@ -35,6 +32,8 @@ private:
 
 	bool InitializeBuffers();
 	ComPtr<ID3D11Buffer> pVSConstBuffer;
+
+	void ProcessInput(const HostWindow::Input*);
 
 	XMFLOAT4X4 mWorld;
 	XMFLOAT4X4 mView;

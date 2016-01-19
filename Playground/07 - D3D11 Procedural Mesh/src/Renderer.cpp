@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Utility.h"
 #include "HLSL.h"
+#include "Logging.h"
 
 using namespace std;
 using namespace DirectX;
@@ -263,49 +264,6 @@ bool Renderer::Resize()
 	return true;
 }
 
-void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, bool middleMouseClicked, POINTS mousePosition)
-{
-	float epsilon = numeric_limits<float>::epsilon();
-
-	SHORT dx = mousePosition.x - lastMousePosition.x;
-	SHORT dy = mousePosition.y - lastMousePosition.y;
-
-	//Rotate
-	if ( leftMouseDown )
-	{
-		theta -= .006f * dx;
-		phi   -= .006f * dy;
-
-		     if ( phi < epsilon         ) phi = epsilon;
-		else if ( phi > XM_PI - epsilon ) phi = XM_PI - epsilon;
-
-		SetCapture(hwnd);
-	}
-	//Zoom
-	else if ( rightMouseDown )
-	{
-		radius += .01f * (dy - dx);
-
-		     if ( radius < epsilon ) radius = epsilon;
-		else if ( radius > 50      ) radius = 50;
-
-		SetCapture(hwnd);
-	}
-	else
-	{
-		ReleaseCapture();
-
-		//Toggle wireframe
-		if ( middleMouseClicked )
-		{
-			isWireframeEnabled = !isWireframeEnabled;
-			UpdateRasterizeState();
-		}
-	}
-
-	lastMousePosition = mousePosition;
-}
-
 void Renderer::UpdateRasterizeState()
 {
 	if ( isWireframeEnabled )
@@ -318,10 +276,12 @@ void Renderer::UpdateRasterizeState()
 	}
 }
 
-bool Renderer::Update(const GameTimer &gameTimer)
+bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input)
 {
 	IF( __super::Update(gameTimer),
 		IS_FALSE, return false);
+
+	ProcessInput(input);
 
 	//*
 	//Animate mesh
@@ -368,6 +328,50 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	pD3DImmediateContext->UpdateSubresource(vsConstBuffer.Get(), 0, nullptr, &WVP, 0, 0);
 
 	return true;
+}
+
+void Renderer::ProcessInput(const HostWindow::Input* input)
+{
+	float epsilon = numeric_limits<float>::epsilon();
+
+	SHORT dx = input->mouseX - lastMousePosition.x;
+	SHORT dy = input->mouseY - lastMousePosition.y;
+
+	//Rotate
+	if ( input->mouseLeft.isDown )
+	{
+		theta -= .006f * dx;
+		phi   -= .006f * dy;
+
+		     if ( phi <  epsilon ) phi = epsilon;
+		else if ( phi >= XM_PI   ) phi = XM_PI - epsilon;
+
+		SetCapture(hwnd);
+	}
+	//Zoom
+	else if ( input->mouseRight.isDown )
+	{
+		radius += .01f * (dy - dx);
+
+		     if ( radius < epsilon ) radius = epsilon;
+		else if ( radius > 50      ) radius = 50;
+
+		SetCapture(hwnd);
+	}
+	else
+	{
+		ReleaseCapture();
+
+		//Toggle wireframe
+		if ( input->mouseMiddle.transitionCount % 2 == 1 )
+		{
+			isWireframeEnabled = !isWireframeEnabled;
+			UpdateRasterizeState();
+		}
+	}
+
+	lastMousePosition.x = input->mouseX;
+	lastMousePosition.y = input->mouseY;
 }
 
 bool Renderer::Render()

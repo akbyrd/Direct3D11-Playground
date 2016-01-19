@@ -218,8 +218,10 @@ bool Renderer::Resize()
 	return true;
 }
 
-bool Renderer::Update(const GameTimer &gameTimer)
+bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input *input)
 {
+	ProcessInput(input);
+
 	// Convert Spherical to Cartesian coordinates.
 	float x = radius*sinf(phi)*cosf(theta);
 	float z = radius*sinf(phi)*sinf(theta);
@@ -248,6 +250,44 @@ bool Renderer::Update(const GameTimer &gameTimer)
 	return true;
 }
 
+void Renderer::ProcessInput(const HostWindow::Input *input)
+{
+	static float epsilon = numeric_limits<float>::epsilon();
+
+	if ( input->mouseLeft.isDown )
+	{
+		short dx = input->mouseX - lastMousePosition.x;
+		short dy = input->mouseY - lastMousePosition.y;
+
+		theta -= .006f * dx;
+		  phi -= .006f * dy;
+
+		if ( phi <  epsilon ) phi = epsilon;
+		if ( phi >= XM_PI   ) phi = XM_PI - epsilon;
+
+		SetCapture(hwnd);
+	}
+	else if ( input->mouseRight.isDown )
+	{
+		short dx = input->mouseX - lastMousePosition.x;
+		short dy = input->mouseY - lastMousePosition.y;
+
+		radius += .01f * (dy - dx);
+
+		if ( radius < epsilon ) radius = epsilon;
+		if ( radius > 50      ) radius = 50;
+
+		SetCapture(hwnd);
+	}
+	else
+	{
+		ReleaseCapture();
+	}
+
+	lastMousePosition.x = input->mouseX;
+	lastMousePosition.y = input->mouseY;
+}
+
 bool Renderer::Render()
 {
 	HRESULT hr;
@@ -262,43 +302,6 @@ bool Renderer::Render()
 	hr = pSwapChain->Present(0, 0); CHECK_HR(hr);
 
 	return true;
-}
-
-void Renderer::HandleInput(bool leftMouseDown, bool rightMouseDown, POINTS mousePosition)
-{
-	static float epsilon = numeric_limits<float>::epsilon();
-
-	if ( leftMouseDown )
-	{
-		short dx = mousePosition.x - lastMousePosition.x;
-		short dy = mousePosition.y - lastMousePosition.y;
-
-		theta -= .006f * dx;
-		  phi -= .006f * dy;
-
-		if ( phi < epsilon ) phi = epsilon;
-		if ( phi > XM_PI   ) phi = XM_PI;
-
-		SetCapture(hwnd);
-	}
-	else if ( rightMouseDown )
-	{
-		short dx = mousePosition.x - lastMousePosition.x;
-		short dy = mousePosition.y - lastMousePosition.y;
-
-		radius += .01f * (dy - dx);
-
-		if ( radius < epsilon ) radius = epsilon;
-		if ( radius > 50      ) radius = 50;
-
-		SetCapture(hwnd);
-	}
-	else
-	{
-		ReleaseCapture();
-	}
-
-	lastMousePosition = mousePosition;
 }
 
 void Renderer::Teardown()

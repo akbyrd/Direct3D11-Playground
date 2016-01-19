@@ -15,7 +15,7 @@
 //TODO: Shader syntax coloring
 //TODO: Alt+F4 causes leaks
 
-bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&);
+bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -73,13 +73,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		Message message = {};
 		while ( messageQueue.PopMessage(message) )
 		{
-			if ( !ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown) ) { goto Cleanup; }
+			if ( !ProcessMessage(message, gameTimer, renderer, window) ) { goto Cleanup; }
 		}
-		renderer.HandleInput(leftMouseDown, rightMouseDown, window.MousePosition());
 
 		//The fun stuff!
-		if ( !renderer.Update(gameTimer) ) { goto Cleanup; }
-		if ( !renderer.Render()          ) { goto Cleanup; }
+		if ( !renderer.Update(gameTimer, window.GetInput()) ) { goto Cleanup; }
+		if ( !renderer.Render()                             ) { goto Cleanup; }
 	}
 
 	//Cleanup and shutdown
@@ -93,9 +92,7 @@ Cleanup:
 bool ProcessMessage(Message    &message,
                     GameTimer  &gameTimer,
                     Renderer   &renderer,
-              const HostWindow &window,
-                    bool       &leftMouseDown,
-                    bool       &rightMouseDown)
+              const HostWindow &window)
 {
 	switch ( message )
 	{
@@ -134,26 +131,6 @@ bool ProcessMessage(Message    &message,
 
 	case Message::WindowClosed:
 		//TODO: Handle if closing was unexpected
-		break;
-
-	case Message::MouseLeftDown:
-		leftMouseDown = true;
-		break;
-
-	case Message::MouseLeftUp:
-		leftMouseDown = false;
-		break;
-
-	case Message::MouseRightDown:
-		rightMouseDown = true;
-		break;
-
-	case Message::MouseRightUp:
-		rightMouseDown = false;
-		break;
-
-	case Message::MouseWheelDown:
-	case Message::MouseWheelUp:
 		break;
 	}
 

@@ -13,16 +13,7 @@ enum class Message
 	WindowUnminimized,
 	WindowActive,
 	WindowInactive,
-	WindowClosed,
-
-	MouseLeftDown,
-	MouseLeftUp,
-	MouseRightDown,
-	MouseRightUp,
-	MouseMiddleDown,
-	MouseMiddleUp,
-	MouseWheelDown,
-	MouseWheelUp,
+	WindowClosed
 };
 
 class MessageQueue final

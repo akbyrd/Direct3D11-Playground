@@ -4,8 +4,9 @@
 #include "HostWindow.h"
 #include "Renderer.h"
 #include "GameTimer.h"
+#include "Logging.h"
 
-bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&, bool&, bool&, bool&, bool&);
+bool ProcessMessage(Message&, GameTimer&, Renderer&, const HostWindow&);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
@@ -21,11 +22,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	HostWindow window;
 	Renderer renderer;
 	GameTimer gameTimer;
-
-	bool leftMouseDown = false;
-	bool rightMouseDown = false;
-	bool middleMouseDown = false;
-	bool middleMouseClicked = false;
 
 	//Initialize game components
 	IF( window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()),
@@ -69,16 +65,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		Message message = {};
 		while ( messageQueue.PopMessage(message) )
 		{
-			IF( ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown, middleMouseDown, middleMouseClicked),
+			IF( ProcessMessage(message, gameTimer, renderer, window),
 				IS_FALSE, goto Cleanup);
 		}
-		renderer.HandleInput(leftMouseDown, rightMouseDown, middleMouseClicked, window.MousePosition());
+
+		IF( renderer.Update(gameTimer, window.GetInput()),
+			IS_FALSE, goto Cleanup);
 
 		//The fun stuff!
-		if ( !renderer.Update(gameTimer) ) { goto Cleanup; }
-
-		//Sigh...
-		middleMouseClicked = false;
 		IF( renderer.Render(),
 			IS_FALSE, goto Cleanup);
 	}
@@ -94,11 +88,7 @@ Cleanup:
 bool ProcessMessage(Message    &message,
                     GameTimer  &gameTimer,
                     Renderer   &renderer,
-              const HostWindow &window,
-                    bool       &leftMouseDown,
-                    bool       &rightMouseDown,
-                    bool       &middleMouseDown,
-                    bool       &middleMouseClicked)
+              const HostWindow &window)
 {
 	switch ( message )
 	{
@@ -137,35 +127,6 @@ bool ProcessMessage(Message    &message,
 
 		case Message::WindowClosed:
 			//TODO: Handle if closing was unexpected
-			break;
-
-		case Message::MouseLeftDown:
-			leftMouseDown = true;
-			break;
-
-		case Message::MouseLeftUp:
-			leftMouseDown = false;
-			break;
-
-		case Message::MouseRightDown:
-			rightMouseDown = true;
-			break;
-
-		case Message::MouseRightUp:
-			rightMouseDown = false;
-			break;
-
-		case Message::MouseMiddleDown:
-			middleMouseClicked = true;
-			middleMouseDown = true;
-			break;
-
-		case Message::MouseMiddleUp:
-			middleMouseDown = false;
-			break;
-
-		case Message::MouseWheelDown:
-		case Message::MouseWheelUp:
 			break;
 	}
 

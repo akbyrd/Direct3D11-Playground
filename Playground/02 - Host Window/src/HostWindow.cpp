@@ -4,11 +4,14 @@
 #include "Utility.h"
 #include "Logging.h"
 
-bool   HostWindow::IsActive()      const { return isActive;      }
-bool   HostWindow::IsMinimized()   const { return isMinimized;   }
-bool   HostWindow::IsResizing()    const { return isResizing;    }
-HWND   HostWindow::GetHWND()       const { return hwnd;          }
-POINTS HostWindow::MousePosition() const { return mousePosition; }
+using namespace Utility;
+
+using Input = HostWindow::Input;
+
+bool HostWindow::IsActive()    const { return isActive;    }
+bool HostWindow::IsMinimized() const { return isMinimized; }
+bool HostWindow::IsResizing()  const { return isResizing;  }
+HWND HostWindow::GetHWND()     const { return hwnd;        }
 
 bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
                             int clientWidth, int clientHeight,
@@ -94,6 +97,21 @@ bool HostWindow::ClientSizeToWindowSize(int &width, int &height,
 	return true;
 }
 
+Input* HostWindow::GetInput()
+{
+	//Copy
+	previousInput = input;
+
+	//Clear
+	for ( size_t i = 0; i < ArraySize(input.buttons); ++i )
+	{
+		input.buttons[i].transitionCount = 0;
+	}
+
+	//Return
+	return &previousInput;
+}
+
 void HostWindow::Teardown()
 {
 	//Show the mouse cursor
@@ -110,14 +128,13 @@ void HostWindow::Teardown()
 
 LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	//throw_assert
 	switch ( uMsg )
 	{
-		//TODO: Move to input in game
-		case WM_KEYDOWN:
-		case WM_KEYUP: {
+		case WM_KEYUP:
+		case WM_KEYDOWN: {
 			if ( wParam == VK_ESCAPE )
 				PostQuitMessage(0);
-
 			return 0;
 		}
 
@@ -225,48 +242,64 @@ LRESULT HostWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_MOUSEWHEEL: {
-			//TODO: Should really check storing and incrementing the offset
-			short delta = GET_WHEEL_DELTA_WPARAM(wParam);
-			if ( delta > WHEEL_DELTA )
-				messageQueue->PushMessage(Message::MouseWheelUp);
-			else if ( delta < -WHEEL_DELTA )
-				messageQueue->PushMessage(Message::MouseWheelDown);
+			//TODO: There's some drift here when scrolling quickly. Why?
+			mouseWheelAccumulator += GET_WHEEL_DELTA_WPARAM(wParam);
+			while ( mouseWheelAccumulator >= WHEEL_DELTA )
+			{
+				mouseWheelAccumulator -= WHEEL_DELTA;
+				input.mouseWheelUp.transitionCount += 2;
+			}
+			 while ( mouseWheelAccumulator <= -WHEEL_DELTA )
+			{
+				mouseWheelAccumulator += WHEEL_DELTA;
+				input.mouseWheelDown.transitionCount += 2;
+			}
 			goto UpdateMousePosition;
 		}
 
 		case WM_RBUTTONDOWN: {
-			messageQueue->PushMessage(Message::MouseRightDown);
+			input.mouseRight.isDown = true;
+			input.mouseRight.transitionCount++;
 			goto UpdateMousePosition;
 		}
 
 		case WM_RBUTTONUP: {
-			messageQueue->PushMessage(Message::MouseRightUp);
+			input.mouseRight.isDown = false;
+			input.mouseRight.transitionCount++;
 			goto UpdateMousePosition;
 		}
 
 		case WM_LBUTTONDOWN: {
-			messageQueue->PushMessage(Message::MouseLeftDown);
+			input.mouseLeft.isDown = true;
+			input.mouseLeft.transitionCount++;
 			goto UpdateMousePosition;
 		}
 
 		case WM_LBUTTONUP: {
-			messageQueue->PushMessage(Message::MouseLeftUp);
+			input.mouseLeft.isDown = false;
+			input.mouseLeft.transitionCount++;
 			goto UpdateMousePosition;
 		}
 
 		case WM_MBUTTONDOWN: {
-			messageQueue->PushMessage(Message::MouseMiddleDown);
+			input.mouseMiddle.isDown = true;
+			input.mouseMiddle.transitionCount++;
 			goto UpdateMousePosition;
 		}
 
 		case WM_MBUTTONUP: {
-			messageQueue->PushMessage(Message::MouseMiddleUp);
+			input.mouseMiddle.isDown = false;
+			input.mouseMiddle.transitionCount++;
 			goto UpdateMousePosition;
 		}
 
+		/* TODO: Only the final mouse position is taken into account, rather than
+		 * its movement over the course of the frame. Make this better?
+		 */
 		UpdateMousePosition:
 		case WM_MOUSEMOVE: {
-			mousePosition = MAKEPOINTS(lParam);
+			input.mouseX = GET_X_LPARAM(lParam);
+			input.mouseY = GET_Y_LPARAM(lParam);
 			return 0;
 		}
 	}
