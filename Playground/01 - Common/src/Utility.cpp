@@ -1,9 +1,8 @@
-#include "stdafx.h"
-
 #include <fstream>
 #include <memory>
 
 #include "Utility.h"
+#include "Logging.h"
 
 using namespace std;
 

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <Windows.h>
+
+#include <exception>
+#include <string>
+
 #define throw_logged(msg)                        \
 do { if ( !(msg) )                               \
 {                                                \

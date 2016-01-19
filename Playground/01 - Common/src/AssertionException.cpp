@@ -1,6 +1,5 @@
-#include "stdafx.h"
-
 #include "AssertionException.h"
+#include "Logging.h"
 
 using namespace std;
 

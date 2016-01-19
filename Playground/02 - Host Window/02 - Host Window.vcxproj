@@ -88,6 +88,9 @@
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\01 - Common\01 - Common.vcxproj">
+      <Project>{2dbc218a-d0df-4802-a38f-6380ceb46247}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
       <Project>{04b467ba-0d82-495a-86fc-38f3da5e0e3d}</Project>
     </ProjectReference>

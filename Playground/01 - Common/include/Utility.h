@@ -3,6 +3,8 @@
 #include <wrl\client.h>
 #include <memory>
 
+#include <d3d11.h>
+
 namespace Utility
 {
 	template<typename T, size_t S>

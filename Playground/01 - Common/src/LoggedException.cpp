@@ -1,6 +1,7 @@
-#include "stdafx.h"
+#include <Windows.h>
 
 #include "LoggedException.h"
+#include "Logging.h"
 
 using namespace std;
 
