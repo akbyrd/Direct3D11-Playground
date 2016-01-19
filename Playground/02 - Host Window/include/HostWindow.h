@@ -4,6 +4,7 @@
 
 #include "Window.h"
 #include "MessageQueue.h"
+#include "Common.h"
 
 class HostWindow final : public Window
 {

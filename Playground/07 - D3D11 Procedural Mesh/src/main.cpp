@@ -28,8 +28,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	bool middleMouseClicked = false;
 
 	//Initialize game components
-	if ( !window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()) ) { goto Cleanup; }
-	if ( !renderer.Initialize(window.GetHWND()) ) { goto Cleanup; }
+	IF( window.Initialize(L"Direct3D11 Playground", iCmdshow, 800, 600, messageQueue.GetQueuePusher()),
+		IS_FALSE, goto Cleanup);
+
+	IF( renderer.Initialize(window.GetHWND()),
+		IS_FALSE, goto Cleanup);
+
 	gameTimer.Start();
 
 	MSG msg = {};
@@ -66,16 +70,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 		while ( messageQueue.PopMessage(message) )
 		{
 			IF( ProcessMessage(message, gameTimer, renderer, window, leftMouseDown, rightMouseDown, middleMouseDown, middleMouseClicked),
-				FALSE, goto Cleanup);
+				IS_FALSE, goto Cleanup);
 		}
 		renderer.HandleInput(leftMouseDown, rightMouseDown, middleMouseClicked, window.MousePosition());
 
 		//The fun stuff!
 		if ( !renderer.Update(gameTimer) ) { goto Cleanup; }
-		if ( !renderer.Render()          ) { goto Cleanup; }
 
 		//Sigh...
 		middleMouseClicked = false;
+		IF( renderer.Render(),
+			IS_FALSE, goto Cleanup);
 	}
 
 	//Cleanup and shutdown

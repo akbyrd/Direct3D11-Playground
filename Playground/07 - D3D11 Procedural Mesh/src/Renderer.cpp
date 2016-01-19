@@ -15,19 +15,19 @@ using namespace HLSL;
 bool Renderer::Initialize(HWND hwnd)
 {
 	IF( __super::Initialize(hwnd),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	IF( VSLoadCreateSet(L"Basic Vertex Shader.cso"),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	IF( PSLoadCreateSet(L"Basic Pixel Shader.cso"),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	IF( InitializeMesh(),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	IF( InitializeRasterizerStates(),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 
@@ -40,7 +40,7 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 	unique_ptr<char[]> vsBytes;
 	size_t vsBytesLength;
 	IF( LoadFile(filename, vsBytes, vsBytesLength),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	//Create
 	IF( pD3DDevice->CreateVertexShader(vsBytes.get(), vsBytesLength, nullptr, &vs),
@@ -89,7 +89,7 @@ bool Renderer::PSLoadCreateSet(const wstring &filename)
 	unique_ptr<char[]> psBytes;
 	size_t psBytesLength;
 	IF( LoadFile(filename, psBytes, psBytesLength),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	//Create
 	IF( pD3DDevice->CreatePixelShader(psBytes.get(), psBytesLength, nullptr, &ps),
@@ -124,7 +124,7 @@ bool Renderer::InitializeMesh()
 
 	meshVerts.reset(new Vertex[vertexCount]);
 	IF( meshVerts,
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	for ( size_t z = 0; z <= meshResolutionZ; ++z )
 	{
@@ -177,7 +177,7 @@ bool Renderer::InitializeMesh()
 	//Indices
 	unique_ptr<UINT[]> meshIndices(new UINT[indexCount]);
 	IF( meshIndices,
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	for ( size_t z = 0; z < meshResolutionZ; ++z )
 	{
@@ -255,7 +255,7 @@ bool Renderer::InitializeRasterizerStates()
 bool Renderer::Resize()
 {
 	IF( __super::Resize(),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float) width / height, 0.1f, 100.0f);
 	XMStoreFloat4x4(&proj, P);
@@ -321,7 +321,7 @@ void Renderer::UpdateRasterizeState()
 bool Renderer::Update(const GameTimer &gameTimer)
 {
 	IF( __super::Update(gameTimer),
-		FALSE, return false);
+		IS_FALSE, return false);
 
 	//*
 	//Animate mesh

@@ -27,18 +27,3 @@
 #ifdef _DEBUG
 #include <dxgidebug.h>
 #endif
-
-// Project Header Files
-#include "Logging.h"
-
-// Macros
-#define IGNORE
-#define FALSE !
-
-#define IF(expression, check, action) \
-do {                                  \
-	if ( check(expression) )          \
-	{                                 \
-		action;                       \
-	}                                 \
-} while ( 0 )                         

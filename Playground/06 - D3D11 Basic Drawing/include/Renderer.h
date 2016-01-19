@@ -3,6 +3,7 @@
 #include <wrl\client.h>
 
 #include "RendererBase.h"
+#include "HostWindow.h"
 
 class Renderer : public RendererBase
 {

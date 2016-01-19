@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "HostWindow.h"
+#include "Utility.h"
+#include "Logging.h"
 
 bool   HostWindow::IsActive()      const { return isActive;      }
 bool   HostWindow::IsMinimized()   const { return isMinimized;   }
