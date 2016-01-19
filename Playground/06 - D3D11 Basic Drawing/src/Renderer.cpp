@@ -284,6 +284,22 @@ void Renderer::ProcessInput(const HostWindow::Input *input)
 		ReleaseCapture();
 	}
 
+	if ( input->mouseWheelUp.transitionCount > 0 )
+	{
+		radius -= .4f * input->mouseWheelUp.transitionCount;
+
+		if ( radius < epsilon ) radius = epsilon;
+		if ( radius > 50      ) radius = 50;
+	}
+
+	if ( input->mouseWheelDown.transitionCount > 0 )
+	{
+		radius += .4f * input->mouseWheelDown.transitionCount;
+
+		if ( radius < epsilon ) radius = epsilon;
+		if ( radius > 50      ) radius = 50;
+	}
+
 	lastMousePosition.x = input->mouseX;
 	lastMousePosition.y = input->mouseY;
 }
