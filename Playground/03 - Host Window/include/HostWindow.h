@@ -17,7 +17,9 @@ public:
 	HWND   GetHWND()      const;
 	Input* GetInput();
 
-	bool Initialize(LPCWSTR applicationName, int iCmdshow, int width, int height, MessageQueue::Pusher* messageQueue);
+	bool Initialize(LPCWSTR applicationName, int iCmdshow,
+	                uint16f width, uint16f height,
+	                MessageQueue::Pusher* messageQueue);
 	void Teardown();
 
 	struct ButtonState
@@ -50,14 +52,14 @@ protected:
 	virtual LRESULT MessageHandler(UINT, WPARAM, LPARAM);
 
 private:
-	bool ClientSizeToWindowSize(int&, int&, int, int, DWORD);
+	bool ClientSizeToWindowSize(uint16f&, uint16f&, uint16f, uint16f, DWORD);
 
 	LPCWSTR               applicationName = nullptr;
 	HINSTANCE             hInstance       = nullptr;
 	MessageQueue::Pusher* messageQueue    = nullptr;
 
-	int minWidth  = 640;
-	int minHeight = 480;
+	uint16f minWidth  = 640;
+	uint16f minHeight = 480;
 
 	bool isActive    = false;
 	bool isResizing  = false;

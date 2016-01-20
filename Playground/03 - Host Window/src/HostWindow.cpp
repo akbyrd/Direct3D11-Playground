@@ -14,7 +14,7 @@ bool HostWindow::IsResizing()  const { return isResizing;  }
 HWND HostWindow::GetHWND()     const { return hwnd;        }
 
 bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
-                            int clientWidth, int clientHeight,
+                            uint16f clientWidth, uint16f clientHeight,
                             MessageQueue::Pusher* messageQueue)
 {
 	HostWindow::messageQueue = messageQueue;
@@ -43,8 +43,8 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	DWORD windowStyle = WS_OVERLAPPEDWINDOW;
 
 	//Determine the resolution of the desktop screen
-	int desktopWidth  = GetSystemMetrics(SM_CXSCREEN);
-	int desktopHeight = GetSystemMetrics(SM_CYSCREEN);
+	uint16f desktopWidth  = (uint16f) GetSystemMetrics(SM_CXSCREEN);
+	uint16f desktopHeight = (uint16f) GetSystemMetrics(SM_CYSCREEN);
 
 	//Convert the min size to clamp the client area, not the whole window
 	ClientSizeToWindowSize(minWidth, minHeight, desktopWidth, desktopHeight, windowStyle);
@@ -53,8 +53,8 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	ClientSizeToWindowSize(clientWidth, clientHeight, desktopWidth, desktopHeight, windowStyle);
 
 	//Center window
-	int windowPosX = (desktopWidth  - clientWidth ) / 2;
-	int windowPosY = (desktopHeight - clientHeight) / 2;
+	uint16f windowPosX = (desktopWidth  - clientWidth ) / 2;
+	uint16f windowPosY = (desktopHeight - clientHeight) / 2;
 
 	//Create the window with the screen settings and get the handle to it
 	WinCreateWindow(wc, WS_EX_APPWINDOW, applicationName, applicationName,
@@ -70,8 +70,9 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	return true;
 }
 
-bool HostWindow::ClientSizeToWindowSize(int &width, int &height,
-                                        int desktopWidth, int desktopHeight, DWORD windowStyle)
+bool HostWindow::ClientSizeToWindowSize(uint16f &width, uint16f &height,
+                                        uint16f desktopWidth, uint16f desktopHeight,
+                                        DWORD windowStyle)
 {
 	//Convert the min size to clamp the client area, not the whole window
 	RECT windowRect = {};

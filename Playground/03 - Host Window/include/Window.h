@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common.h"
+
 class Window
 {
 protected:
@@ -13,10 +15,10 @@ protected:
 		LPCWSTR lpClassName,
 		LPCWSTR lpWindowName,
 		DWORD dwStyle,
-		int X,
-		int Y,
-		int nWidth,
-		int nHeight,
+		uint16f X,
+		uint16f Y,
+		uint16f nWidth,
+		uint16f nHeight,
 		HWND hWndParent,
 		HMENU hMenu,
 		HINSTANCE hInstance);
