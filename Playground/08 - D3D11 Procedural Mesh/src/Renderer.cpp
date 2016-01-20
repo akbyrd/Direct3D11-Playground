@@ -65,7 +65,7 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 
 	IF( pD3DDevice->CreateBuffer(&vsConstBuffDes, nullptr, &vsConstBuffer),
 		LOG_FAILED, return false);
-	SetDebugObjectName(vsConstBuffer, "VS Constant Buffer (PO)");
+	SetDebugObjectName(vsConstBuffer, "VS Constant Buffer (Per-Object)");
 
 
 	//Input layout
@@ -239,6 +239,7 @@ bool Renderer::InitializeRasterizerStates()
 
 	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateSolid),
 		LOG_FAILED, return false);
+	SetDebugObjectName(rasterizerStateSolid, "Rasterizer State (Solid)");
 
 
 	//Wireframe
@@ -246,6 +247,7 @@ bool Renderer::InitializeRasterizerStates()
 
 	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateWireframe),
 		LOG_FAILED, return false);
+	SetDebugObjectName(rasterizerStateWireframe, "Rasterizer State (Wireframe)");
 
 	//Start off in correct state
 	UpdateRasterizeState();

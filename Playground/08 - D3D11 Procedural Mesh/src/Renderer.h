@@ -47,18 +47,18 @@ private:
 
 	void ProcessInput(const HostWindow::Input*);
 
-	uint16_t meshResolutionX     = 64;
-	uint16_t meshResolutionZ     = 64;
-	float    meshWidth           = 10;
-	float    meshHeight          = 10;
-	float    meshMaxAmplitude    = 1;
-	float    meshAmplitudePeriod = 4;
+	uint16f meshResolutionX     = 64;
+	uint16f meshResolutionZ     = 64;
+	float   meshWidth           = 10;
+	float   meshHeight          = 10;
+	float   meshMaxAmplitude    = 1;
+	float   meshAmplitudePeriod = 4;
 
-	float  radius            = 14;
-	float  theta             = DirectX::XM_PIDIV4;
-	float  phi               = DirectX::XM_PIDIV4 * 1.5f;
-	POINTS lastMousePosition = {};
-	bool  isWireframeEnabled = true;
+	float  radius             = 14;
+	float  theta              = DirectX::XM_PIDIV4;
+	float  phi                = DirectX::XM_PIDIV4 * 1.5f;
+	POINTS lastMousePosition  = {};
+	bool   isWireframeEnabled = false;
 
 	XMFLOAT4X4 world;
 	XMFLOAT4X4 view;
