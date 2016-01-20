@@ -285,30 +285,31 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 
 	ProcessInput(input);
 
-	//*
 	//Animate mesh
 	double t = gameTimer.Time();
-	float scaledT = (float) t / meshAmplitudePeriod;
+	float scaledT = (float) t * XM_2PI / meshAmplitudePeriod;
 
-	for ( size_t z = 0; z <= meshResolutionZ; ++z )
+	Vertex *vertex = meshVerts.get();
+	float xPhaseScale = XM_2PI / meshResolutionX;
+	float zPhaseScale = XM_2PI / meshResolutionZ;
+
+	for ( float z = 0; z <= meshResolutionZ; ++z )
 	{
-		size_t rowOffset = z*(meshResolutionX+1);
+		float zHeight = sinf(scaledT + z*zPhaseScale);
 
-		for ( size_t x = 0; x <= meshResolutionX; ++x )
+		for ( float x = 0; x <= meshResolutionX; ++x )
 		{
-			//Noticeable. ~.03ms
-			meshVerts[x + rowOffset].position.y = meshMaxAmplitude * (
-				  sinf(XM_2PI * (scaledT + ((float) x / meshResolutionX)))
-				+ sinf(XM_2PI * (scaledT + ((float) z / meshResolutionZ)))
+			(vertex++)->position.y = meshMaxAmplitude * (
+				sinf(scaledT + x*xPhaseScale)
+				+ zHeight
 			);
 		}
 	}
 	//*/
 
-	//TODO: It might be faster to use a dynamic buffer and map/unmap
-	//SLOW! ~.14ms
-	pD3DImmediateContext->UpdateSubresource(meshVertexBuffer.Get(), 0, nullptr, meshVerts.get(), 0, 0);
 
+	//TODO: Should be faster to use a dynamic buffer and map/unmap
+	pD3DImmediateContext->UpdateSubresource(meshVertexBuffer.Get(), 0, nullptr, meshVerts.get(), 0, 0);
 
 	//Update Camera
 	float x = radius*sinf(phi)*cosf(theta);
