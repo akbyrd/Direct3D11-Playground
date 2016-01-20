@@ -252,12 +252,13 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input *input
 
 void Renderer::ProcessInput(const HostWindow::Input *input)
 {
-	static float epsilon = numeric_limits<float>::epsilon();
+	const float epsilon = numeric_limits<float>::epsilon();
 
+	//Rotate
 	if ( input->mouseLeft.isDown )
 	{
-		short dx = input->mouseX - lastMousePosition.x;
-		short dy = input->mouseY - lastMousePosition.y;
+		int16f dx = input->mouseX - lastMousePosition.x;
+		int16f dy = input->mouseY - lastMousePosition.y;
 
 		theta -= .006f * dx;
 		  phi -= .006f * dy;
@@ -267,15 +268,13 @@ void Renderer::ProcessInput(const HostWindow::Input *input)
 
 		SetCapture(hwnd);
 	}
+	//Zoom
 	else if ( input->mouseRight.isDown )
 	{
-		short dx = input->mouseX - lastMousePosition.x;
-		short dy = input->mouseY - lastMousePosition.y;
+		int16f dx = input->mouseX - lastMousePosition.x;
+		int16f dy = input->mouseY - lastMousePosition.y;
 
 		radius += .01f * (dy - dx);
-
-		if ( radius < epsilon ) radius = epsilon;
-		if ( radius > 50      ) radius = 50;
 
 		SetCapture(hwnd);
 	}
@@ -284,21 +283,15 @@ void Renderer::ProcessInput(const HostWindow::Input *input)
 		ReleaseCapture();
 	}
 
-	if ( input->mouseWheelUp.transitionCount > 0 )
-	{
-		radius -= .4f * input->mouseWheelUp.transitionCount;
+	//Zoom
+	int8f zoomSteps = 0;
+	zoomSteps += input->mouseWheelUp.transitionCount;
+	zoomSteps -= input->mouseWheelDown.transitionCount;
 
-		if ( radius < epsilon ) radius = epsilon;
-		if ( radius > 50      ) radius = 50;
-	}
+	radius -= .4f * zoomSteps;
 
-	if ( input->mouseWheelDown.transitionCount > 0 )
-	{
-		radius += .4f * input->mouseWheelDown.transitionCount;
-
-		if ( radius < epsilon ) radius = epsilon;
-		if ( radius > 50      ) radius = 50;
-	}
+	if ( radius < epsilon ) radius = epsilon;
+	if ( radius > 50      ) radius = 50;
 
 	lastMousePosition.x = input->mouseX;
 	lastMousePosition.y = input->mouseY;

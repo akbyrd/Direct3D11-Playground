@@ -332,14 +332,14 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 
 void Renderer::ProcessInput(const HostWindow::Input* input)
 {
-	float epsilon = numeric_limits<float>::epsilon();
-
-	SHORT dx = input->mouseX - lastMousePosition.x;
-	SHORT dy = input->mouseY - lastMousePosition.y;
+	const float epsilon = numeric_limits<float>::epsilon();
 
 	//Rotate
 	if ( input->mouseLeft.isDown )
 	{
+		int16f dx = input->mouseX - lastMousePosition.x;
+		int16f dy = input->mouseY - lastMousePosition.y;
+
 		theta -= .006f * dx;
 		phi   -= .006f * dy;
 
@@ -351,10 +351,10 @@ void Renderer::ProcessInput(const HostWindow::Input* input)
 	//Zoom
 	else if ( input->mouseRight.isDown )
 	{
-		radius += .01f * (dy - dx);
+		int16f dx = input->mouseX - lastMousePosition.x;
+		int16f dy = input->mouseY - lastMousePosition.y;
 
-		     if ( radius < epsilon ) radius = epsilon;
-		else if ( radius > 50      ) radius = 50;
+		radius += .01f * (dy - dx);
 
 		SetCapture(hwnd);
 	}
@@ -363,12 +363,22 @@ void Renderer::ProcessInput(const HostWindow::Input* input)
 		ReleaseCapture();
 
 		//Toggle wireframe
-		if ( input->mouseMiddle.transitionCount % 2 == 1 )
+		if ( input->mouseMiddle.isDown && input->mouseMiddle.transitionCount % 2 == 1 )
 		{
 			isWireframeEnabled = !isWireframeEnabled;
 			UpdateRasterizeState();
 		}
 	}
+
+	//Zoom
+	int8f zoomSteps = 0;
+	zoomSteps += input->mouseWheelUp.transitionCount;
+	zoomSteps -= input->mouseWheelDown.transitionCount;
+
+	radius -= .4f * zoomSteps;
+
+	     if ( radius < epsilon ) radius = epsilon;
+	else if ( radius > 50      ) radius = 50;
 
 	lastMousePosition.x = input->mouseX;
 	lastMousePosition.y = input->mouseY;
