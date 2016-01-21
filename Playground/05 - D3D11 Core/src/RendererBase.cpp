@@ -386,17 +386,17 @@ bool RendererBase::InitializeDepthBuffer()
 	HRESULT hr;
 
 	D3D11_TEXTURE2D_DESC depthDesc = {};
-	depthDesc.Width = width;
-	depthDesc.Height = height;
-	depthDesc.MipLevels = 1;
-	depthDesc.ArraySize = 1;
-	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthDesc.SampleDesc.Count = multiSampleCount;
+	depthDesc.Width              = width;
+	depthDesc.Height             = height;
+	depthDesc.MipLevels          = 1;
+	depthDesc.ArraySize          = 1;
+	depthDesc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthDesc.SampleDesc.Count   = multiSampleCount;
 	depthDesc.SampleDesc.Quality = numQualityLevels - 1;
-	depthDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthDesc.CPUAccessFlags = 0;
-	depthDesc.MiscFlags = 0;
+	depthDesc.Usage              = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags          = D3D11_BIND_DEPTH_STENCIL;
+	depthDesc.CPUAccessFlags     = 0;
+	depthDesc.MiscFlags          = 0;
 
 	ComPtr<ID3D11Texture2D> pDepthBuffer;
 	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer);
@@ -424,8 +424,8 @@ void RendererBase::InitializeViewport()
 	D3D11_VIEWPORT viewport = {};
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = (FLOAT) width;
-	viewport.Height = (FLOAT) height;
+	viewport.Width    = (FLOAT) width;
+	viewport.Height   = (FLOAT) height;
 	viewport.MinDepth = 0;
 	viewport.MaxDepth = 1;
 
