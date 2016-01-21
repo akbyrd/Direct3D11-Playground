@@ -224,6 +224,16 @@ bool Renderer::InitializeMesh()
 
 bool Renderer::InitializeRasterizerStates()
 {
+	/* NOTE: MultisampleEnable toggles between quadrilateral AA (true) and alpha AA (false).
+	 * Alpha AA has a massive performance impact while quadrilateral is much smaller (negligible
+	 * for the mesh drawn here). Visually, it's hard to tell the difference between quadrilateral
+	 * AA on and off in this demo. Alpha AA on the other is more obvious. It causes the wireframe
+	 * to draw lines 2 px wide instead of 1.
+	 * 
+	 * See remarks: https://msdn.microsoft.com/en-us/library/windows/desktop/ff476198(v=vs.85).aspx
+	 */
+	const bool useQuadrilateralLineAA = true;
+
 	//Solid
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	rasterizerDesc.FillMode              = D3D11_FILL_SOLID;
@@ -234,8 +244,8 @@ bool Renderer::InitializeRasterizerStates()
 	rasterizerDesc.SlopeScaledDepthBias  = 0;
 	rasterizerDesc.DepthClipEnable       = true;
 	rasterizerDesc.ScissorEnable         = false;
-	rasterizerDesc.MultisampleEnable     = false;
-	rasterizerDesc.AntialiasedLineEnable = multiSampleCount > 0;
+	rasterizerDesc.MultisampleEnable     = multiSampleCount > 1 && useQuadrilateralLineAA;
+	rasterizerDesc.AntialiasedLineEnable = multiSampleCount > 1;
 
 	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateSolid),
 		LOG_FAILED, return false);
@@ -305,7 +315,6 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 			);
 		}
 	}
-	//*/
 
 
 	//TODO: Should be faster to use a dynamic buffer and map/unmap
