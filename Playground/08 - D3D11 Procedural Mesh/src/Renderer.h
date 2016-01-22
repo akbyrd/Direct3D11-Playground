@@ -21,6 +21,7 @@ private:
 	using XMFLOAT4   = DirectX::XMFLOAT4;
 	using XMFLOAT4X4 = DirectX::XMFLOAT4X4;
 
+	__declspec(align(16))
 	struct Vertex
 	{
 		XMFLOAT3 position;
@@ -38,7 +39,7 @@ private:
 	bool InitializeMesh();
 	ComPtr<ID3D11Buffer> meshVertexBuffer;
 	ComPtr<ID3D11Buffer> meshIndexBuffer;
-	std::unique_ptr<Vertex[]> meshVerts;
+	Vertex* meshVerts = {};
 
 	bool InitializeRasterizerStates();
 	void UpdateRasterizeState();

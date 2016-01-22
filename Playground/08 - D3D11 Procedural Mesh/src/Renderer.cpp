@@ -123,7 +123,7 @@ bool Renderer::InitializeMesh()
 	float dx = meshWidth  / meshResolutionX;
 	float dz = meshHeight / meshResolutionZ;
 
-	meshVerts.reset(new Vertex[vertexCount]);
+	meshVerts = (Vertex*) _aligned_malloc(vertexCount * sizeof(Vertex), alignof(Vertex));
 	IF( meshVerts,
 		IS_FALSE, return false);
 
@@ -161,7 +161,7 @@ bool Renderer::InitializeMesh()
 	vertBuffDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA vertBuffInitData = {};
-	vertBuffInitData.pSysMem          = meshVerts.get();
+	vertBuffInitData.pSysMem          = meshVerts;
 	vertBuffInitData.SysMemPitch      = 0;
 	vertBuffInitData.SysMemSlicePitch = 0;
 
@@ -299,7 +299,7 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 	double t = gameTimer.Time();
 	float scaledT = (float) t * XM_2PI / meshAmplitudePeriod;
 
-	Vertex *vertex = meshVerts.get();
+	Vertex *vertex = meshVerts;
 	float xPhaseScale = XM_2PI / meshResolutionX;
 	float zPhaseScale = XM_2PI / meshResolutionZ;
 
@@ -318,7 +318,7 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 
 
 	//TODO: Should be faster to use a dynamic buffer and map/unmap
-	pD3DImmediateContext->UpdateSubresource(meshVertexBuffer.Get(), 0, nullptr, meshVerts.get(), 0, 0);
+	pD3DImmediateContext->UpdateSubresource(meshVertexBuffer.Get(), 0, nullptr, meshVerts, 0, 0);
 
 	//Update Camera
 	float x = radius*sinf(phi)*cosf(theta);
@@ -417,7 +417,7 @@ void Renderer::Teardown()
 	ps.Reset();
 	meshVertexBuffer.Reset();
 	meshIndexBuffer.Reset();
-	meshVerts.reset();
+	_aligned_free(meshVerts);
 
 	__super::Teardown();
 }
