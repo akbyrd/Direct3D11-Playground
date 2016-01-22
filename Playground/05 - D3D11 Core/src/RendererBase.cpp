@@ -642,6 +642,7 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 {
 	static const int bufferSize = 30;
 
+	static char titleBuffer[128];
 	static double buffer[bufferSize];
 	static int head = -1;
 	static int length = 0;
@@ -669,18 +670,21 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 	double delta = buffer[head] - buffer[tail];
 	averageFrameTime = delta * deltaToMS;
 
-	//Update FPS in window title once a second
-	static double lastFPSUpdateTime = DBL_EPSILON;
+	//Update FPS in window title periodically
+	static double lastFPSUpdateTime = numeric_limits<double>::epsilon();
 	if ( gameTimer.RealTime() - lastFPSUpdateTime >= .5f )
 	{
 		lastFPSUpdateTime = gameTimer.RealTime();
 
-		wostringstream outs;
-		outs << L"FPS: " << setprecision(0) << fixed << (1000 / averageFrameTime);
-		outs << L"   Frame Time: " << setprecision(2) << averageFrameTime << L" ms";
-		outs << L"   (" << width << L" x " << height << L")";
+		snprintf(titleBuffer, ArraySize(titleBuffer),
+			"FPS: %.0f   Frame Time: %.2f ms (%d x %d)",
+			1000 / averageFrameTime,
+			averageFrameTime,
+			width,
+			height
+		);
 
-		SetWindowTextW(hwnd, outs.str().c_str());
+		SetWindowTextA(hwnd, titleBuffer);
 	}
 
 	return;
