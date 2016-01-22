@@ -11,14 +11,14 @@ GameTimer::GameTimer()
 {
 	isStopped = true;
 
-	           time      = 0;
-	           timeTicks = 0;
-	       realTime      = 0;
-	       realTimeTicks = 0;
-	      deltaTime      = 0;
-	      deltaTimeTicks = 0;
-	  realDeltaTime      = 0;
-	  realDeltaTimeTicks = 0;
+	         time      = 0;
+	         timeTicks = 0;
+	     realTime      = 0;
+	     realTimeTicks = 0;
+	    deltaTime      = 0;
+	    deltaTimeTicks = 0;
+	realDeltaTime      = 0;
+	realDeltaTimeTicks = 0;
 
 	//Initialize frequency info
 	uint64_t ticksPerSecond;

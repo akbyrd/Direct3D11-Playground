@@ -19,17 +19,17 @@ public:
 private:
 	bool isStopped;
 
-	 double time;
-	 uint64_t timeTicks;
+	double   time;
+	uint64_t timeTicks;
 
-	 double realTime;
-	 uint64_t realTimeTicks;
+	double   realTime;
+	uint64_t realTimeTicks;
 
-	 double deltaTime;
-	 uint64_t deltaTimeTicks;
+	double   deltaTime;
+	uint64_t deltaTimeTicks;
 
-	 double realDeltaTime;
-	 uint64_t realDeltaTimeTicks;
+	double   realDeltaTime;
+	uint64_t realDeltaTimeTicks;
 
 	double secondsPerTick;
 
