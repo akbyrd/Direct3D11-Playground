@@ -57,9 +57,9 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 	//Per-object constant buffer
 	D3D11_BUFFER_DESC vsConstBuffDes = {};
 	vsConstBuffDes.ByteWidth           = sizeof(XMFLOAT4X4);
-	vsConstBuffDes.Usage               = D3D11_USAGE_DEFAULT;
+	vsConstBuffDes.Usage               = D3D11_USAGE_DYNAMIC;
 	vsConstBuffDes.BindFlags           = D3D11_BIND_CONSTANT_BUFFER;
-	vsConstBuffDes.CPUAccessFlags      = 0;
+	vsConstBuffDes.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
 	vsConstBuffDes.MiscFlags           = 0;
 	vsConstBuffDes.StructureByteStride = 0;
 
@@ -154,9 +154,9 @@ bool Renderer::InitializeMesh()
 
 	D3D11_BUFFER_DESC vertBuffDesc = {};
 	vertBuffDesc.ByteWidth           = sizeof(Vertex) * vertexCount;
-	vertBuffDesc.Usage               = D3D11_USAGE_DEFAULT;
+	vertBuffDesc.Usage               = D3D11_USAGE_DYNAMIC;
 	vertBuffDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
-	vertBuffDesc.CPUAccessFlags      = 0;
+	vertBuffDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
 	vertBuffDesc.MiscFlags           = 0;
 	vertBuffDesc.StructureByteStride = 0;
 
@@ -295,6 +295,14 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 
 	ProcessInput(input);
 
+	/*TODO: Figure out performance
+			- Default vs immutable
+			- Debug vs release
+			- Fullscreen is slow
+			- UpdateSubresource vs Map
+			- Performance counters
+	*/
+
 	//Animate mesh
 	double t = gameTimer.Time();
 	float scaledT = (float) t * XM_2PI / meshAmplitudePeriod;
@@ -316,9 +324,19 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 		}
 	}
 
+	/* NOTE:
+	 *   UpdateSubresource  - .39 ms
+	 *   Map, loop, Unmap   - .63 ms
+	 *   Map, memcpy, Unmap - .32 ms
+	 */
+	D3D11_MAPPED_SUBRESOURCE meshVertexBuffMap = {};
+	IF( pD3DImmediateContext->Map(meshVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &meshVertexBuffMap),
+		LOG_FAILED, return false);
 
-	//TODO: Should be faster to use a dynamic buffer and map/unmap
-	pD3DImmediateContext->UpdateSubresource(meshVertexBuffer.Get(), 0, nullptr, meshVerts, 0, 0);
+	size_t vertCount = (meshResolutionX + 1) * (meshResolutionZ + 1);
+	memcpy(meshVertexBuffMap.pData, meshVerts, sizeof(Vertex)*vertCount);
+
+	pD3DImmediateContext->Unmap(meshVertexBuffer.Get(), 0);
 
 	//Update Camera
 	float x = radius*sinf(phi)*cosf(theta);
@@ -337,7 +355,12 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 	XMMATRIX WVP = XMMatrixTranspose(W * V * P);
 
 	//Update VS cbuffer
-	pD3DImmediateContext->UpdateSubresource(vsConstBuffer.Get(), 0, nullptr, &WVP, 0, 0);
+	D3D11_MAPPED_SUBRESOURCE vsConstBuffMap = {};
+	IF( pD3DImmediateContext->Map(vsConstBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &vsConstBuffMap),
+		LOG_FAILED, return false);
+
+	memcpy(vsConstBuffMap.pData, &WVP, sizeof(WVP));
+	pD3DImmediateContext->Unmap(vsConstBuffer.Get(), 0);
 
 	return true;
 }

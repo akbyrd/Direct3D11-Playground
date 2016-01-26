@@ -39,7 +39,7 @@ private:
 	bool InitializeMesh();
 	ComPtr<ID3D11Buffer> meshVertexBuffer;
 	ComPtr<ID3D11Buffer> meshIndexBuffer;
-	Vertex* meshVerts = {};
+	Vertex* meshVerts = nullptr;
 
 	bool InitializeRasterizerStates();
 	void UpdateRasterizeState();
