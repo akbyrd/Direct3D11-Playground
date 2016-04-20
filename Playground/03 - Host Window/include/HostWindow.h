@@ -11,10 +11,10 @@ class HostWindow final : public Window
 public:
 	struct Input;
 
-	bool   IsActive()     const;
-	bool   IsMinimized()  const;
-	bool   IsResizing()   const;
-	HWND   GetHWND()      const;
+	bool   IsActive()    const;
+	bool   IsMinimized() const;
+	bool   IsResizing()  const;
+	HWND   GetHWND()     const;
 	Input* GetInput();
 
 	bool Initialize(LPCWSTR applicationName, int iCmdshow,
@@ -52,7 +52,7 @@ protected:
 	virtual LRESULT MessageHandler(UINT, WPARAM, LPARAM);
 
 private:
-	bool ClientSizeToWindowSize(uint16f&, uint16f&, uint16f, uint16f, DWORD);
+	bool ClientSizeToWindowSizeClamped(uint16f&, uint16f&, uint16f, uint16f, DWORD);
 
 	LPCWSTR               applicationName = nullptr;
 	HINSTANCE             hInstance       = nullptr;

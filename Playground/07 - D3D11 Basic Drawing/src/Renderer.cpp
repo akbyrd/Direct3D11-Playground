@@ -250,6 +250,7 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input *input
 	return true;
 }
 
+//TODO: Holding left click and scroll the mouse wheel causes the box rotation to change erratically.
 void Renderer::ProcessInput(const HostWindow::Input *input)
 {
 	const float epsilon = numeric_limits<float>::epsilon();

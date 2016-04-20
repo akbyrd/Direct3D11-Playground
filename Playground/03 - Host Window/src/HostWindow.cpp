@@ -25,6 +25,11 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	//Give the application a name
 	HostWindow::applicationName = applicationName;
 
+	/* NOTE: style = CS_HREDRAW | CS_VREDRAW causes the window to go black
+	 * during resizing. I wonder if it's sending messages than can be used
+	 * to render the screen again?
+	 */
+
 	//Setup the windows class with default settings
 	WNDCLASSEX wc = {};
 	wc.style         = 0;
@@ -38,29 +43,34 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName  = nullptr;
 	wc.lpszClassName = HostWindow::applicationName;
-	wc.cbSize        = sizeof(WNDCLASSEX);
+	wc.cbSize        = sizeof(wc);
 
-	DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+	uint16f windowPosX = CW_USEDEFAULT;
+	uint16f windowPosY = CW_USEDEFAULT;
 
-	//Determine the resolution of the desktop screen
-	uint16f desktopWidth  = (uint16f) GetSystemMetrics(SM_CXSCREEN);
-	uint16f desktopHeight = (uint16f) GetSystemMetrics(SM_CYSCREEN);
+	//Determine the usable area of the desktop
+	RECT rect = {};
+	if ( SystemParametersInfoW(SPI_GETWORKAREA, 0, &rect, 0) )
+	{
+		uint16f usableDesktopWidth  = rect.right - rect.left;
+		uint16f usableDesktopHeight = rect.bottom - rect.top;
 
-	//Convert the min size to clamp the client area, not the whole window
-	ClientSizeToWindowSize(minWidth, minHeight, desktopWidth, desktopHeight, windowStyle);
+		ClientSizeToWindowSizeClamped(   minWidth,    minHeight, usableDesktopWidth, usableDesktopHeight, wc.style);
+		ClientSizeToWindowSizeClamped(clientWidth, clientHeight, usableDesktopWidth, usableDesktopHeight, wc.style);
 
-	//Convert the client size to a window size
-	ClientSizeToWindowSize(clientWidth, clientHeight, desktopWidth, desktopHeight, windowStyle);
+		//Center window
+		windowPosX = (usableDesktopWidth  - clientWidth ) / 2;
+		windowPosY = (usableDesktopHeight - clientHeight) / 2;
+	}
 
-	//Center window
-	uint16f windowPosX = (desktopWidth  - clientWidth ) / 2;
-	uint16f windowPosY = (desktopHeight - clientHeight) / 2;
+	DWORD windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_SIZEBOX
+	                  | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+	                  | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
 	//Create the window with the screen settings and get the handle to it
-	WinCreateWindow(wc, WS_EX_APPWINDOW, applicationName, applicationName,
-	                windowStyle,
+	WinCreateWindow(wc, WS_EX_APPWINDOW, applicationName, windowStyle,
 	                windowPosX, windowPosY, clientWidth, clientHeight,
-	                nullptr, nullptr, hInstance);
+	                nullptr);
 
 	//Bring the window up on the screen and set it as main focus
 	ShowWindow(hwnd, iCmdshow);
@@ -70,11 +80,10 @@ bool HostWindow::Initialize(LPCWSTR applicationName, int iCmdshow,
 	return true;
 }
 
-bool HostWindow::ClientSizeToWindowSize(uint16f &width, uint16f &height,
-                                        uint16f desktopWidth, uint16f desktopHeight,
-                                        DWORD windowStyle)
+bool HostWindow::ClientSizeToWindowSizeClamped(uint16f &width, uint16f &height,
+                                               uint16f desktopWidth, uint16f desktopHeight,
+                                               DWORD windowStyle)
 {
-	//Convert the min size to clamp the client area, not the whole window
 	RECT windowRect = {};
 	windowRect.left   = 0;
 	windowRect.top    = 0;
@@ -92,7 +101,7 @@ bool HostWindow::ClientSizeToWindowSize(uint16f &width, uint16f &height,
 	height = windowRect.bottom - windowRect.top;
 
 	//Clamp window size to fit screen
-	width  = std::min(width, desktopWidth);
+	width  = std::min(width , desktopWidth);
 	height = std::min(height, desktopHeight);
 
 	return true;

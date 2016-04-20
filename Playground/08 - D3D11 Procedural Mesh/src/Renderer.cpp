@@ -45,7 +45,7 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 
 	//Create
 	IF( pD3DDevice->CreateVertexShader(vsBytes.get(), vsBytesLength, nullptr, &vs),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 
 	string debugName = wstring_convert<codecvt_utf8<wchar_t>>().to_bytes(filename);
 	SetDebugObjectName(vs, debugName);
@@ -64,7 +64,7 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 	vsConstBuffDes.StructureByteStride = 0;
 
 	IF( pD3DDevice->CreateBuffer(&vsConstBuffDes, nullptr, &vsConstBuffer),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 	SetDebugObjectName(vsConstBuffer, "VS Constant Buffer (Per-Object)");
 
 
@@ -75,7 +75,7 @@ bool Renderer::VSLoadCreateSet(const wstring &filename)
 	};
 
 	IF( pD3DDevice->CreateInputLayout(vsInputDescs, ArraySize(vsInputDescs), vsBytes.get(), vsBytesLength, &vsInputLayout),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 	SetDebugObjectName(vsInputLayout, "Input Layout");
 
 	pD3DImmediateContext->IASetInputLayout(vsInputLayout.Get());
@@ -94,7 +94,7 @@ bool Renderer::PSLoadCreateSet(const wstring &filename)
 
 	//Create
 	IF( pD3DDevice->CreatePixelShader(psBytes.get(), psBytesLength, nullptr, &ps),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 
 	string debugName = wstring_convert<codecvt_utf8<wchar_t>>().to_bytes(filename);
 	SetDebugObjectName(ps, debugName);
@@ -166,7 +166,7 @@ bool Renderer::InitializeMesh()
 	vertBuffInitData.SysMemSlicePitch = 0;
 
 	IF( pD3DDevice->CreateBuffer(&vertBuffDesc, &vertBuffInitData, &meshVertexBuffer),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 	SetDebugObjectName(meshVertexBuffer, "Mesh Vertex Buffer");
 
 	const UINT stride = sizeof(Vertex);
@@ -214,7 +214,7 @@ bool Renderer::InitializeMesh()
 	indexBuffInitData.SysMemSlicePitch = 0;
 
 	IF( pD3DDevice->CreateBuffer(&indexBuffDesc, &indexBuffInitData, &meshIndexBuffer),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 	SetDebugObjectName(meshIndexBuffer, "Mesh Index Buffer");
 
 	pD3DImmediateContext->IASetIndexBuffer(meshIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -248,7 +248,7 @@ bool Renderer::InitializeRasterizerStates()
 	rasterizerDesc.AntialiasedLineEnable = multiSampleCount > 1;
 
 	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateSolid),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 	SetDebugObjectName(rasterizerStateSolid, "Rasterizer State (Solid)");
 
 
@@ -256,7 +256,7 @@ bool Renderer::InitializeRasterizerStates()
 	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 
 	IF( pD3DDevice->CreateRasterizerState(&rasterizerDesc, &rasterizerStateWireframe),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 	SetDebugObjectName(rasterizerStateWireframe, "Rasterizer State (Wireframe)");
 
 	//Start off in correct state
@@ -301,6 +301,7 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 			- Fullscreen is slow
 			- UpdateSubresource vs Map
 			- Performance counters
+			- Write entire range, don't skip fields
 	*/
 
 	//Animate mesh
@@ -331,8 +332,9 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 	 */
 	D3D11_MAPPED_SUBRESOURCE meshVertexBuffMap = {};
 	IF( pD3DImmediateContext->Map(meshVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &meshVertexBuffMap),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 
+	//TODO: Compare loop that writes only position vs memcpy
 	size_t vertCount = (meshResolutionX + 1) * (meshResolutionZ + 1);
 	memcpy(meshVertexBuffMap.pData, meshVerts, sizeof(Vertex)*vertCount);
 
@@ -357,7 +359,7 @@ bool Renderer::Update(const GameTimer &gameTimer, const HostWindow::Input* input
 	//Update VS cbuffer
 	D3D11_MAPPED_SUBRESOURCE vsConstBuffMap = {};
 	IF( pD3DImmediateContext->Map(vsConstBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &vsConstBuffMap),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 
 	memcpy(vsConstBuffMap.pData, &WVP, sizeof(WVP));
 	pD3DImmediateContext->Unmap(vsConstBuffer.Get(), 0);
@@ -428,7 +430,7 @@ bool Renderer::Render()
 	pD3DImmediateContext->DrawIndexed(indexCount, 0, 0);
 
 	IF( pSwapChain->Present(0, 0),
-		LOG_FAILED, return false);
+		LOG_HRESULT, return false);
 
 	return true;
 }

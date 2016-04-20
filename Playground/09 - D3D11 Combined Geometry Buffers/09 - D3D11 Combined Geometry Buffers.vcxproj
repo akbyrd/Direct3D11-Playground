@@ -11,20 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{2DBC218A-D0DF-4802-A38F-6380CEB46247}</ProjectGuid>
-    <RootNamespace>My01Common</RootNamespace>
+    <ProjectGuid>{755ED472-B9CD-44B9-B50B-EAD399A57C01}</ProjectGuid>
+    <RootNamespace>My09D3D11CombinedGeometryBuffers</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
-    <ProjectName>02 - Common</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -38,10 +37,14 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
+    <Import Project="..\Shared\D3D11 Core.props" />
+    <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
+    <Import Project="..\Shared\D3D11 Core.props" />
+    <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -66,22 +69,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\AssertionException.h" />
-    <ClInclude Include="include\Common.h" />
-    <ClInclude Include="include\HLSL.h" />
-    <ClInclude Include="include\LoggedException.h" />
-    <ClInclude Include="include\Utility.h" />
-    <ClInclude Include="include\Timer.h" />
+    <FxCompile Include="shaders\Basic Pixel Shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shaders\Basic Vertex Shader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AssertionException.cpp" />
-    <ClCompile Include="src\LoggedException.cpp" />
-    <ClCompile Include="src\Utility.cpp" />
-    <ClCompile Include="src\Timer.cpp" />
+    <ClCompile Include="private include\Platform.h" />
+    <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\Simulation.cpp" />
+    <ClCompile Include="src\win32_main.cpp" />
+    <ClCompile Include="src\win32_window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
-      <Project>{c549347e-282a-408d-9557-5f7959d387f1}</Project>
+    <ClInclude Include="private include\Renderer.h" />
+    <ClInclude Include="private include\Simulation.h" />
+    <ClInclude Include="private include\Time.hpp" />
+    <ClInclude Include="private include\win32_window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\02 - Common\02 - Common.vcxproj">
+      <Project>{2dbc218a-d0df-4802-a38f-6380ceb46247}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\03 - Host Window\03 - Host Window.vcxproj">
+      <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\05 - D3D11 Core\05 - D3D11 Core.vcxproj">
+      <Project>{1feb782b-c79e-4a6d-be07-d1e0787a75c9}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

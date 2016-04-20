@@ -22,6 +22,7 @@ Topic to Study
 	attributes
 	Input methods: RawInput, DirectInput (deprecated) http://gamedev.stackexchange.com/questions/72114/how-do-i-handle-directx-mouse-events/72545
 	AI http://gamedev.stackexchange.com/questions/2194/new-to-creating-ai-where-to-start
+	Write combining.
 
 General Reading Material
 	Shawn Hargreaves' Blog http://blogs.msdn.com/b/shawnhar/
@@ -48,3 +49,8 @@ Things to Try
 	Experiment with different error checking patterns
 	More procedural approach (less OOP)
 	Data objects vs function classes
+
+Notes
+	Multiple Windows - Register a single window class, CreateWindow multiple times with that class.
+	WNDCLASS - Use WNDCLASSEX to set "small icon associated with the window class"
+	CreateWindow - WS_EX_NOACTIVATE is useful for non-focusable windows (e.g. passive window that sits on the desktop).

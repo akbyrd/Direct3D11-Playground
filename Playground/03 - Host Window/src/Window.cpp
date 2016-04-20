@@ -47,24 +47,26 @@ LRESULT Window::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 bool Window::WinCreateWindow(
 	WNDCLASSEX wc,
 	DWORD dwExStyle,
-	LPCWSTR lpClassName,
 	LPCWSTR lpWindowName,
 	DWORD dwStyle,
 	uint16f X,
 	uint16f Y,
 	uint16f nWidth,
 	uint16f nHeight,
-	HWND hWndParent,
-	HMENU hMenu,
-	HINSTANCE hInstance)
+	HMENU hMenu)
 {
+	//NOTE: Doesn't check for failures :(
+
+	//For the window pointer we pack to get an instance reference
+	wc.cbWndExtra += sizeof(Window*);
+
 	//Register the window class
 	RegisterClassExW(&wc);
 
 	//Create the window with the screen settings and get the handle to it
-	hwnd = CreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle,
+	hwnd = CreateWindowExW(dwExStyle, wc.lpszClassName, lpWindowName, dwStyle,
 	                       X, Y, nWidth, nHeight,
-	                       hWndParent, hMenu, hInstance, this);
+	                       nullptr, hMenu, wc.hInstance, this);
 
 	return hwnd != nullptr;
 }

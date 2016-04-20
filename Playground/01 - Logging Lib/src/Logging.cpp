@@ -84,12 +84,11 @@ namespace Logging
 		__debugbreak();
 	}
 
-	bool LogIfFailed(HRESULT hr, const char* file, long line, const char* function)
+	bool LogHRESULT(HRESULT hr, const char* file, long line, const char* function)
 	{
-		//Success!
-		if ( !FAILED(hr) ) { return false; }
+		if (!FAILED(hr)) {return false;}
 
-		//Get a friendly string from the D3D error
+		//Get a friendly string from the HRESULT
 		wchar_t* errorMessage;
 		DWORD ret = FormatMessageW(
 			FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
@@ -104,16 +103,21 @@ namespace Logging
 		wostringstream stream;
 
 		//Log the friendly error message
-		if ( ret != 0 )
+		if (ret)
 		{
-			stream << L"ERROR: " << function << L" - " << errorMessage;
+			stream << L"ERROR: " << function << L" - " << errorMessage << endl;
+
+			if (!HeapFree(GetProcessHeap(), NULL, errorMessage))
+			{
+				stream << L"Failed to HeapFree error buffer. Error: " << GetLastError();
+			}
 		}
 		//FormatMessage failed, log that too
 		else
 		{
-			stream << L"ERROR: Failed to format error message from HRESULT: " << hr << L". FormatMessage error: " << GetLastError() << endl;
+			stream << L"ERROR: " << function << L" - Failed to format error message from HRESULT: "
+			       << hr << L". FormatMessage error: " << GetLastError() << endl;
 		}
-		HeapFree(GetProcessHeap(), NULL, errorMessage);
 
 		//Append the error location (it's clickable!)
 		stream << L"\t" << file << L"(" << line << L")" << endl;

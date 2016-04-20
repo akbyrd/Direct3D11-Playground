@@ -12,16 +12,13 @@ protected:
 	bool WinCreateWindow(
 		WNDCLASSEX wc,
 		DWORD dwExStyle,
-		LPCWSTR lpClassName,
 		LPCWSTR lpWindowName,
 		DWORD dwStyle,
 		uint16f X,
 		uint16f Y,
 		uint16f nWidth,
 		uint16f nHeight,
-		HWND hWndParent,
-		HMENU hMenu,
-		HINSTANCE hInstance);
+		HMENU hMenu);
 
 	HWND hwnd;
 };

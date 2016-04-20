@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01 - Logging Lib", "01 - Lo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02 - Common", "02 - Common\02 - Common.vcxproj", "{2DBC218A-D0DF-4802-A38F-6380CEB46247}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09 - D3D11 Combined Geometry Buffers", "09 - D3D11 Combined Geometry Buffers\09 - D3D11 Combined Geometry Buffers.vcxproj", "{755ED472-B9CD-44B9-B50B-EAD399A57C01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -83,6 +85,12 @@ Global
 		{2DBC218A-D0DF-4802-A38F-6380CEB46247}.Release|Win32.ActiveCfg = Release|Win32
 		{2DBC218A-D0DF-4802-A38F-6380CEB46247}.Release|Win32.Build.0 = Release|Win32
 		{2DBC218A-D0DF-4802-A38F-6380CEB46247}.Release|x64.ActiveCfg = Release|Win32
+		{755ED472-B9CD-44B9-B50B-EAD399A57C01}.Debug|Win32.ActiveCfg = Debug|Win32
+		{755ED472-B9CD-44B9-B50B-EAD399A57C01}.Debug|Win32.Build.0 = Debug|Win32
+		{755ED472-B9CD-44B9-B50B-EAD399A57C01}.Debug|x64.ActiveCfg = Debug|Win32
+		{755ED472-B9CD-44B9-B50B-EAD399A57C01}.Release|Win32.ActiveCfg = Release|Win32
+		{755ED472-B9CD-44B9-B50B-EAD399A57C01}.Release|Win32.Build.0 = Release|Win32
+		{755ED472-B9CD-44B9-B50B-EAD399A57C01}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

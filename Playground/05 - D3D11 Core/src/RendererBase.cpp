@@ -94,7 +94,7 @@ bool RendererBase::InitializeDevice()
 		&featureLevel,
 		&pD3DImmediateContext
 	);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pD3DDevice, "Device");
 	SetDebugObjectName(pD3DImmediateContext, "Device Context");
 
@@ -123,16 +123,16 @@ bool RendererBase::InitializeDebugOptions()
 
 	ComPtr<ID3D11Debug> pD3DDebug;
 	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	ComPtr<ID3D11InfoQueue> pD3DInfoQueue;
 	hr = pD3DDebug->QueryInterface(IID_PPV_ARGS(&pD3DInfoQueue));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR     , true);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	//Win7
 	#elif defined(DEBUG_11_1) || defined(DEBUG_11_Plus)
@@ -160,12 +160,12 @@ bool RendererBase::InitializeDebugOptions()
 
 	ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
 	hr = DXGIGetDebugInterface(IID_PPV_ARGS(&dxgiInfoQueue));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR     , true);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	//TODO: Smart pointer
 	FreeLibrary(dxgiDebugModule);
@@ -174,16 +174,16 @@ bool RendererBase::InitializeDebugOptions()
 	#elif defined(DEBUG_11_2)
 	ComPtr<IDXGIDebug1> pDXGIDebug;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	pDXGIDebug->EnableLeakTrackingForThread();
 
 	ComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIInfoQueue));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
-	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); LOG_FAILED(hr);
-	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); LOG_FAILED(hr);
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true); LOG_HRESULT(hr);
+	hr = pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true); LOG_HRESULT(hr);
 
 	#else
 	UNREFERENCED_PARAMETER(hr);
@@ -205,15 +205,15 @@ bool RendererBase::ObtainDXGIFactory()
 	 */
 	ComPtr<IDXGIDevice1> pDXGIDevice;
 	hr = pD3DDevice.As(&pDXGIDevice);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	ComPtr<IDXGIAdapter1> pDXGIAdapter;
 	hr = pDXGIDevice->GetParent(IID_PPV_ARGS(&pDXGIAdapter));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pDXGIAdapter, "DXGI Adapter");
 
 	hr = pDXGIAdapter->GetParent(IID_PPV_ARGS(&pDXGIFactory));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pDXGIFactory, "DXGI Factory");
 
 	return true;
@@ -228,15 +228,15 @@ bool RendererBase::CheckForWarpDriver()
 	//Check for the WARP driver
 	ComPtr<IDXGIDevice1> pDXGIDevice;
 	hr = pD3DDevice.As(&pDXGIDevice);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	ComPtr<IDXGIAdapter> pDXGIAdapter;
 	hr = pDXGIDevice->GetAdapter(&pDXGIAdapter);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	DXGI_ADAPTER_DESC desc = {};
 	hr = pDXGIAdapter->GetDesc(&desc);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	if ( (desc.VendorId == 0x1414) && (desc.DeviceId == 0x8c) )
 	{
@@ -260,7 +260,7 @@ bool RendererBase::InitializeSwapChain()
 
 	//Query and set MSAA quality levels
 	hr = pD3DDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multiSampleCount, &numQualityLevels);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	//Get the actual window size, in case we want it later.
 	ret = GetWindowClientSize(width, height);
@@ -304,7 +304,7 @@ bool RendererBase::InitializeSwapChain()
 
 	//Create the swap chain
 	hr = pDXGIFactory->CreateSwapChain(pD3DDevice.Get(), &swapChainDesc, &pSwapChain);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pSwapChain, "Swap Chain");
 
 	if ( hr == DXGI_STATUS_OCCLUDED && !swapChainDesc.Windowed )
@@ -332,7 +332,7 @@ bool RendererBase::GetWindowClientSize(UINT &width, UINT &height)
 	else
 	{
 		hr = GetLastError();
-		if ( !LOG_FAILED(hr) )
+		if ( !LOG_HRESULT(hr) )
 		{
 			LOG_WARNING(L"GetClientRect failed, but the last error passed a FAILED. HR = " + to_wstring(hr));
 		}
@@ -350,12 +350,12 @@ bool RendererBase::CreateBackBufferView()
 
 	ComPtr<ID3D11Texture2D> pBackBuffer;
 	hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pBackBuffer, "Back Buffer");
 
 	//Create a render target view to the back buffer
 	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pRenderTargetView);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pRenderTargetView, "Render Target View");
 
 	return true;
@@ -374,7 +374,7 @@ bool RendererBase::UpdateAllowFullscreen()
 		flags |= DXGI_MWA_NO_ALT_ENTER;
 
 	hr = pDXGIFactory->MakeWindowAssociation(hwnd, flags);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	return true;
 }
@@ -400,11 +400,11 @@ bool RendererBase::InitializeDepthBuffer()
 
 	ComPtr<ID3D11Texture2D> pDepthBuffer;
 	hr = pD3DDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthBuffer);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pDepthBuffer, "Depth Buffer");
 
 	hr = pD3DDevice->CreateDepthStencilView(pDepthBuffer.Get(), nullptr, &pDepthBufferView);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	SetDebugObjectName(pDepthBufferView, "Depth Buffer View");
 
 	return true;
@@ -439,7 +439,7 @@ bool RendererBase::LogAdapters()
 
 	ComPtr<IDXGIFactory1> pDXGIFactory;
 	hr = CreateDXGIFactory1(IID_PPV_ARGS(&pDXGIFactory));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	UINT i = 0;
 	while ( true )
@@ -451,12 +451,12 @@ bool RendererBase::LogAdapters()
 		if ( hr == DXGI_ERROR_NOT_FOUND ) { break; }
 
 		//Other errors
-		if(LOG_FAILED(hr)) {return false;}
+		if(LOG_HRESULT(hr)) {return false;}
 
 		//Get adapter description
 		DXGI_ADAPTER_DESC1 adapterDesc;
 		hr = pDXGIAdapter->GetDesc1(&adapterDesc);
-		if(LOG_FAILED(hr)) {return false;}
+		if(LOG_HRESULT(hr)) {return false;}
 
 		static const float BytesInAMB = 1048576.0f;
 
@@ -500,11 +500,11 @@ bool RendererBase::LogOutputs(ComPtr<IDXGIAdapter1> pDXGIAdapter)
 		if ( hr == DXGI_ERROR_NOT_FOUND ) { break; }
 
 		//Other errors
-		if(LOG_FAILED(hr)) {return false;}
+		if(LOG_HRESULT(hr)) {return false;}
 
 		DXGI_OUTPUT_DESC outputDesc = {};
 		hr = pDXGIOutput->GetDesc(&outputDesc);
-		if(LOG_FAILED(hr)) {return false;}
+		if(LOG_HRESULT(hr)) {return false;}
 
 		wostringstream stream;
 
@@ -537,14 +537,14 @@ bool RendererBase::LogDisplayModes(ComPtr<IDXGIOutput> pDXGIOutput)
 	//Get the number of modes
 	UINT numModes;
 	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, nullptr);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	//Allocate space
 	unique_ptr<DXGI_MODE_DESC[]> arrModeDesc(new DXGI_MODE_DESC[numModes]);
 
 	//Get the actual display modes
 	hr = pDXGIOutput->GetDisplayModeList(format, 0, &numModes, arrModeDesc.get());
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	wostringstream stream;
 	for ( UINT i = 0; i < numModes; ++i )
@@ -575,7 +575,7 @@ bool RendererBase::Resize()
 	//Preserve the swap chain configuration
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	hr = pSwapChain->GetDesc(&swapChainDesc);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	//Skip resizing if it's not necessary
 	if ( swapChainDesc.BufferDesc.Width  == width
@@ -589,7 +589,7 @@ bool RendererBase::Resize()
 	pDepthBufferView.Reset();
 
 	hr = pSwapChain->ResizeBuffers(1, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	ret = CreateBackBufferView();
 	if(!ret) {return false;}
@@ -632,7 +632,7 @@ bool RendererBase::Render()
 	pD3DImmediateContext->ClearDepthStencilView(pDepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
 	hr = pSwapChain->Present(0, 0);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	return true;
 }
@@ -709,7 +709,7 @@ void RendererBase::Teardown()
 		if ( FAILED(hr) )
 		{
 			LOG(L"Failed to disable fullscreen before releasing the swap chain. See the following message for more info.");
-			LOG_FAILED(hr);
+			LOG_HRESULT(hr);
 		}
 	}
 
@@ -748,7 +748,7 @@ bool RendererBase::LogLiveObjects()
 
 	ComPtr<ID3D11Debug> pD3DDebug;
 	hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	//TODO: Test the differences in the output
 	//D3D11_RLDO_SUMMARY
@@ -787,10 +787,10 @@ bool RendererBase::LogLiveObjects()
 
 	ComPtr<IDXGIDebug> pDXGIDebug;
 	hr = DXGIGetDebugInterface(IID_PPV_ARGS(&pDXGIDebug));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 	OutputDebugStringW(L"\n");
 
 	//TODO: Smart pointer
@@ -801,14 +801,14 @@ bool RendererBase::LogLiveObjects()
 	#elif defined(DEBUG_11_2)
 	ComPtr<IDXGIDebug1> pDXGIDebug;
 	hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug));
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	//TODO: Test the differences in the output
 	//DXGI_DEBUG_RLO_ALL
 	//DXGI_DEBUG_RLO_SUMMARY
 	//DXGI_DEBUG_RLO_DETAIL
 	hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL);
-	if(LOG_FAILED(hr)) {return false;}
+	if(LOG_HRESULT(hr)) {return false;}
 
 	OutputDebugStringW(L"\n");
 
