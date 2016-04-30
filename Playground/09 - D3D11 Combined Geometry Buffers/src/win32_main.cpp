@@ -1,34 +1,30 @@
 #include <Windows.h>
 
-#include "win32_window.h"
-#include "Logging.h"
+#include "win32_window.hpp"
 #include "Platform.h"
+#include "Logging.h"
 #include "Simulation.h"
 
 int WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCmdShow)
 {
-	InputQueue inputQueue = {};
+	//TODO: 64-bit build
+	SimMemory simMemory = {nullptr, Megabyte};
 
 
 	//Initialize
 	{
-		//TODO: 64-bit build
-		uint32 requiredMemory = Meagbyte;
-
-		void* memoryPool;
-		IF( memoryPool = VirtualAlloc(0, requiredMemory, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE),
+		IF( simMemory.bytes = VirtualAlloc(0, simMemory.size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE),
 			IS_FALSE, LOG_LASTERROR(); goto Failure);
 
-		LARGE_INTEGER tickFrequency;
-		IF( QueryPerformanceFrequency(&tickFrequency),
-			IS_FALSE, LOG_LASTERROR());
+		IF( QueryPerformanceFrequency((LARGE_INTEGER*) &simMemory.tickFrequency),
+		   IS_FALSE, LOG_LASTERROR());
 
 		//TODO: Get window size from sim?
-		InitializeSimulation(memoryPool, tickFrequency.QuadPart);
+		InitializeSimulation(&simMemory);
 
 		Window2 window = {};
-		IF( InitializeWindow(&window, &inputQueue, hInstance, L"D3D11 Playground", nCmdShow, SIZE{800, 600}),
+		IF( InitializeWindow(&window, &simMemory.input, hInstance, L"D3D11 Playground", nCmdShow, SIZE{800, 600}),
 			IS_FALSE, goto Failure);
 	}
 
@@ -38,17 +34,17 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 		bool quit = false;
 		LARGE_INTEGER lastTicks = {};
 
-		while ( !quit )
+		while (!quit)
 		{
 			MSG msg = {};
 
-			while ( PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) )
+			while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
 				//TranslateAccelerator?
 				TranslateMessage(&msg);
 				DispatchMessageW(&msg);
 
-				if ( msg.message == WM_QUIT )
+				if (msg.message == WM_QUIT)
 				{
 					
 					Logging::Log(L"Quit message recieved");
@@ -56,7 +52,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 					break;
 				}
 			}
-			if ( quit ) { break; }
+			if (quit) { break; }
 
 			LARGE_INTEGER currentTicks = {};
 			IF( QueryPerformanceCounter(&currentTicks),
@@ -68,7 +64,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 			//TODO: Who creates/calls the renderer?
 			//TODO: What if the simulation wants to quit?
 			//TODO: Put ticks in the queue
-			UpdateSimulation(newTicks, inputQueue);
+			UpdateSimulation(&simMemory);
 		}
 	}
 

@@ -34,9 +34,6 @@
     <ClCompile Include="src\Simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\win32_window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="private include\Renderer.h">
@@ -48,7 +45,7 @@
     <ClInclude Include="private include\Simulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="private include\win32_window.h">
+    <ClInclude Include="private include\win32_window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

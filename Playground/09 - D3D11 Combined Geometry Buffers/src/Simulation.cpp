@@ -1,4 +1,4 @@
-#include "Time.hpp"
+#include "Platform.h"
 
 struct SimState
 {
@@ -8,24 +8,24 @@ struct SimState
 };
 
 void
-InitializeSimulation(void *simMemory, uint64 tickFrequency)
+InitializeSimulation(SimMemory *simMemory)
 {
 	//NOTE: simMemory is expected to be initialized to zeros.
 
 	SimState simState = {};
 
-	simState.realTime.tickFrequency = tickFrequency;
-	simState.gameTime.tickFrequency = tickFrequency;
+	simState.realTime.tickFrequency = simMemory->tickFrequency;
+	simState.gameTime.tickFrequency = simMemory->tickFrequency;
 }
 
 void
-UpdateSimulation(uint64 ticks, InputQueue &inputQueue)
+UpdateSimulation(SimMemory *simMemory)
 {
 	//TODO: Remove
 	SimState simState;
 
 	InputMessage msg;
-	while ( msg = inputQueue.GetInputMessage() )
+	while ( msg = simMemory->input.GetInputMessage() )
 	{
 		switch ( msg )
 		{
@@ -48,9 +48,9 @@ UpdateSimulation(uint64 ticks, InputQueue &inputQueue)
 		}
 	}
 
-	simState.realTime.AddTicks(ticks);
+	simState.realTime.AddTicks(simMemory->ticks);
 	if (!simState.isPaused)
-		simState.gameTime.AddTicks(ticks);
+		simState.gameTime.AddTicks(simMemory->ticks);
 
 	//Update sim?
 	//Render

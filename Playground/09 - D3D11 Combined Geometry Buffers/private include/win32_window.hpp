@@ -4,6 +4,12 @@
 #include "Logging.h"
 #include "Platform.h"
 
+/* Notes:
+ * Functions bodies inside a type are implicitly inline.
+ * Only function bodies marked inline or static are allowed in headers.
+ * Static functions outside of a type are local to the translation unit.
+ */
+
 struct Window2
 {
 	InputQueue* inputQueue  = nullptr;
@@ -11,7 +17,7 @@ struct Window2
 	SIZE        minimumSize = {800, 600};
 };
 
-LRESULT CALLBACK
+static inline LRESULT CALLBACK
 WndProc(Window2* window, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -78,13 +84,13 @@ StaticWndProc(HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 		return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
-SIZE
+static inline SIZE
 ClientSizeToWindowSizeClamped(SIZE clientSize, SIZE maxSize, DWORD windowStyle)
 {
 	//TODO: Assert windowStyle != WS_OVERLAPPED. AdjustWindowRect docs say it's unsupported
 
 	RECT windowRect = {0, 0, clientSize.cx, clientSize.cy};
-	if ( !AdjustWindowRect(&windowRect, windowStyle, false) )
+	if (!AdjustWindowRect(&windowRect, windowStyle, false))
 	{
 		//TODO: Log
 		//LOG_WARNING(L"Failed to translate client size to window size");
@@ -96,16 +102,16 @@ ClientSizeToWindowSizeClamped(SIZE clientSize, SIZE maxSize, DWORD windowStyle)
 	windowSize.cy = windowRect.bottom - windowRect.top;
 
 	//Clamp size
-	if ( windowSize.cx > maxSize.cx )
+	if (windowSize.cx > maxSize.cx)
 		windowSize.cx = maxSize.cx;
 
-	if ( windowSize.cy > maxSize.cy )
+	if (windowSize.cy > maxSize.cy)
 		windowSize.cy = maxSize.cy;
 
 	return windowSize;
 }
 
-bool
+static inline bool
 InitializeWindow(Window2* window, InputQueue* inputQueue, HINSTANCE hInstance,
                  LPCWSTR applicationName, int32 nCmdShow, SIZE clientSize )
 {
@@ -131,7 +137,7 @@ InitializeWindow(Window2* window, InputQueue* inputQueue, HINSTANCE hInstance,
 	                  | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
 	RECT usableDesktopRect = {};
-	if ( SystemParametersInfoW(SPI_GETWORKAREA, 0, &usableDesktopRect, 0) )
+	if (SystemParametersInfoW(SPI_GETWORKAREA, 0, &usableDesktopRect, 0))
 	{
 		SIZE usableDesktop = {
 			usableDesktopRect.right - usableDesktopRect.left,

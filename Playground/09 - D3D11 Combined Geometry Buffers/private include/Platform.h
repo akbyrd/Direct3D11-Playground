@@ -1,5 +1,9 @@
 #pragma once
 
+///
+// Macros and Fundamental Types
+///
+
 #include <stdint.h>
 
 typedef uint8_t  uint8;
@@ -12,8 +16,8 @@ typedef float  float32;
 typedef double float64;
 
 #define Kilobyte 1024LL
-#define Meagbyte 1024LL * Kilobyte
-#define Gigabyte 1024LL * Meagbyte
+#define Megabyte 1024LL * Kilobyte
+#define Gigabyte 1024LL * Megabyte
 
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 
@@ -32,6 +36,11 @@ do {                                  \
 
 #define IGNORE
 #define IS_FALSE !
+
+
+///
+// Input
+///
 
 enum InputMessage
 {
@@ -72,4 +81,19 @@ struct InputQueue
 
 		return false;
 	}
+};
+
+
+///
+// Memory
+///
+
+struct SimMemory
+{
+	void* bytes;
+	uint32 size;
+
+	InputQueue input;
+	uint64 ticks;
+	uint64 tickFrequency;
 };

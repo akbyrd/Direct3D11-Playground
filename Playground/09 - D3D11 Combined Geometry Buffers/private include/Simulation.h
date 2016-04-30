@@ -2,6 +2,6 @@
 
 #include "Platform.h"
 
-void InitializeSimulation(void *simMemory, uint64 ticks);
+void InitializeSimulation(SimMemory *simMemory);
 
-void UpdateSimulation(uint64 ticks, InputQueue &inputQueue);
+void UpdateSimulation(SimMemory *simMemory);
