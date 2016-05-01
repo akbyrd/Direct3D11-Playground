@@ -12,11 +12,16 @@
 
 namespace Logging
 {
-	void Log          (std::wstring);
-	void Log          (std::wostringstream&);
-	void Log          (std::wstring,               const char*, long, const char*);
-	void LogWarning   (std::wstring,               const char*, long, const char*);
-	void LogError     (std::wstring,               const char*, long, const char*);
-	bool LogHRESULT   (HRESULT,                    const char*, long, const char*);
-	void LogAssert    (std::wstring, std::wstring, const char*, long, const char*);
+	using namespace std;
+
+	void Log          (wstring message);
+	void Log          (wostringstream& msgStream);
+	void Log          (wstring message,                     const char* file, long line, const char* function);
+	void LogWarning   (wstring message,                     const char* file, long line, const char* function);
+	void LogError     (wstring message,                     const char* file, long line, const char* function);
+	void LogAssert    (wstring expression, wstring message, const char* file, long line, const char* function);
+
+	#ifdef WIN32
+	bool LogHRESULT   (HRESULT hr,                          const char* file, long line, const char* function);
+	#endif
 }

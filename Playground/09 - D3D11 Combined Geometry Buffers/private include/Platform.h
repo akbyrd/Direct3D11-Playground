@@ -12,8 +12,8 @@ typedef uint64_t uint64;
 
 typedef int32_t int32;
 
-typedef float  float32;
-typedef double float64;
+typedef float  real32;
+typedef double real64;
 
 #define Kilobyte 1024LL
 #define Megabyte 1024LL * Kilobyte
@@ -36,6 +36,13 @@ do {                                  \
 
 #define IGNORE
 #define IS_FALSE !
+
+
+///
+// Global Functionality
+///
+
+#include "Logging.h"
 
 
 ///
@@ -94,6 +101,7 @@ struct SimMemory
 	uint32 size;
 
 	InputQueue input;
+	//TODO: Put ticks in the queue
 	uint64 ticks;
 	uint64 tickFrequency;
 };

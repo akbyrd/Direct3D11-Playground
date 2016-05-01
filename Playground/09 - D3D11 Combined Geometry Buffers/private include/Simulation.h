@@ -2,6 +2,6 @@
 
 #include "Platform.h"
 
-void InitializeSimulation(SimMemory *simMemory);
+void InitializeSimulation(SimMemory* simMemory);
 
-void UpdateSimulation(SimMemory *simMemory);
+void UpdateSimulation(SimMemory* simMemory);

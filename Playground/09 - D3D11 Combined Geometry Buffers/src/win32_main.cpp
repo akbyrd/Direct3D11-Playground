@@ -2,15 +2,14 @@
 
 #include "win32_window.hpp"
 #include "Platform.h"
-#include "Logging.h"
 #include "Simulation.h"
 
 int WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCmdShow)
 {
 	//TODO: 64-bit build
-	SimMemory simMemory = {nullptr, Megabyte};
-
+	SimMemory simMemory = {};
+	simMemory.size = Megabyte;
 
 	//Initialize
 	{
@@ -18,7 +17,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 			IS_FALSE, LOG_LASTERROR(); goto Failure);
 
 		IF( QueryPerformanceFrequency((LARGE_INTEGER*) &simMemory.tickFrequency),
-		   IS_FALSE, LOG_LASTERROR());
+			IS_FALSE, LOG_LASTERROR());
 
 		//TODO: Get window size from sim?
 		InitializeSimulation(&simMemory);
@@ -31,9 +30,11 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 
 	//Main loop
 	{
-		bool quit = false;
-		LARGE_INTEGER lastTicks = {};
+		LARGE_INTEGER lastTicks;
+		IF( QueryPerformanceCounter(&lastTicks),
+		   IS_FALSE, LOG_LASTERROR());
 
+		bool quit = false;
 		while (!quit)
 		{
 			MSG msg = {};
@@ -54,16 +55,14 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 			}
 			if (quit) { break; }
 
-			LARGE_INTEGER currentTicks = {};
+			LARGE_INTEGER currentTicks;
 			IF( QueryPerformanceCounter(&currentTicks),
 				IS_FALSE, LOG_LASTERROR());
 
-			uint64 newTicks = currentTicks.QuadPart - lastTicks.QuadPart;
+			simMemory.ticks += currentTicks.QuadPart - lastTicks.QuadPart;
 			lastTicks = currentTicks;
 
-			//TODO: Who creates/calls the renderer?
 			//TODO: What if the simulation wants to quit?
-			//TODO: Put ticks in the queue
 			UpdateSimulation(&simMemory);
 		}
 	}

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Windows.h>
-#include "Logging.h"
 #include "Platform.h"
 
 /* Notes:
