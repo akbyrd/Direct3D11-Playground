@@ -7,9 +7,10 @@
 int WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCmdShow)
 {
-	//TODO: 64-bit build
+	//TODO: 64-bit build?
 	SimMemory simMemory = {};
 	simMemory.size = Megabyte;
+
 
 	//Initialize
 	{
@@ -23,7 +24,8 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 		InitializeSimulation(&simMemory);
 
 		Window2 window = {};
-		IF( InitializeWindow(&window, &simMemory.input, hInstance, L"D3D11 Playground", nCmdShow, SIZE{800, 600}),
+		window.inputQueue = &simMemory.input;
+		IF( InitializeWindow(&window, hInstance, L"D3D11 Playground", nCmdShow, {800, 600}),
 			IS_FALSE, goto Failure);
 	}
 
@@ -59,11 +61,13 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 			IF( QueryPerformanceCounter(&currentTicks),
 				IS_FALSE, LOG_LASTERROR());
 
-			simMemory.ticks += currentTicks.QuadPart - lastTicks.QuadPart;
+			//NOTE: Ticks can be negative if the process is shuffled
+			uint64 newTicks = currentTicks.QuadPart - lastTicks.QuadPart;
+			if (newTicks < 0) { newTicks = 0; }
 			lastTicks = currentTicks;
 
 			//TODO: What if the simulation wants to quit?
-			UpdateSimulation(&simMemory);
+			UpdateSimulation(&simMemory, newTicks);
 		}
 	}
 

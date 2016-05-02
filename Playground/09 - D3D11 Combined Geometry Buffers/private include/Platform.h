@@ -21,6 +21,11 @@ typedef double real64;
 
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 
+#define Assert(condition) if (!condition) { *((uint8 *) 0) = 0; }
+#define InvalidCodePath Assert(!"Invalid code path")
+#define InvalidDefaultCase default: InvalidCodePath; break
+
+//TODO: Confirm the loop is optimized away
 #define IF(expression, check, action) \
 do {                                  \
 	if ( check(expression) )          \
@@ -49,46 +54,69 @@ do {                                  \
 // Input
 ///
 
+enum MouseButton
+{
+	Left,
+	Right,
+	Middle
+};
+
+struct MousePosition
+{
+	int32 x;
+	int32 y;
+};
+
 enum InputMessage
 {
 	FocusGained = 1,
 	FocusLost   = 2,
 
+	//TODO: Put ticks in the queue
+	//TimeTicks
+	//MousePosition
+	//MouseClicks
+	//ButtonClicks
+
 	Quit        = 3
 };
 
-//TODO: This is broken as fuck
 //TODO: Expand to support passing data
 struct InputQueue
 {
 	InputMessage messages[64] = {};
 	uint8        head         = -1;
-	uint8        tail         = 0;
-
-	inline InputMessage
-	GetInputMessage()
-	{
-		InputMessage result = messages[tail];
-		++tail &= ArrayCount(messages);
-		return result;
-	}
-
-	inline bool
-	PutWindowMessage(InputMessage message)
-	{
-		++head &= ArrayCount(messages);
-		messages[head] = message;
-
-		if ( head == tail )
-		{
-			//TODO: Log
-			++tail &= ArrayCount(messages);
-			return true;
-		}
-
-		return false;
-	}
+	uint8        count        = 0;
 };
+
+static inline InputMessage
+GetInputMessage(InputQueue* queue)
+{
+	Assert(queue->count > 0);
+
+	uint32 size = ArrayCount(queue->messages);
+	uint32 tail = (queue->head + (size - queue->count) + 1) % size;
+	InputMessage result = queue->messages[tail];
+	--queue->count;
+
+	return result;
+}
+
+static inline void
+PutInputMessage(InputQueue* queue, InputMessage message)
+{
+	uint32 size = ArrayCount(queue->messages);
+
+	++queue->head %= size;
+	queue->messages[queue->head] = message;
+	++queue->count;
+
+	if (queue->count > size)
+	{
+		queue->count = size;
+		LOG_WARNING(L"InputQueue is overflowing.");
+	}
+}
 
 
 ///
@@ -97,11 +125,10 @@ struct InputQueue
 
 struct SimMemory
 {
+	//NOTE: bytes are expected to be initialized to zeros.
 	void* bytes;
 	uint32 size;
 
 	InputQueue input;
-	//TODO: Put ticks in the queue
-	uint64 ticks;
 	uint64 tickFrequency;
 };

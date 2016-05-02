@@ -13,7 +13,7 @@ struct Window2
 {
 	InputQueue* inputQueue  = nullptr;
 	HWND        hwnd        = nullptr;
-	SIZE        minimumSize = {800, 600};
+	SIZE        minimumSize = {200, 200};
 };
 
 static inline LRESULT CALLBACK
@@ -25,9 +25,10 @@ WndProc(Window2* window, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 		//TODO: How should the application exit? Quit message? Inform the sim? Just queue input?
 		case WM_CLOSE:
 		{
-			/* NOTE: Received when X button clicked, Alt-F4, SysMenu > Close clicked,
-			* SysMenu double clicked, Right click Taskbar > Close
-			*/
+			/* NOTE: Received when the window's X button is clicked, Alt-F4,
+			 * SysMenu > Close clicked, SysMenu double clicked, Right click
+			 * Taskbar > Close, Task Manager Processes > End Task clicked
+			 */
 			PostQuitMessage(0);
 			return 0;
 		}
@@ -58,7 +59,7 @@ WndProc(Window2* window, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
-LRESULT CALLBACK
+static LRESULT CALLBACK
 StaticWndProc(HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 {
 	Window2 *window = nullptr;
@@ -111,11 +112,8 @@ ClientSizeToWindowSizeClamped(SIZE clientSize, SIZE maxSize, DWORD windowStyle)
 }
 
 static inline bool
-InitializeWindow(Window2* window, InputQueue* inputQueue, HINSTANCE hInstance,
-                 LPCWSTR applicationName, int32 nCmdShow, SIZE clientSize )
+InitializeWindow(Window2* window, HINSTANCE hInstance, LPCWSTR applicationName, int32 nCmdShow, SIZE clientSize)
 {
-	window->inputQueue = inputQueue;
-
 	WNDCLASS wc      = {};
 	wc.style         = 0;
 	wc.lpfnWndProc   = StaticWndProc;
@@ -144,7 +142,7 @@ InitializeWindow(Window2* window, InputQueue* inputQueue, HINSTANCE hInstance,
 		};
 
 		window->minimumSize = ClientSizeToWindowSizeClamped(window->minimumSize, usableDesktop, windowStyle);
-		windowSize  = ClientSizeToWindowSizeClamped(clientSize,  usableDesktop, windowStyle);
+		windowSize = ClientSizeToWindowSizeClamped(clientSize,  usableDesktop, windowStyle);
 
 		windowPos = {
 			(usableDesktop.cx - windowSize.cx) / 2,

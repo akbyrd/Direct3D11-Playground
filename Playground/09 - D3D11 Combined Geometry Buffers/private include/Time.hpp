@@ -7,17 +7,14 @@ struct SimTime
 {
 	real32 t;
 	real32 dt;
-	uint64  ticks;
-
-	uint64 tickFrequency;
-
-	//TODO: Ensure platform never gives negative ticks (possible when thread is shuffled)
-	inline void
-	AddTicks(uint64 newTicks)
-	{
-		ticks += newTicks;
-
-		 t = (real32)    ticks / tickFrequency;
-		dt = (real32) newTicks / tickFrequency;
-	}
+	uint64 ticks;
 };
+
+static inline void
+AddTicks(SimTime* simTime, uint64 newTicks, uint64 tickFrequency)
+{
+	simTime->ticks += newTicks;
+
+	simTime->t  = (real32) simTime->ticks / tickFrequency;
+	simTime->dt = (real32)       newTicks / tickFrequency;
+}

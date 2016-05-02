@@ -51,6 +51,8 @@ namespace Logging
 
 		//Send it all to the VS Output window
 		OutputDebugStringW(stream.str().c_str());
+
+		//__debugbreak();
 	}
 
 	void LogError(wstring message, const char* file, long line, const char* function)
@@ -65,7 +67,7 @@ namespace Logging
 		//Send it all to the VS Output window
 		OutputDebugStringW(stream.str().c_str());
 
-		__debugbreak();
+		//__debugbreak();
 	}
 
 	void LogAssert(wstring expression, wstring message, const char* file, long line, const char* function)

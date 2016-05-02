@@ -8,50 +8,56 @@ struct SimState
 	bool    isPaused;
 };
 
+/*
+#define PushMemory(sm, type) (type*) PushMemory_(sm, type, sizeof(type))
+internal void*
+PushMemory_(SimState* simState, void* memory, uint32 size)
+{
+	Assert(simMemory->size + size <= simMemory->maxSize);
+
+	void* p = simMemory->bytes[simMemory->size];
+	simMemory->size += size;
+
+	return p;
+};
+*/
+
 void
 InitializeSimulation(SimMemory *simMemory)
 {
-	//NOTE: simMemory is expected to be initialized to zeros.
-
-	SimState simState = {};
-
-	simState.realTime.tickFrequency = simMemory->tickFrequency;
-	simState.gameTime.tickFrequency = simMemory->tickFrequency;
+	SimState* simState = (SimState*) simMemory->bytes;
 }
 
 void
-UpdateSimulation(SimMemory *simMemory)
+UpdateSimulation(SimMemory *simMemory, uint64 ticks)
 {
-	//TODO: Remove
-	SimState simState;
+	SimState* simState = (SimState*) simMemory->bytes;
 
 	InputMessage msg;
-	while ( msg = simMemory->input.GetInputMessage() )
+	while ( simMemory->input.count > 0 )
 	{
+		msg = GetInputMessage(&simMemory->input);
 		switch ( msg )
 		{
 			case FocusGained:
-				simState.isPaused = false;
+				simState->isPaused = false;
 				break;
 
 			case FocusLost:
-				simState.isPaused = true;
+				simState->isPaused = true;
 				break;
 
 			case Quit:
 				//TOOD: ???
 				break;
 
-			default:
-				//TODO: ???
-				*((uint8 *) 0) = 0;
-				break;
+			InvalidDefaultCase;
 		}
 	}
 
-	simState.realTime.AddTicks(simMemory->ticks);
-	if (!simState.isPaused)
-		simState.gameTime.AddTicks(simMemory->ticks);
+	AddTicks(&simState->realTime, ticks, simMemory->tickFrequency);
+	if (!simState->isPaused)
+		AddTicks(&simState->gameTime, ticks, simMemory->tickFrequency);
 
 	//Update sim?
 	//Render
