@@ -1,4 +1,4 @@
-#include "Platform.h"
+#include "Simulation.h"
 #include "Time.hpp"
 
 struct SimState
@@ -33,11 +33,9 @@ UpdateSimulation(SimMemory *simMemory, uint64 ticks)
 {
 	SimState* simState = (SimState*) simMemory->bytes;
 
-	InputMessage msg;
-	while ( simMemory->input.count > 0 )
+	while (simMemory->input.count > 0)
 	{
-		msg = GetInputMessage(&simMemory->input);
-		switch ( msg )
+		switch (GetInputMessage(&simMemory->input))
 		{
 			case FocusGained:
 				simState->isPaused = false;

@@ -37,14 +37,10 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
-    <Import Project="..\Shared\D3D11 Core.props" />
-    <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Shared\Common.props" />
-    <Import Project="..\Shared\D3D11 Core.props" />
-    <Import Project="..\Shared\HostWindow.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -93,9 +89,6 @@
   <ItemGroup>
     <ProjectReference Include="..\02 - Common\02 - Common.vcxproj">
       <Project>{2dbc218a-d0df-4802-a38f-6380ceb46247}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\03 - Host Window\03 - Host Window.vcxproj">
-      <Project>{55d6565c-d542-464b-9485-fa681672b4d8}</Project>
     </ProjectReference>
     <ProjectReference Include="..\05 - D3D11 Core\05 - D3D11 Core.vcxproj">
       <Project>{1feb782b-c79e-4a6d-be07-d1e0787a75c9}</Project>

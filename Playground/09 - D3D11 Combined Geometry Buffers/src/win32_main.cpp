@@ -5,7 +5,7 @@
 #include "Simulation.h"
 
 int WINAPI
-wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCmdShow)
+wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int32 nCmdShow)
 {
 	//TODO: 64-bit build?
 	SimMemory simMemory = {};
@@ -49,8 +49,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 
 				if (msg.message == WM_QUIT)
 				{
-					
-					Logging::Log(L"Quit message recieved");
+					Logging::Log(L"WM_QUIT recieved");
 					quit = true;
 					break;
 				}
@@ -70,6 +69,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int32 nCm
 			UpdateSimulation(&simMemory, newTicks);
 		}
 	}
+
 
 Cleanup:
 	/* NOTE: Windows automatically frees memory on exit.

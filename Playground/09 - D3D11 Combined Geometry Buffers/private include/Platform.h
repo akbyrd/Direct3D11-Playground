@@ -15,13 +15,15 @@ typedef int32_t int32;
 typedef float  real32;
 typedef double real64;
 
+typedef wchar_t wchar;
+
 #define Kilobyte 1024LL
 #define Megabyte 1024LL * Kilobyte
 #define Gigabyte 1024LL * Megabyte
 
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 
-#define Assert(condition) if (!condition) { *((uint8 *) 0) = 0; }
+#define Assert(condition) if (!(condition)) { *((uint8 *) 0) = 0; }
 #define InvalidCodePath Assert(!"Invalid code path")
 #define InvalidDefaultCase default: InvalidCodePath; break
 
@@ -49,7 +51,6 @@ do {                                  \
 
 #include "Logging.h"
 
-
 ///
 // Input
 ///
@@ -75,8 +76,7 @@ enum InputMessage
 	//TODO: Put ticks in the queue
 	//TimeTicks
 	//MousePosition
-	//MouseClicks
-	//ButtonClicks
+	//ButtonClicks(incl mouse clicks and scrollwheel)
 
 	Quit        = 3
 };
@@ -114,7 +114,9 @@ PutInputMessage(InputQueue* queue, InputMessage message)
 	if (queue->count > size)
 	{
 		queue->count = size;
-		LOG_WARNING(L"InputQueue is overflowing.");
+		wchar warning[] = L"InputQueue is overflowing. Last message: x";
+		warning[ArrayCount(warning) - 2] = '0' + message;
+		LOG_WARNING(warning);
 	}
 }
 
