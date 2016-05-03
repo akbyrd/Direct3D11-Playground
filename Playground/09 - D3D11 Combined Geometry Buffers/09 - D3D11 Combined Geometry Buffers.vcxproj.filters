@@ -25,9 +25,6 @@
     <ClCompile Include="src\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="private include\Platform.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\win32_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="private include\win32_window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="private include\Platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
