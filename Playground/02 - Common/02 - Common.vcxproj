@@ -71,13 +71,11 @@
     <ClInclude Include="include\HLSL.h" />
     <ClInclude Include="include\LoggedException.h" />
     <ClInclude Include="include\Utility.h" />
-    <ClInclude Include="include\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AssertionException.cpp" />
     <ClCompile Include="src\LoggedException.cpp" />
     <ClCompile Include="src\Utility.cpp" />
-    <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\01 - Logging Lib\01 - Logging Lib.vcxproj">
