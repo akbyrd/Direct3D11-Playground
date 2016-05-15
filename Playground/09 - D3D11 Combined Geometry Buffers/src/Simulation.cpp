@@ -29,33 +29,13 @@ InitializeSimulation(SimMemory *simMemory)
 }
 
 void
-UpdateSimulation(SimMemory *simMemory, uint64 ticks)
+UpdateSimulation(SimMemory *simMemory)
 {
 	SimState* simState = (SimState*) simMemory->bytes;
 
-	while (simMemory->input.count > 0)
-	{
-		switch (GetInputMessage(&simMemory->input))
-		{
-			case FocusGained:
-				simState->isPaused = false;
-				break;
-
-			case FocusLost:
-				simState->isPaused = true;
-				break;
-
-			case Quit:
-				//TOOD: ???
-				break;
-
-			InvalidDefaultCase;
-		}
-	}
-
-	AddTicks(&simState->realTime, ticks, simMemory->tickFrequency);
+	AddTicks(&simState->realTime, simMemory->input.newTicks, simMemory->tickFrequency);
 	if (!simState->isPaused)
-		AddTicks(&simState->gameTime, ticks, simMemory->tickFrequency);
+		AddTicks(&simState->gameTime, simMemory->input.newTicks, simMemory->tickFrequency);
 
 	//Update sim?
 	//Render

@@ -4,4 +4,4 @@
 
 void InitializeSimulation(SimMemory* simMemory);
 
-void UpdateSimulation(SimMemory* simMemory, uint64 ticks);
+void UpdateSimulation(SimMemory* simMemory);

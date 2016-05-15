@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <windowsx.h>
 #include "Platform.h"
 
 /* Notes:
@@ -9,34 +10,53 @@
  * Static functions outside of a type are local to the translation unit.
  */
 
-struct Window2
+struct Win32State
 {
-	InputQueue* inputQueue  = nullptr;
-	HWND        hwnd        = nullptr;
-	SIZE        minimumSize = {200, 200};
+	HWND      hwnd        = nullptr;
+	SIZE      minimumSize = {200, 200};
+	SimMemory simMemory   = {};
 };
 
 static inline LRESULT CALLBACK
-WndProc(Window2* window, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
+WndProc(Win32State* win32State, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 {
+	InputState* input = &win32State->simMemory.input;
+
 	switch (uMsg)
 	{
-		//TODO: Exit codes?
-		//TODO: How should the application exit? Quit message? Inform the sim? Just queue input?
-		case WM_CLOSE:
+		case WM_LBUTTONDOWN:
 		{
-			/* NOTE: Received when the window's X button is clicked, Alt-F4,
-			 * SysMenu > Close clicked, SysMenu double clicked, Right click
-			 * Taskbar > Close, Task Manager Processes > End Task clicked
-			 */
-			PostQuitMessage(0);
-			return 0;
+			input->mouseLeft.isDown = true;
+			input->mouseLeft.transitionCount++;
+			goto UpdateMousePosition;
 		}
 
-		case WM_ENDSESSION:
+		case WM_LBUTTONUP:
 		{
-			//NOTE: Application is shutting down, probably due to user logging off.
-			//TODO: Perform an expedient shutdown here.
+			input->mouseLeft.isDown = false;
+			input->mouseLeft.transitionCount++;
+			goto UpdateMousePosition;
+		}
+
+		case WM_RBUTTONDOWN:
+		{
+			input->mouseRight.isDown = true;
+			input->mouseRight.transitionCount++;
+			goto UpdateMousePosition;
+		}
+
+		case WM_RBUTTONUP:
+		{
+			input->mouseRight.isDown = false;
+			input->mouseRight.transitionCount++;
+			goto UpdateMousePosition;
+		}
+
+		UpdateMousePosition:
+		case WM_MOUSEMOVE:
+		{
+			input->mouseX = GET_X_LPARAM(lParam);
+			input->mouseY = GET_Y_LPARAM(lParam);
 			return 0;
 		}
 
@@ -47,11 +67,46 @@ WndProc(Window2* window, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 
+		case WM_MENUCHAR:
+		{
+			//Recieved unhandled keystroke while a menu is active.
+			UINT menuType = HIWORD(wParam);
+			bool isSystem = menuType == MF_SYSMENU;
+
+			UINT keyPressed = LOWORD(wParam);
+			bool enterPressed = keyPressed == VK_RETURN;
+
+			//Don't beep when exiting fullscreen with Alt+Enter
+			if (isSystem && enterPressed)
+				return MAKELRESULT(0, MNC_CLOSE);
+
+			break;
+		}
+
 		case WM_GETMINMAXINFO:
 		{
 			MINMAXINFO* minMaxInfo = (MINMAXINFO*) lParam;
-			minMaxInfo->ptMinTrackSize.x = window->minimumSize.cx;
-			minMaxInfo->ptMinTrackSize.y = window->minimumSize.cy;
+			minMaxInfo->ptMinTrackSize.x = win32State->minimumSize.cx;
+			minMaxInfo->ptMinTrackSize.y = win32State->minimumSize.cy;
+			return 0;
+		}
+
+		//TODO: Exit codes?
+		//TODO: How should the application exit? Quit message? Inform the sim? Just queue input?
+		case WM_CLOSE:
+		{
+			/* NOTE: Received when the window's X button is clicked, Alt-F4,
+			* SysMenu > Close clicked, SysMenu double clicked, Right click
+			* Taskbar > Close, Task Manager Processes > End Task clicked
+			*/
+			PostQuitMessage(0);
+			return 0;
+		}
+
+		case WM_ENDSESSION:
+		{
+			//NOTE: Application is shutting down, probably due to user logging off.
+			//TODO: Perform an expedient shutdown here.
 			return 0;
 		}
 	}
@@ -62,24 +117,24 @@ WndProc(Window2* window, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 static LRESULT CALLBACK
 StaticWndProc(HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
 {
-	Window2 *window = nullptr;
+	Win32State* win32State = nullptr;
 
 	//NOTE: This misses the very first WM_GETMINMAXINFO.
 	if (uMsg == WM_NCCREATE)
 	{
 		CREATESTRUCT *params = (CREATESTRUCT*) lParam;
-		window = (Window2*) params->lpCreateParams;
+		win32State = (Win32State*) params->lpCreateParams;
 
-		window->hwnd = hwnd;
-		SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG) window);
+		win32State->hwnd = hwnd;
+		SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG) win32State);
 	}
 	else
 	{
-		window = (Window2*) GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+		win32State = (Win32State*) GetWindowLongPtrW(hwnd, GWLP_USERDATA);
 	}
 
-	if (window)
-		return WndProc(window, hwnd, uMsg, wParam, lParam);
+	if (win32State)
+		return WndProc(win32State, hwnd, uMsg, wParam, lParam);
 	else
 		return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
@@ -112,13 +167,13 @@ ClientSizeToWindowSizeClamped(SIZE clientSize, SIZE maxSize, DWORD windowStyle)
 }
 
 static inline bool
-InitializeWindow(Window2* window, HINSTANCE hInstance, LPCWSTR applicationName, int32 nCmdShow, SIZE clientSize)
+InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicationName, int32 nCmdShow, SIZE clientSize)
 {
 	WNDCLASS wc      = {};
 	wc.style         = 0;
 	wc.lpfnWndProc   = StaticWndProc;
 	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = sizeof(Window2*);
+	wc.cbWndExtra    = sizeof(Win32State*);
 	wc.hInstance     = hInstance;
 	wc.hIcon         = nullptr; //TODO: Legit icon
 	wc.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
@@ -141,7 +196,7 @@ InitializeWindow(Window2* window, HINSTANCE hInstance, LPCWSTR applicationName, 
 			usableDesktopRect.bottom - usableDesktopRect.top
 		};
 
-		window->minimumSize = ClientSizeToWindowSizeClamped(window->minimumSize, usableDesktop, windowStyle);
+		win32State->minimumSize = ClientSizeToWindowSizeClamped(win32State->minimumSize, usableDesktop, windowStyle);
 		windowSize = ClientSizeToWindowSizeClamped(clientSize,  usableDesktop, windowStyle);
 
 		windowPos = {
@@ -155,15 +210,20 @@ InitializeWindow(Window2* window, HINSTANCE hInstance, LPCWSTR applicationName, 
 	}
 
 	IF( RegisterClassW(&wc),
-	   IS_FALSE, LOG_LASTERROR(); return false);
+		IS_FALSE, LOG_LASTERROR(); return false);
 
-	//TODO: Log
-	IF( window->hwnd = CreateWindowExW(0, applicationName, applicationName, windowStyle,
-	   windowPos.x, windowPos.y, windowSize.cx, windowSize.cy,
-	   nullptr, nullptr, hInstance, window),
-	   IS_FALSE, LOG_LASTERROR(); return false);
+	IF( win32State->hwnd = CreateWindowExW(
+			0,
+			applicationName, applicationName,
+			windowStyle,
+			windowPos.x, windowPos.y,
+			windowSize.cx, windowSize.cy,
+			nullptr, nullptr,
+			hInstance,
+			win32State),
+		IS_FALSE, LOG_LASTERROR(); return false);
 
-	ShowWindow(window->hwnd, nCmdShow);
+	ShowWindow(win32State->hwnd, nCmdShow);
 
 	return true;
 }

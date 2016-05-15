@@ -55,70 +55,29 @@ do {                                  \
 // Input
 ///
 
-enum MouseButton
+struct ButtonState
 {
-	Left,
-	Right,
-	Middle
+	bool  isDown;
+	uint8 transitionCount;
 };
 
-struct MousePosition
+struct InputState
 {
-	int32 x;
-	int32 y;
-};
+	uint32 newTicks;
 
-enum InputMessage
-{
-	FocusGained = 1,
-	FocusLost   = 2,
+	int32 mouseX;
+	int32 mouseY;
 
-	//TODO: Put ticks in the queue
-	//TimeTicks
-	//MousePosition
-	//ButtonClicks(incl mouse clicks and scrollwheel)
-
-	Quit        = 3
-};
-
-//TODO: Expand to support passing data
-struct InputQueue
-{
-	InputMessage messages[64] = {};
-	uint8        head         = -1;
-	uint8        count        = 0;
-};
-
-static inline InputMessage
-GetInputMessage(InputQueue* queue)
-{
-	Assert(queue->count > 0);
-
-	uint32 size = ArrayCount(queue->messages);
-	uint32 tail = (queue->head + (size - queue->count) + 1) % size;
-	InputMessage result = queue->messages[tail];
-	--queue->count;
-
-	return result;
-}
-
-static inline void
-PutInputMessage(InputQueue* queue, InputMessage message)
-{
-	uint32 size = ArrayCount(queue->messages);
-
-	++queue->head %= size;
-	queue->messages[queue->head] = message;
-	++queue->count;
-
-	if (queue->count > size)
+	union
 	{
-		queue->count = size;
-		wchar warning[] = L"InputQueue is overflowing. Last message: x";
-		warning[ArrayCount(warning) - 2] = '0' + message;
-		LOG_WARNING(warning);
-	}
-}
+		ButtonState buttons[2];
+		struct
+		{
+			ButtonState mouseLeft;
+			ButtonState mouseRight;
+		};
+	};
+};
 
 
 ///
@@ -128,9 +87,9 @@ PutInputMessage(InputQueue* queue, InputMessage message)
 struct SimMemory
 {
 	//NOTE: bytes are expected to be initialized to zeros.
-	void* bytes;
+	void*  bytes;
 	uint32 size;
 
-	InputQueue input;
-	uint64 tickFrequency;
+	InputState input;
+	uint64     tickFrequency;
 };
