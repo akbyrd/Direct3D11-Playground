@@ -63,10 +63,10 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int32 nCmdShow)
 				IS_FALSE, LOG_LASTERROR());
 
 			//NOTE: Ticks can be negative if the process is shuffled
-			uint64 newTicks = currentTicks.QuadPart - lastTicks.QuadPart;
+			int64 newTicks = currentTicks.QuadPart - lastTicks.QuadPart;
 			if (newTicks < 0) { newTicks = 0; }
 
-			input->newTicks = newTicks;
+			input->newTicks = (uint32) newTicks;
 			lastTicks = currentTicks;
 
 			//TODO: What if the simulation wants to quit?
