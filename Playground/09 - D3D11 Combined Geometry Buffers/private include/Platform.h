@@ -6,15 +6,15 @@
 
 #include <stdint.h>
 
-typedef uint8_t  uint8;
-typedef uint32_t uint32;
-typedef uint64_t uint64;
+typedef uint8_t  u8;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
-typedef int32_t int32;
-typedef int64_t int64;
+typedef int32_t i32;
+typedef int64_t i64;
 
-typedef float  real32;
-typedef double real64;
+typedef float  r32;
+typedef double r64;
 
 typedef wchar_t wchar;
 
@@ -58,16 +58,16 @@ do {                                  \
 
 struct ButtonState
 {
-	bool  isDown;
-	uint8 transitionCount;
+	bool isDown;
+	u8   transitionCount;
 };
 
 struct InputState
 {
-	uint32 newTicks;
+	u32 newTicks;
 
-	int32 mouseX;
-	int32 mouseY;
+	i32 mouseX;
+	i32 mouseY;
 
 	union
 	{
@@ -89,8 +89,8 @@ struct SimMemory
 {
 	//NOTE: bytes are expected to be initialized to zeros.
 	void*  bytes;
-	uint32 size;
+	u32    size;
 
 	InputState input;
-	uint64     tickFrequency;
+	u64        tickFrequency;
 };

@@ -5,16 +5,16 @@
 //TODO: Add scale factor and drift accumulator?
 struct SimTime
 {
-	real32 t;
-	real32 dt;
-	uint64 ticks;
+	r32 t;
+	r32 dt;
+	u64 ticks;
 };
 
 static inline void
-AddTicks(SimTime* simTime, uint64 newTicks, uint64 tickFrequency)
+AddTicks(SimTime* simTime, u64 newTicks, u64 tickFrequency)
 {
 	simTime->ticks += newTicks;
 
-	simTime->t  = (real32) simTime->ticks / tickFrequency;
-	simTime->dt = (real32)       newTicks / tickFrequency;
+	simTime->t  = (r32) simTime->ticks / tickFrequency;
+	simTime->dt = (r32)       newTicks / tickFrequency;
 }

@@ -18,7 +18,7 @@ struct Win32State
 };
 
 static inline LRESULT CALLBACK
-WndProc(Win32State* win32State, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
+WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lParam)
 {
 	InputState* input = &win32State->simMemory.input;
 
@@ -115,7 +115,7 @@ WndProc(Win32State* win32State, HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lP
 }
 
 static LRESULT CALLBACK
-StaticWndProc(HWND hwnd, uint32 uMsg, WPARAM wParam, LPARAM lParam)
+StaticWndProc(HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lParam)
 {
 	Win32State* win32State = nullptr;
 
@@ -167,7 +167,7 @@ ClientSizeToWindowSizeClamped(SIZE clientSize, SIZE maxSize, DWORD windowStyle)
 }
 
 static inline bool
-InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicationName, int32 nCmdShow, SIZE clientSize)
+InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicationName, i32 nCmdShow, SIZE clientSize)
 {
 	WNDCLASS wc      = {};
 	wc.style         = 0;

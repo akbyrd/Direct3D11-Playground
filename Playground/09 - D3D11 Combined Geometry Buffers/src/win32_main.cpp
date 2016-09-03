@@ -5,7 +5,7 @@
 #include "Simulation.h"
 
 int WINAPI
-wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int32 nCmdShow)
+wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 {
 	//TODO: 64-bit build?
 	Win32State win32State = {};
@@ -35,7 +35,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int32 nCmdShow)
 	{
 		LARGE_INTEGER lastTicks;
 		IF( QueryPerformanceCounter(&lastTicks),
-		   IS_FALSE, LOG_LASTERROR());
+			IS_FALSE, LOG_LASTERROR());
 
 		bool quit = false;
 		while (!quit)
@@ -62,11 +62,12 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int32 nCmdShow)
 			IF( QueryPerformanceCounter(&currentTicks),
 				IS_FALSE, LOG_LASTERROR());
 
+			//TODO: Max function
 			//NOTE: Ticks can be negative if the process is shuffled
-			int64 newTicks = currentTicks.QuadPart - lastTicks.QuadPart;
+			i64 newTicks = currentTicks.QuadPart - lastTicks.QuadPart;
 			if (newTicks < 0) { newTicks = 0; }
 
-			input->newTicks = (uint32) newTicks;
+			input->newTicks = (u32) newTicks;
 			lastTicks = currentTicks;
 
 			//TODO: What if the simulation wants to quit?
