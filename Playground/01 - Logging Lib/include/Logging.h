@@ -2,11 +2,11 @@
 
 #include <string>
 
-#define LOG(msg)         Logging::Log       (msg, __FILE__, __LINE__, __FUNCTION__)
-#define LOG_WARNING(msg) Logging::LogWarning(msg, __FILE__, __LINE__, __FUNCTION__); __debugbreak()
-#define LOG_ERROR(msg)   Logging::LogError  (msg, __FILE__, __LINE__, __FUNCTION__); __debugbreak()
-#define LOG_HRESULT(hr)  Logging::LogHRESULT( hr, __FILE__, __LINE__, __FUNCTION__)
-#define LOG_LASTERROR()  LOG_HRESULT(HRESULT_FROM_WIN32(GetLastError()))
+#define LOG(msg)           Logging::Log       (msg, __FILE__, __LINE__, __FUNCTION__)
+#define LOG_WARNING(msg) { Logging::LogWarning(msg, __FILE__, __LINE__, __FUNCTION__); __debugbreak(); }
+#define LOG_ERROR(msg)   { Logging::LogError  (msg, __FILE__, __LINE__, __FUNCTION__); __debugbreak(); }
+#define LOG_HRESULT(hr)    Logging::LogHRESULT( hr, __FILE__, __LINE__, __FUNCTION__)
+#define LOG_LASTERROR()    LOG_HRESULT(HRESULT_FROM_WIN32(GetLastError()))
 //TODO: Log expression
 
 namespace Logging
