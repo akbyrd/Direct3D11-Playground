@@ -61,7 +61,9 @@ struct RendererState
 	bool allowFullscreen   = true;
 };
 
+#pragma region Foward Declarations
 bool InitializeSwapChain(RendererState*);
+#pragma endregion
 
 bool
 InitializeRenderer(RendererState* state)
@@ -134,6 +136,14 @@ InitializeRenderer(RendererState* state)
 				LOG_WARNING(L"WARP driver in use.");
 			}
 		}
+
+		//Update 'allow fullscreen'
+		UINT flags = 0;
+		if (!state->allowFullscreen)
+			flags |= DXGI_MWA_NO_ALT_ENTER;
+
+		IF( state->dxgiFactory->MakeWindowAssociation(state->hwnd, flags),
+			LOG_HRESULT, IGNORE);
 	}
 
 
@@ -302,14 +312,6 @@ InitializeSwapChain(RendererState* state)
 		IF( state->d3dDevice->CreateRenderTargetView(d3dBackBuffer.Get(), nullptr, &state->d3dRenderTargetView),
 			LOG_HRESULT, return false);
 		SetDebugObjectName(state->d3dRenderTargetView, "Render Target View");
-
-		//Update 'allow fullscreen'
-		UINT flags = 0;
-		if (!state->allowFullscreen)
-			flags |= DXGI_MWA_NO_ALT_ENTER;
-
-		IF( state->dxgiFactory->MakeWindowAssociation(state->hwnd, flags),
-			LOG_HRESULT, IGNORE);
 	}
 
 
@@ -355,6 +357,8 @@ InitializeSwapChain(RendererState* state)
 
 		state->d3dContext->RSSetViewports(1, &viewport);
 	}
+
+	return true;
 }
 
 void
@@ -514,72 +518,14 @@ ResizeRenderer(RendererState* state)
 	return true;
 }
 
-//TODO: Move this?
-void
-UpdateFrameStatistics(RendererState* state, r64 t)
-{
-	static const int bufferSize = 30;
-
-	static char titleBuffer[128];
-	static double buffer[bufferSize];
-	static int head = -1;
-	static int length = 0;
-	static double deltaToMS;
-
-	//HACK: Hate this
-	if ( length == 0 )
-		buffer[bufferSize - 1] = t;
-
-	//Update the head position and length
-	head = (head + 1) % bufferSize;
-	if ( length < bufferSize - 1 )
-	{
-		++length;
-		deltaToMS = 1000. / length;
-	}
-
-	//Update the head value
-	buffer[head] = t;
-
-	int tail = (head - length) % bufferSize;
-	if ( tail < 0 )
-		tail += bufferSize;
-
-	//Update FPS in window title periodically
-	static double lastFPSUpdateTime = 0;
-	if ( t - lastFPSUpdateTime >= .5 )
-	{
-		lastFPSUpdateTime = t;
-
-		r64 delta = buffer[head] - buffer[tail];
-		r64 averageFrameTime = delta * deltaToMS;
-
-		snprintf(titleBuffer, ArraySize(titleBuffer),
-				 "FPS: %.0f   Frame Time: %.4f ms (%d x %d)",
-				 1000 / averageFrameTime,
-				 averageFrameTime,
-				 state->renderSize.x,
-				 state->renderSize.y
-		);
-
-		SetWindowTextA(state->hwnd, titleBuffer);
-	}
-
-	return;
-}
-
 inline bool
 Render(RendererState* state, r64 t)
 {
-	HRESULT hr;
-
 	state->d3dContext->ClearRenderTargetView(state->d3dRenderTargetView.Get(), DirectX::Colors::Magenta);
 	state->d3dContext->ClearDepthStencilView(state->d3dDepthBufferView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
-	hr = state->dxgiSwapChain->Present(0, 0);
-	if(LOG_HRESULT(hr)) {return false;}
-
-	UpdateFrameStatistics(state, t);
+	IF( state->dxgiSwapChain->Present(0, 0),
+		LOG_HRESULT, return false);
 
 	return true;
 }

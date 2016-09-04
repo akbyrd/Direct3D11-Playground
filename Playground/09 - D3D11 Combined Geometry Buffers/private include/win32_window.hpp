@@ -1,9 +1,5 @@
 #pragma once
 
-#include <Windows.h>
-#include <windowsx.h>
-#include "Platform.h"
-
 /* Notes:
  * Functions bodies inside a type are implicitly inline.
  * Only function bodies marked inline or static are allowed in headers.
@@ -23,6 +19,111 @@ struct Win32State
 	SimMemory simMemory             = {};
 };
 
+#pragma region Foward Declarations
+bool ClientSizeToWindowSize(V2i, DWORD, V2i*);
+LRESULT CALLBACK StaticWndProc(HWND, u32, WPARAM, LPARAM);
+LRESULT CALLBACK WndProc(Win32State*, HWND, u32, WPARAM, LPARAM);
+#pragma endregion
+
+bool
+InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicationName, i32 nCmdShow, V2i desiredClientSize)
+{
+	WNDCLASS wc      = {};
+	wc.style         = 0;
+	wc.lpfnWndProc   = StaticWndProc;
+	wc.cbClsExtra    = 0;
+	wc.cbWndExtra    = sizeof(Win32State*);
+	wc.hInstance     = hInstance;
+	wc.hIcon         = nullptr; //TODO: Legit icon
+	wc.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
+	wc.lpszMenuName  = nullptr;
+	wc.lpszClassName = applicationName;
+
+	V2i windowPos  = {CW_USEDEFAULT, CW_USEDEFAULT};
+	V2i windowSize = desiredClientSize;
+
+	win32State->clientSize = desiredClientSize;
+
+	DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION
+		| WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+		| WS_SIZEBOX;
+
+	ClientSizeToWindowSize(win32State->minClientSize, windowStyle, &win32State->minClientSize);
+	ClientSizeToWindowSize(desiredClientSize, windowStyle, &windowSize);
+
+	//Clamp size and center on desktop
+	RECT usableDesktopRect = {};
+	if (SystemParametersInfoW(SPI_GETWORKAREA, 0, &usableDesktopRect, 0))
+	{
+		V2i usableDesktop = {
+			usableDesktopRect.right - usableDesktopRect.left,
+			usableDesktopRect.bottom - usableDesktopRect.top
+		};
+
+		Clamp(win32State->minClientSize, usableDesktop);
+
+		i32 delta = windowSize.x - usableDesktop.x;
+		if (delta > 0)
+		{
+			windowSize.x             -= delta;
+			win32State->clientSize.x -= delta;
+		}
+
+		delta = windowSize.y - usableDesktop.y;
+		if (delta > 0)
+		{
+			windowSize.y             -= delta;
+			win32State->clientSize.y -= delta;
+		}
+
+		windowPos = (usableDesktop - windowSize) / 2;
+	}
+	else
+	{
+		LOG_LASTERROR();
+	}
+
+	IF( RegisterClassW(&wc),
+		IS_FALSE, LOG_LASTERROR(); return false);
+
+	IF( win32State->hwnd = CreateWindowExW(
+		0,
+		applicationName, applicationName,
+		windowStyle,
+		windowPos.x, windowPos.y,
+		windowSize.x, windowSize.y,
+		nullptr, nullptr,
+		hInstance,
+		win32State),
+		IS_FALSE, LOG_LASTERROR(); return false);
+
+	ShowWindow(win32State->hwnd, nCmdShow);
+
+	return true;
+}
+
+inline bool
+ClientSizeToWindowSize(V2i clientSize, DWORD windowStyle, V2i* windowSize)
+{
+	// TODO: It's pretty easy to create style where this function returns
+	// different numbers than CreateWindow will. THis in turn can cause an
+	// immediate resize/swap chain rebuild. Should place a strategic assert to
+	// catch that case early.
+
+	RECT windowRect = {0, 0, clientSize.x, clientSize.y};
+	if (!AdjustWindowRect(&windowRect, windowStyle, false))
+	{
+		LOG_WARNING(L"Failed to translate client size to window size");
+		return false;
+	}
+
+	windowSize->x = windowRect.right - windowRect.left;
+	windowSize->y = windowRect.bottom - windowRect.top;
+
+	return true;
+}
+
 inline bool
 GetWindowClientSize(HWND hwnd, V2i* clientSize)
 {
@@ -41,6 +142,35 @@ GetWindowClientSize(HWND hwnd, V2i* clientSize)
 	}
 
 	return true;
+}
+
+LRESULT CALLBACK
+StaticWndProc(HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lParam)
+{
+	Win32State* win32State = nullptr;
+
+	//NOTE: This misses the very first WM_GETMINMAXINFO.
+	if (uMsg == WM_NCCREATE)
+	{
+		CREATESTRUCT *params = (CREATESTRUCT*) lParam;
+		win32State = (Win32State*) params->lpCreateParams;
+
+		win32State->hwnd = hwnd;
+		SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG) win32State);
+	}
+	else
+	{
+		win32State = (Win32State*) GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+	}
+
+	if (win32State)
+	{
+		return WndProc(win32State, hwnd, uMsg, wParam, lParam);
+	}
+	else
+	{
+		return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+	}
 }
 
 LRESULT CALLBACK
@@ -205,132 +335,4 @@ WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lPara
 	}
 
 	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
-}
-
-LRESULT CALLBACK
-StaticWndProc(HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lParam)
-{
-	Win32State* win32State = nullptr;
-
-	//NOTE: This misses the very first WM_GETMINMAXINFO.
-	if (uMsg == WM_NCCREATE)
-	{
-		CREATESTRUCT *params = (CREATESTRUCT*) lParam;
-		win32State = (Win32State*) params->lpCreateParams;
-
-		win32State->hwnd = hwnd;
-		SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG) win32State);
-	}
-	else
-	{
-		win32State = (Win32State*) GetWindowLongPtrW(hwnd, GWLP_USERDATA);
-	}
-
-	if (win32State)
-	{
-		return WndProc(win32State, hwnd, uMsg, wParam, lParam);
-	}
-	else
-	{
-		return DefWindowProcW(hwnd, uMsg, wParam, lParam);
-	}
-}
-
-inline bool
-ClientSizeToWindowSize(V2i clientSize, DWORD windowStyle, V2i* windowSize)
-{
-	// TODO: It's pretty easy to create style where this function returns
-	// different numbers than CreateWindow will. THis in turn can cause an
-	// immediate resize/swap chain rebuild. Should place a strategic assert to
-	// catch that case early.
-
-	RECT windowRect = {0, 0, clientSize.x, clientSize.y};
-	if (!AdjustWindowRect(&windowRect, windowStyle, false))
-	{
-		LOG_WARNING(L"Failed to translate client size to window size");
-		return false;
-	}
-
-	windowSize->x = windowRect.right - windowRect.left;
-	windowSize->y = windowRect.bottom - windowRect.top;
-
-	return true;
-}
-
-bool
-InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicationName, i32 nCmdShow, V2i desiredClientSize)
-{
-	WNDCLASS wc      = {};
-	wc.style         = 0;
-	wc.lpfnWndProc   = StaticWndProc;
-	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = sizeof(Win32State*);
-	wc.hInstance     = hInstance;
-	wc.hIcon         = nullptr; //TODO: Legit icon
-	wc.hCursor       = LoadCursorW(nullptr, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
-	wc.lpszMenuName  = nullptr;
-	wc.lpszClassName = applicationName;
-
-	V2i windowPos  = {CW_USEDEFAULT, CW_USEDEFAULT};
-	V2i windowSize = desiredClientSize;
-
-	win32State->clientSize = desiredClientSize;
-
-	DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION
-	                  | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
-	                  | WS_SIZEBOX;
-
-	ClientSizeToWindowSize(win32State->minClientSize, windowStyle, &win32State->minClientSize);
-	ClientSizeToWindowSize(desiredClientSize, windowStyle, &windowSize);
-
-	//Clamp size and center on desktop
-	RECT usableDesktopRect = {};
-	if (SystemParametersInfoW(SPI_GETWORKAREA, 0, &usableDesktopRect, 0))
-	{
-		V2i usableDesktop = {
-			usableDesktopRect.right - usableDesktopRect.left,
-			usableDesktopRect.bottom - usableDesktopRect.top
-		};
-
-		Clamp(win32State->minClientSize, usableDesktop);
-
-		i32 delta = windowSize.x - usableDesktop.x;
-		if (delta > 0)
-		{
-			windowSize.x             -= delta;
-			win32State->clientSize.x -= delta;
-		}
-		
-		delta = windowSize.y - usableDesktop.y;
-		if (delta > 0)
-		{
-			windowSize.y             -= delta;
-			win32State->clientSize.y -= delta;
-		}
-
-		windowPos = (usableDesktop - windowSize) / 2;
-	}
-	else
-	{
-		LOG_LASTERROR();
-	}
-
-	IF( RegisterClassW(&wc),
-		IS_FALSE, LOG_LASTERROR(); return false);
-
-	IF( win32State->hwnd = CreateWindowExW(
-			0,
-			applicationName, applicationName,
-			windowStyle,
-			windowPos.x, windowPos.y,
-			windowSize.x, windowSize.y,
-			nullptr, nullptr,
-			hInstance,
-			win32State),
-		IS_FALSE, LOG_LASTERROR(); return false);
-
-	ShowWindow(win32State->hwnd, nCmdShow);
-
-	return true;
 }

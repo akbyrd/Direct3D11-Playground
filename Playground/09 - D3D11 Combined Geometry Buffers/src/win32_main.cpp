@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <windowsx.h>
 
 //TODO: IGNORE macro redefinition
 #include "Platform.h"
@@ -6,6 +7,9 @@
 #include "Simulation.hpp"
 #include "Renderer.hpp"
 
+#pragma region Foward Declarations
+void UpdateFrameStatistics(RendererState*, r64);
+#pragma endregion
 
 int WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
@@ -55,7 +59,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 
 	//Main loop
 	{
-		i64 maxTickPerFrame = .5f * win32State.clockTicksPerSecond;
+		i64 maxTickPerFrame = (i64) (.5f * win32State.clockTicksPerSecond);
 
 		i64 previousTicks;
 		IF( QueryPerformanceCounter((LARGE_INTEGER*) &previousTicks),
@@ -107,6 +111,8 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 
 			for (size_t i = 0; i < ArrayCount(input->buttons); ++i)
 				input->buttons[i].transitionCount = 0;
+
+			UpdateFrameStatistics(rendererState, input->t);
 		}
 	}
 
@@ -122,4 +128,57 @@ Cleanup:
 Failure:
 	__debugbreak();
 	goto Cleanup;
+}
+
+void
+UpdateFrameStatistics(RendererState* state, r64 t)
+{
+	static const int bufferSize = 30;
+
+	static char titleBuffer[128];
+	static double buffer[bufferSize];
+	static int head = -1;
+	static int length = 0;
+	static double deltaToMS;
+
+	//HACK: Hate this
+	if ( length == 0 )
+		buffer[bufferSize - 1] = t;
+
+	//Update the head position and length
+	head = (head + 1) % bufferSize;
+	if ( length < bufferSize - 1 )
+	{
+		++length;
+		deltaToMS = 1000. / length;
+	}
+
+	//Update the head value
+	buffer[head] = t;
+
+	int tail = (head - length) % bufferSize;
+	if ( tail < 0 )
+		tail += bufferSize;
+
+	//Update FPS in window title periodically
+	static double lastFPSUpdateTime = 0;
+	if ( t - lastFPSUpdateTime >= .5 )
+	{
+		lastFPSUpdateTime = t;
+
+		r64 delta = buffer[head] - buffer[tail];
+		r64 averageFrameTime = delta * deltaToMS;
+
+		snprintf(titleBuffer, ArraySize(titleBuffer),
+				 "FPS: %.0f   Frame Time: %.4f ms (%d x %d)",
+				 1000 / averageFrameTime,
+				 averageFrameTime,
+				 state->renderSize.x,
+				 state->renderSize.y
+		);
+
+		SetWindowTextA(state->hwnd, titleBuffer);
+	}
+
+	return;
 }
