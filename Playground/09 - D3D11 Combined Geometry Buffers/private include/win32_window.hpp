@@ -12,12 +12,38 @@
 
 struct Win32State
 {
-	HWND      hwnd        = nullptr;
-	SIZE      minimumSize = {200, 200};
-	SimMemory simMemory   = {};
+	HWND      hwnd                  = nullptr;
+	i64       clockTicks            = 0;
+	i64       clockTicksPerSecond   = 0;
+	u16       mouseWheelAccumulator = 0;
+	V2i       minClientSize         = {200, 200};
+	V2i       clientSize            = {};
+	bool      wasResized            = false;
+	bool      isResizing            = false;
+	SimMemory simMemory             = {};
 };
 
-static inline LRESULT CALLBACK
+inline bool
+GetWindowClientSize(HWND hwnd, V2i* clientSize)
+{
+	RECT rect = {};
+	if ( GetClientRect(hwnd, &rect) )
+	{
+		clientSize->x = rect.right - rect.left;
+		clientSize->y = rect.bottom - rect.top;
+	}
+	else
+	{
+		HRESULT hr = GetLastError();
+		if ( !LOG_HRESULT(hr) )
+			LOG_WARNING(L"GetClientRect failed, but the last error passed a FAILED. HR = " + std::to_wstring(hr));
+		return false;
+	}
+
+	return true;
+}
+
+LRESULT CALLBACK
 WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lParam)
 {
 	InputState* input = &win32State->simMemory.input;
@@ -52,11 +78,42 @@ WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lPara
 			goto UpdateMousePosition;
 		}
 
+		case WM_MBUTTONDOWN:
+		{
+			input->mouseMiddle.isDown = true;
+			input->mouseMiddle.transitionCount++;
+			goto UpdateMousePosition;
+		}
+
+		case WM_MBUTTONUP:
+		{
+			input->mouseMiddle.isDown = false;
+			input->mouseMiddle.transitionCount++;
+			goto UpdateMousePosition;
+		}
+
+		case WM_MOUSEWHEEL:
+		{
+			//TODO: There's some drift here when scrolling quickly. Why?
+			win32State->mouseWheelAccumulator += GET_WHEEL_DELTA_WPARAM(wParam);
+			while ( win32State->mouseWheelAccumulator >= WHEEL_DELTA )
+			{
+				win32State->mouseWheelAccumulator -= WHEEL_DELTA;
+				input->mouseWheelUp.transitionCount += 2;
+			}
+			while ( win32State->mouseWheelAccumulator <= -WHEEL_DELTA )
+			{
+				win32State->mouseWheelAccumulator += WHEEL_DELTA;
+				input->mouseWheelDown.transitionCount += 2;
+			}
+			goto UpdateMousePosition;
+		}
+
+
 		UpdateMousePosition:
 		case WM_MOUSEMOVE:
 		{
-			input->mouseX = GET_X_LPARAM(lParam);
-			input->mouseY = GET_Y_LPARAM(lParam);
+			input->mouse = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 			return 0;
 		}
 
@@ -86,8 +143,44 @@ WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lPara
 		case WM_GETMINMAXINFO:
 		{
 			MINMAXINFO* minMaxInfo = (MINMAXINFO*) lParam;
-			minMaxInfo->ptMinTrackSize.x = win32State->minimumSize.cx;
-			minMaxInfo->ptMinTrackSize.y = win32State->minimumSize.cy;
+			minMaxInfo->ptMinTrackSize.x = win32State->minClientSize.x;
+			minMaxInfo->ptMinTrackSize.y = win32State->minClientSize.y;
+			return 0;
+		}
+
+		//Entering modal loop for move and resize events.
+		case WM_ENTERSIZEMOVE:
+		{
+			win32State->isResizing = true;
+			return 0;
+		}
+
+		//Exiting modal loop for move and resize events.
+		case WM_EXITSIZEMOVE:
+		{
+			win32State->isResizing = false;
+
+			V2i newClientSize;
+			if (GetWindowClientSize(win32State->hwnd, &newClientSize))
+			{
+				lParam = MAKELPARAM(newClientSize.x, newClientSize.y);
+				goto CheckForResize;
+			}
+			return 0;
+		}
+
+		CheckForResize:
+		case WM_SIZE:
+		{
+			if ( !win32State->isResizing && wParam != SIZE_MINIMIZED )
+			{
+				V2i newClientSize = { LOWORD(lParam), HIWORD(lParam) };
+				if (win32State->clientSize != newClientSize)
+				{
+					win32State->clientSize = newClientSize;
+					win32State->wasResized = true;
+				}
+			}
 			return 0;
 		}
 
@@ -114,7 +207,7 @@ WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lPara
 	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
-static LRESULT CALLBACK
+LRESULT CALLBACK
 StaticWndProc(HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lParam)
 {
 	Win32State* win32State = nullptr;
@@ -134,40 +227,38 @@ StaticWndProc(HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	if (win32State)
+	{
 		return WndProc(win32State, hwnd, uMsg, wParam, lParam);
+	}
 	else
+	{
 		return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+	}
 }
 
-static inline SIZE
-ClientSizeToWindowSizeClamped(SIZE clientSize, SIZE maxSize, DWORD windowStyle)
+inline bool
+ClientSizeToWindowSize(V2i clientSize, DWORD windowStyle, V2i* windowSize)
 {
-	//TODO: Assert windowStyle != WS_OVERLAPPED. AdjustWindowRect docs say it's unsupported
+	// TODO: It's pretty easy to create style where this function returns
+	// different numbers than CreateWindow will. THis in turn can cause an
+	// immediate resize/swap chain rebuild. Should place a strategic assert to
+	// catch that case early.
 
-	RECT windowRect = {0, 0, clientSize.cx, clientSize.cy};
+	RECT windowRect = {0, 0, clientSize.x, clientSize.y};
 	if (!AdjustWindowRect(&windowRect, windowStyle, false))
 	{
-		//TODO: Log
-		//LOG_WARNING(L"Failed to translate client size to window size");
-		return clientSize;
+		LOG_WARNING(L"Failed to translate client size to window size");
+		return false;
 	}
 
-	SIZE windowSize;
-	windowSize.cx = windowRect.right - windowRect.left;
-	windowSize.cy = windowRect.bottom - windowRect.top;
+	windowSize->x = windowRect.right - windowRect.left;
+	windowSize->y = windowRect.bottom - windowRect.top;
 
-	//Clamp size
-	if (windowSize.cx > maxSize.cx)
-		windowSize.cx = maxSize.cx;
-
-	if (windowSize.cy > maxSize.cy)
-		windowSize.cy = maxSize.cy;
-
-	return windowSize;
+	return true;
 }
 
-static inline bool
-InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicationName, i32 nCmdShow, SIZE clientSize)
+bool
+InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicationName, i32 nCmdShow, V2i desiredClientSize)
 {
 	WNDCLASS wc      = {};
 	wc.style         = 0;
@@ -181,28 +272,44 @@ InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicatio
 	wc.lpszMenuName  = nullptr;
 	wc.lpszClassName = applicationName;
 
-	POINT windowPos  = {CW_USEDEFAULT, CW_USEDEFAULT};
-	SIZE  windowSize = clientSize;
+	V2i windowPos  = {CW_USEDEFAULT, CW_USEDEFAULT};
+	V2i windowSize = desiredClientSize;
 
-	DWORD windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_SIZEBOX
-	                  | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
-	                  | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+	win32State->clientSize = desiredClientSize;
 
+	DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION
+	                  | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+	                  | WS_SIZEBOX;
+
+	ClientSizeToWindowSize(win32State->minClientSize, windowStyle, &win32State->minClientSize);
+	ClientSizeToWindowSize(desiredClientSize, windowStyle, &windowSize);
+
+	//Clamp size and center on desktop
 	RECT usableDesktopRect = {};
 	if (SystemParametersInfoW(SPI_GETWORKAREA, 0, &usableDesktopRect, 0))
 	{
-		SIZE usableDesktop = {
+		V2i usableDesktop = {
 			usableDesktopRect.right - usableDesktopRect.left,
 			usableDesktopRect.bottom - usableDesktopRect.top
 		};
 
-		win32State->minimumSize = ClientSizeToWindowSizeClamped(win32State->minimumSize, usableDesktop, windowStyle);
-		windowSize = ClientSizeToWindowSizeClamped(clientSize,  usableDesktop, windowStyle);
+		Clamp(win32State->minClientSize, usableDesktop);
 
-		windowPos = {
-			(usableDesktop.cx - windowSize.cx) / 2,
-			(usableDesktop.cy - windowSize.cy) / 2
-		};
+		i32 delta = windowSize.x - usableDesktop.x;
+		if (delta > 0)
+		{
+			windowSize.x             -= delta;
+			win32State->clientSize.x -= delta;
+		}
+		
+		delta = windowSize.y - usableDesktop.y;
+		if (delta > 0)
+		{
+			windowSize.y             -= delta;
+			win32State->clientSize.y -= delta;
+		}
+
+		windowPos = (usableDesktop - windowSize) / 2;
 	}
 	else
 	{
@@ -217,7 +324,7 @@ InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicatio
 			applicationName, applicationName,
 			windowStyle,
 			windowPos.x, windowPos.y,
-			windowSize.cx, windowSize.cy,
+			windowSize.x, windowSize.y,
 			nullptr, nullptr,
 			hInstance,
 			win32State),

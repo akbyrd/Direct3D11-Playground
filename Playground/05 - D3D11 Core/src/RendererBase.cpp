@@ -269,7 +269,7 @@ bool RendererBase::InitializeSwapChain()
 	/* TODO: When using fullscreen, the display mode should be chosen by enumerating supported
 	 * modes. If a mode is chosen that isn't supported, a performance penalty will be incurred due
 	 * to Present performing a blit instead of a swap (does this apply to incorrect refresh rates
-	 * or only incorrect reolutions?).
+	 * or only incorrect resolutions?).
 	 */
 
 	/* Set swap chain properties
@@ -549,8 +549,8 @@ bool RendererBase::LogDisplayModes(ComPtr<IDXGIOutput> pDXGIOutput)
 	wostringstream stream;
 	for ( UINT i = 0; i < numModes; ++i )
 	{
-		UINT  width = arrModeDesc[i].Width;
-		UINT  height = arrModeDesc[i].Height;
+		UINT  width       = arrModeDesc[i].Width;
+		UINT  height      = arrModeDesc[i].Height;
 		float refreshRate = arrModeDesc[i].RefreshRate.Numerator / (float) arrModeDesc[i].RefreshRate.Denominator;
 
 		stream << width << L"x" << height << L" @ " << refreshRate << L" Hz" << endl;

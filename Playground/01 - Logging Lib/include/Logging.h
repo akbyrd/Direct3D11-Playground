@@ -1,5 +1,9 @@
 #pragma once
 
+//TODO: This is inherently WIN32-only 
+//TODO: Get rid of this
+#include <Windows.h>
+
 #include <string>
 
 #define LOG(msg)           Logging::Log       (msg, __FILE__, __LINE__, __FUNCTION__)
@@ -19,8 +23,5 @@ namespace Logging
 	void LogWarning   (wstring message,                     const char* file, long line, const char* function);
 	void LogError     (wstring message,                     const char* file, long line, const char* function);
 	void LogAssert    (wstring expression, wstring message, const char* file, long line, const char* function);
-
-	#ifdef WIN32
 	bool LogHRESULT   (HRESULT hr,                          const char* file, long line, const char* function);
-	#endif
 }
