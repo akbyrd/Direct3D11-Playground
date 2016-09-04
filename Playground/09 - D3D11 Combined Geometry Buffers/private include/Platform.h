@@ -23,7 +23,7 @@ typedef wchar_t wchar;
 #define Megabyte 1024LL * Kilobyte
 #define Gigabyte 1024LL * Megabyte
 
-#define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
+//#define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 
 #define Assert(condition) if (!(condition)) { *((u8 *) 0) = 0; }
 #define InvalidCodePath Assert(!"Invalid code path")
@@ -44,6 +44,7 @@ do {                                  \
 #endif
 
 #define IGNORE
+#define IS_TRUE
 #define IS_FALSE !
 
 
@@ -51,7 +52,13 @@ do {                                  \
 // Global Functionality
 ///
 
+#include <memory>
+template<typename T>
+using unique_ptr = std::unique_ptr<T>;
+
 #include "Logging.h"
+#include "Utility.h"
+using namespace Utility;
 
 
 ///

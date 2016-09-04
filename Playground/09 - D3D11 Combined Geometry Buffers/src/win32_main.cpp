@@ -1,7 +1,8 @@
 #include <Windows.h>
 #include <windowsx.h>
+#include <atlbase.h> //ComPtr
+//#include <wrl\client.h> //TODO: Is this a lighter include for ComPtr?
 
-//TODO: IGNORE macro redefinition
 #include "Platform.h"
 #include "win32_window.hpp"
 #include "Simulation.hpp"

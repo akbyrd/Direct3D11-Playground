@@ -227,8 +227,8 @@ bool Renderer::InitializeRasterizerStates()
 	/* NOTE: MultisampleEnable toggles between quadrilateral AA (true) and alpha AA (false).
 	 * Alpha AA has a massive performance impact while quadrilateral is much smaller (negligible
 	 * for the mesh drawn here). Visually, it's hard to tell the difference between quadrilateral
-	 * AA on and off in this demo. Alpha AA on the other is more obvious. It causes the wireframe
-	 * to draw lines 2 px wide instead of 1.
+	 * AA on and off in this demo. Alpha AA on the other hand is more obvious. It causes the
+	 * wireframe to draw lines 2 px wide instead of 1.
 	 * 
 	 * See remarks: https://msdn.microsoft.com/en-us/library/windows/desktop/ff476198(v=vs.85).aspx
 	 */

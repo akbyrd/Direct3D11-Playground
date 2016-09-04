@@ -1,6 +1,6 @@
 struct PixelFragment
 {
-	float4 PosH  : POSITION;
+	float4 PosH  : SV_POSITION;
 	float4 Color : COLOR;
 };
 
