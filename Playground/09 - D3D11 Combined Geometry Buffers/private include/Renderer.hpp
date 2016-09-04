@@ -366,8 +366,6 @@ TeardownRenderer(RendererState* state)
 {
 	if (state == nullptr) {return;}
 
-	HRESULT hr;
-
 	state->hwnd = nullptr;
 
 	if ( state->dxgiSwapChain )
@@ -378,7 +376,7 @@ TeardownRenderer(RendererState* state)
 		// automatically incremented. It isn't decremented until leaving fullscreen. Thus closing
 		// the application while fullscreened leaks the device.
 
-		IF( hr = state->dxgiSwapChain->SetFullscreenState(false, nullptr),
+		IF( state->dxgiSwapChain->SetFullscreenState(false, nullptr),
 			LOG_HRESULT, IGNORE);
 	}
 
@@ -459,15 +457,15 @@ TeardownRenderer(RendererState* state)
 
 		//Win8.1
 		#elif defined(DEBUG_11_2)
-		ComPtr<IDXGIDebug1> pDXGIDebug;
-		IF( hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug)),
+		ComPtr<IDXGIDebug1> dxgiDebug;
+		IF( DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)),
 			LOG_HRESULT, return);
 
 		//TODO: Test the differences in the output
 		//DXGI_DEBUG_RLO_ALL
 		//DXGI_DEBUG_RLO_SUMMARY
 		//DXGI_DEBUG_RLO_DETAIL
-		IF( hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL),
+		IF( dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL),
 			LOG_HRESULT, return);
 
 		OutputDebugStringW(L"\n");
