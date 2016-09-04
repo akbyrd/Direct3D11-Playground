@@ -1,6 +1,6 @@
 #pragma once
 
-//TODO: This is inherently WIN32-only 
+//TODO: This is inherently WIN32-only
 //TODO: Get rid of this
 #include <Windows.h>
 

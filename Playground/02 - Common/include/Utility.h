@@ -8,9 +8,16 @@
 namespace Utility
 {
 	template<typename T, size_t S>
-	inline size_t ArraySize(const T (&arr)[S])
+	inline size_t ArrayCount(const T (&arr)[S])
 	{
 		return S;
+	}
+
+	//TODO: Update usage sites and rename
+	template<typename T, size_t S>
+	inline size_t ArraySize(const T (&arr)[S])
+	{
+		return S * sizeof(T);
 	}
 
 	template<typename T>
@@ -43,6 +50,7 @@ namespace Utility
 		#endif
 	}
 
+	//TODO: Probably don't use std:string
 	inline void SetDebugObjectName(const ComPtr<ID3D11DeviceChild> &resource,
 		const std::string &name)
 	{

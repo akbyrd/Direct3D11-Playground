@@ -676,7 +676,7 @@ void RendererBase::UpdateFrameStatistics(const GameTimer &gameTimer)
 	{
 		lastFPSUpdateTime = gameTimer.RealTime();
 
-		snprintf(titleBuffer, ArraySize(titleBuffer),
+		snprintf(titleBuffer, ArrayCount(titleBuffer),
 			"FPS: %.0f   Frame Time: %.2f ms (%d x %d)",
 			1000 / averageFrameTime,
 			averageFrameTime,

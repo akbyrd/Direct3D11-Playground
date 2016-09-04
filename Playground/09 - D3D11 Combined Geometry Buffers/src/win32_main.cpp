@@ -169,7 +169,7 @@ UpdateFrameStatistics(RendererState* state, r64 t)
 		r64 delta = buffer[head] - buffer[tail];
 		r64 averageFrameTime = delta * deltaToMS;
 
-		snprintf(titleBuffer, ArraySize(titleBuffer),
+		snprintf(titleBuffer, ArrayCount(titleBuffer),
 				 "FPS: %.0f   Frame Time: %.4f ms (%d x %d)",
 				 1000 / averageFrameTime,
 				 averageFrameTime,

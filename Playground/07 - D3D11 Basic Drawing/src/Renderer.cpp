@@ -46,7 +46,7 @@ bool Renderer::InitializeInputLayout()
 	CHECK(LoadFile(L"Basic Vertex Shader.cso", vsBytes, vsBytesLength));
 
 	//Create and set input layout
-	hr = pD3DDevice->CreateInputLayout(vsInputDescs, ArraySize(vsInputDescs), vsBytes.get(), vsBytesLength, &pInputLayout); CHECK_HR(hr);
+	hr = pD3DDevice->CreateInputLayout(vsInputDescs, ArrayCount(vsInputDescs), vsBytes.get(), vsBytesLength, &pInputLayout); CHECK_HR(hr);
 	SetDebugObjectName(pInputLayout, "Input Layout");
 
 	pD3DImmediateContext->IASetInputLayout(pInputLayout.Get());

@@ -113,7 +113,7 @@ Input* HostWindow::GetInput()
 	previousInput = input;
 
 	//Clear
-	for ( size_t i = 0; i < ArraySize(input.buttons); ++i )
+	for ( size_t i = 0; i < ArrayCount(input.buttons); ++i )
 	{
 		input.buttons[i].transitionCount = 0;
 	}
