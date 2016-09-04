@@ -46,8 +46,8 @@ InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicatio
 	win32State->clientSize = desiredClientSize;
 
 	DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION
-		| WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
-		| WS_SIZEBOX;
+	                  | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+	                  | WS_SIZEBOX;
 
 	ClientSizeToWindowSize(win32State->minClientSize, windowStyle, &win32State->minClientSize);
 	ClientSizeToWindowSize(desiredClientSize, windowStyle, &windowSize);
@@ -88,14 +88,15 @@ InitializeWindow(Win32State* win32State, HINSTANCE hInstance, LPCWSTR applicatio
 		IS_FALSE, LOG_LASTERROR(); return false);
 
 	IF( win32State->hwnd = CreateWindowExW(
-		0,
-		applicationName, applicationName,
-		windowStyle,
-		windowPos.x, windowPos.y,
-		windowSize.x, windowSize.y,
-		nullptr, nullptr,
-		hInstance,
-		win32State),
+			0,
+			applicationName, applicationName,
+			windowStyle,
+			windowPos.x, windowPos.y,
+			windowSize.x, windowSize.y,
+			nullptr, nullptr,
+			hInstance,
+			win32State
+		),
 		IS_FALSE, LOG_LASTERROR(); return false);
 
 	ShowWindow(win32State->hwnd, nCmdShow);
@@ -112,11 +113,8 @@ ClientSizeToWindowSize(V2i clientSize, DWORD windowStyle, V2i* windowSize)
 	// catch that case early.
 
 	RECT windowRect = {0, 0, clientSize.x, clientSize.y};
-	if (!AdjustWindowRect(&windowRect, windowStyle, false))
-	{
-		LOG_WARNING(L"Failed to translate client size to window size");
-		return false;
-	}
+	IF( AdjustWindowRect(&windowRect, windowStyle, false),
+		IS_FALSE, LOG_WARNING(L"Failed to translate client size to window size"); return false);
 
 	windowSize->x = windowRect.right - windowRect.left;
 	windowSize->y = windowRect.bottom - windowRect.top;
@@ -138,6 +136,7 @@ GetWindowClientSize(HWND hwnd, V2i* clientSize)
 		HRESULT hr = GetLastError();
 		if ( !LOG_HRESULT(hr) )
 			LOG_WARNING(L"GetClientRect failed, but the last error passed a FAILED. HR = " + std::to_wstring(hr));
+
 		return false;
 	}
 
@@ -238,7 +237,6 @@ WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lPara
 			}
 			goto UpdateMousePosition;
 		}
-
 
 		UpdateMousePosition:
 		case WM_MOUSEMOVE:
