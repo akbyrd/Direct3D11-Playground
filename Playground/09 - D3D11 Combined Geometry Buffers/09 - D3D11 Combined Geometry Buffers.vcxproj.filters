@@ -30,13 +30,13 @@
     <ClInclude Include="private include\win32_window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="private include\Platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="private include\Renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="private include\Simulation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="private include\FileIO.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

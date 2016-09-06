@@ -238,6 +238,8 @@ WndProc(Win32State* win32State, HWND hwnd, u32 uMsg, WPARAM wParam, LPARAM lPara
 			goto UpdateMousePosition;
 		}
 
+		// TODO: Switch to RawInput
+		// https://msdn.microsoft.com/en-us/library/windows/desktop/ee418864.aspx
 		UpdateMousePosition:
 		case WM_MOUSEMOVE:
 		{

@@ -1,51 +1,62 @@
-//TODO: This needs to be tested on WinXP, 7, 8, and 8.1
-#ifdef _DEBUG
-	#define DEBUG_11_2
-
-	#if defined(DEBUG_11)
-		#include <d3d11sdklayers.h>
-	#elif defined(DEBUG_11_1)
-		#include <d3d11sdklayers.h>
-		#include <dxgidebug.h>
-	#elif defined(DEBUG_11_1_Plus)
-		#include <d3d11sdklayers.h>
-		#include <dxgidebug.h>
-	#elif defined(DEBUG_11_2)
-		#include <d3d11sdklayers.h>
-		#include <dxgidebug.h>
-		#include <dxgi1_3.h>
-	#endif
-#endif
-
 #pragma comment(lib, "D3D11.lib")
 #pragma comment(lib,  "DXGI.lib")
+
+#ifdef DEBUG
+	#include <d3d11sdklayers.h>
+	#include <dxgidebug.h>
+	#include <dxgi1_3.h>
+#endif
+
+#include <d3d11.h>
 #include <DirectXColors.h>
-#include <string>  //TODO: Eh...
-#include "HLSL.h"
 using namespace DirectX;
+
+#include <wrl\client.h>
+using Microsoft::WRL::ComPtr;
+
+#include <string>  //TODO: Eh...
+
+namespace HLSL
+{
+	namespace Semantic
+	{
+		const char* Position = "POSITION";
+		const char* Color    = "COLOR";
+	}
+}
 using namespace HLSL;
+
+template<UINT TNameLength>
+inline void
+SetDebugObjectName(const ComPtr<ID3D11Device> &resource, const char (&name)[TNameLength])
+{
+	#if defined(DEBUG)
+	resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
+	#endif
+}
+
+template<UINT TNameLength>
+inline void
+SetDebugObjectName(const ComPtr<ID3D11DeviceChild> &resource, const char (&name)[TNameLength])
+{
+	#if defined(DEBUG)
+	resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
+	#endif
+}
+
+template<UINT TNameLength>
+inline void
+SetDebugObjectName(const ComPtr<IDXGIObject> &resource, const char (&name)[TNameLength])
+{
+	#if defined(DEBUG)
+	resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
+	#endif
+}
 
 #pragma region Foward Declarations
 bool InitializeSwapChain(struct RendererState*);
 void UpdateRasterizeState(struct RendererState*);
 #pragma endregion
-
-// REMEMBER:
-// ComPtr
-// operator&            - Get a ComPtrRef
-// Get()                - Get the raw pointer
-// GetAddressOf()       - Get a pointer to the raw pointer
-//
-// As()                 - Get some other interface
-// Attach()             - Release existing pointer and assign a new one (does not AddRef)
-// Detach()             - Get the raw pointer and leave the ComPtr empty (does not Release)
-// Reset()              - Alias for Release
-// Swap()               - Swap raw pointers (no calls to AddRef or Release)
-//
-// ComPtrRef
-// operator(ComPtr<T>*) - Get raw pointer and leave ComPtr empty
-// operator(void**)     - Alias for ReleaseAndGetAddressOf
-// Operator(T**)        - Alias for ReleaseAndGetAddressOf
 
 struct DrawCall
 {
@@ -122,7 +133,7 @@ InitializeRenderer(RendererState* s)
 	//Create device
 	{
 		UINT createDeviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
-		#if _DEBUG
+		#if DEBUG
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 		//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUGGABLE; //11_1+
 		#endif
@@ -194,79 +205,22 @@ InitializeRenderer(RendererState* s)
 
 	//Configure debugging
 	{
-		//TODO: Debug with the highest available interface
-		//WinXP
-		#if defined(DEBUG_11)
-		throw_assert(pD3DDevice, L"D3D device not initialized.");
+		//TODO: Maybe replace DEBUG with something app specific
+		#ifdef DEBUG
+		ComPtr<IDXGIDebug1> dxgiDebug;
+		IF( DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)),
+			LOG_HRESULT, return false);
 
-		ComPtr<ID3D11Debug> pD3DDebug;
-		hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug));
-		if(LOG_HRESULT(hr)) {return false;}
-
-		ComPtr<ID3D11InfoQueue> pD3DInfoQueue;
-		hr = pD3DDebug->QueryInterface(IID_PPV_ARGS(&pD3DInfoQueue));
-		if(LOG_HRESULT(hr)) {return false;}
-
-		hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
-		if(LOG_HRESULT(hr)) {return false;}
-		hr = pD3DInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR     , true);
-		if(LOG_HRESULT(hr)) {return false;}
-
-		//Win7
-		#elif defined(DEBUG_11_1) || defined(DEBUG_11_Plus)
-
-		//Win8
-		#if defined(DEBUG_11_1_Plus)
-		typedef decltype(&DXGIGetDebugInterface) fPtr;
-		#else
-		typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
-		#endif
-
-		HMODULE dxgiDebugModule = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-		if ( !dxgiDebugModule )
-		{
-			LOG_ERROR(L"Failed to load dxgidebug.dll");
-			return false;
-		}
-
-		fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(dxgiDebugModule, "DXGIGetDebugInterface");
-		if ( !DXGIGetDebugInterface )
-		{
-			LOG_ERROR(L"Failed to obtain DXGIGetDebugInterface function pointer");
-			return false;
-		}
+		dxgiDebug->EnableLeakTrackingForThread();
 
 		ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
-		hr = DXGIGetDebugInterface(IID_PPV_ARGS(&dxgiInfoQueue));
-		if(LOG_HRESULT(hr)) {return false;}
-
-		hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR     , true);
-		if(LOG_HRESULT(hr)) {return false;}
-		hr = dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
-		if(LOG_HRESULT(hr)) {return false;}
-
-		//TODO: Smart pointer
-		FreeLibrary(dxgiDebugModule);
-
-		//Win8.1
-		#elif defined(DEBUG_11_2)
-		ComPtr<IDXGIDebug1> pDXGIDebug;
-		IF( DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIDebug)),
+		IF( DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiInfoQueue)),
 			LOG_HRESULT, return false);
 
-		pDXGIDebug->EnableLeakTrackingForThread();
-
-		ComPtr<IDXGIInfoQueue> pDXGIInfoQueue;
-		IF( DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDXGIInfoQueue)),
-			LOG_HRESULT, return false);
-
-		IF( pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true),
+		IF( dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR,      true),
 			LOG_HRESULT, IGNORE);
-		IF( pDXGIInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true),
+		IF( dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true),
 			LOG_HRESULT, IGNORE);
-
-		#else
-		UNREFERENCED_PARAMETER(hr);
 		#endif
 	}
 
@@ -638,73 +592,7 @@ TeardownRenderer(RendererState* s)
 
 	//Log live objects
 	{
-		//WinXP
-		#if defined(DEBUG_11)
-		// TODO: This D3D API is poorly designed. You need to keep the device around to be able to
-		// get the debug interface, which means you're guaranteed to have live objects, defeating
-		// the purpose of even logging them. I could get the debug interface before releasing the
-		// device and then use it here, but that's ugly and requires a different code path. Since
-		// this is just debug code, I'd rather use the newest, most capable debug interface anyway,
-		// so this code path won't be used and is effectively unsupported.
-		if ( !pD3DDevice )
-		{
-			LOG_WARNING(L"Failed to log live objects because the D3D device is not initialized.");
-			return;
-		}
-
-		ComPtr<ID3D11Debug> pD3DDebug;
-		hr = pD3DDevice->QueryInterface(IID_PPV_ARGS(&pD3DDebug));
-		if(LOG_HRESULT(hr)) {return;}
-
-		//TODO: Test the differences in the output
-		//D3D11_RLDO_SUMMARY
-		//D3D11_RLDO_DETAIL
-		//D3D11_RLDO_IGNORE_INTERNAL
-		pD3DDebug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY
-		                                 | D3D11_RLDO_DETAIL
-		                                 | D3D11_RLDO_IGNORE_INTERNAL
-		);
-
-		OutputDebugStringW(L"\n");
-
-		//Win7
-		#elif defined(DEBUG_11_1) || defined(DEBUG_11_1_Plus)
-
-		//Win8
-		#if defined(DEBUG_11_1_Plus)
-		typedef decltype(&DXGIGetDebugInterface) fPtr;
-		#else
-		typedef HRESULT (WINAPI *fPtr)(REFIID, void**);
-		#endif
-
-		HMODULE dxgiDebugModule = LoadLibraryExW(L"dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-		if ( !dxgiDebugModule )
-		{
-			LOG_ERROR(L"Failed to load dxgidebug.dll");
-			return;
-		}
-
-		fPtr DXGIGetDebugInterface = (fPtr) GetProcAddress(dxgiDebugModule, "DXGIGetDebugInterface");
-		if ( !DXGIGetDebugInterface )
-		{
-			LOG_ERROR(L"Failed to obtain DXGIGetDebugInterface function pointer");
-			return;
-		}
-
-		ComPtr<IDXGIDebug> pDXGIDebug;
-		hr = DXGIGetDebugInterface(IID_PPV_ARGS(&pDXGIDebug));
-		if(LOG_HRESULT(hr)) {return;}
-
-		hr = pDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL);
-		if(LOG_HRESULT(hr)) {return;}
-		OutputDebugStringW(L"\n");
-
-		//TODO: Smart pointer
-		//unique_ptr<HMODULE> blah((HMODULE)nullptr, FreeLibrary);
-		FreeLibrary(dxgiDebugModule);
-
-		//Win8.1
-		#elif defined(DEBUG_11_2)
+		#ifdef DEBUG
 		ComPtr<IDXGIDebug1> dxgiDebug;
 		IF( DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)),
 			LOG_HRESULT, return);
@@ -717,9 +605,6 @@ TeardownRenderer(RendererState* s)
 			LOG_HRESULT, return);
 
 		OutputDebugStringW(L"\n");
-
-		#else
-		UNREFERENCED_PARAMETER(hr);
 		#endif
 	}
 }
@@ -818,6 +703,7 @@ Render(RendererState* s, r64 t)
 
 	s->d3dContext->DrawIndexed(dc->iCount, 0, dc->vOffset);
 
+	//TODO: Handle DXGI_ERROR_DEVICE_RESET, DXGI_ERROR_DEVICE_REMOVED, etc
 	IF( s->dxgiSwapChain->Present(0, 0),
 		LOG_HRESULT, return false);
 

@@ -49,7 +49,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>WIN32;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;WIN32;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -80,7 +80,7 @@
     <ClCompile Include="src\win32_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="private include\Platform.h" />
+    <ClInclude Include="private include\FileIO.hpp" />
     <ClInclude Include="private include\Renderer.hpp" />
     <ClInclude Include="private include\Simulation.hpp" />
     <ClInclude Include="private include\win32_window.hpp" />

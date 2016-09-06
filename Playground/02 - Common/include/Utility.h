@@ -13,13 +13,15 @@ namespace Utility
 		return S;
 	}
 
-	//TODO: Update usage sites and rename
 	template<typename T, size_t S>
 	inline size_t ArraySize(const T (&arr)[S])
 	{
 		return S * sizeof(T);
 	}
 
+	bool LoadFile(const std::wstring &fileName, std::unique_ptr<char[]> &data, size_t &dataSize);
+
+	//TODO: This is all DirectX specific, should be moved somewhere else
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
@@ -58,8 +60,6 @@ namespace Utility
 		resource->SetPrivateData(WKPDID_D3DDebugObjectName, name.length(), name.c_str());
 		#endif
 	}
-
-	bool LoadFile(const std::wstring &fileName, std::unique_ptr<char[]> &data, size_t &dataSize);
 
 	ULONG GetRefCount(IUnknown *obj);
 }

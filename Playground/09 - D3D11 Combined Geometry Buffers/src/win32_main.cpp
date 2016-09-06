@@ -1,11 +1,10 @@
+#include "Simulation.hpp"
+
+//TODO: IGNORE macro redefinition
 #include <Windows.h>
 #include <windowsx.h>
-#include <atlbase.h> //ComPtr
-//#include <wrl\client.h> //TODO: Is this a lighter include for ComPtr?
 
-#include "Platform.h"
 #include "win32_window.hpp"
-#include "Simulation.hpp"
 #include "Renderer.hpp"
 
 #pragma region Foward Declarations
@@ -16,7 +15,7 @@ int WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 {
 	//Enable run-time memory check for debug builds.
-	#ifdef _DEBUG
+	#ifdef DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
@@ -25,9 +24,9 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 	Win32State win32State = {};
 	win32State.simMemory.size = Megabyte;
 
-	SimMemory*     simMemory     = &win32State.simMemory;
-	InputState*    input         = &win32State.simMemory.input;
-	RendererState* rendererState = nullptr;
+	SimMemory*    simMemory     = &win32State.simMemory;
+	InputState*   input         = &win32State.simMemory.input;
+	RendererState rendererState = {};
 
 
 	//Initialize
@@ -46,14 +45,8 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 			IS_FALSE, goto Failure);
 
 		//TODO: Formally define memory chunks
-		//TODO: Probably put rendererState on the stack and just it's memory in the simMemory
-		rendererState = (RendererState*) simMemory->bytes;
-		simMemory->bytes  = rendererState + 1;
-		simMemory->size  -= sizeof(*rendererState);
-		*rendererState = {};
-
-		rendererState->hwnd = win32State.hwnd;
-		IF( InitializeRenderer(rendererState),
+		rendererState.hwnd = win32State.hwnd;
+		IF( InitializeRenderer(&rendererState),
 			IS_FALSE, goto Failure);
 	}
 
@@ -90,7 +83,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 			if (win32State.wasResized)
 			{
 				win32State.wasResized = false;
-				ResizeRenderer(rendererState);
+				ResizeRenderer(&rendererState);
 			}
 
 			i64 currentTicks;
@@ -108,12 +101,12 @@ wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, i32 nCmdShow)
 
 			//TODO: What if the simulation wants to quit?
 			UpdateSimulation(simMemory);
-			Render(rendererState, input->t);
+			Render(&rendererState, input->t);
 
 			for (size_t i = 0; i < ArrayCount(input->buttons); ++i)
 				input->buttons[i].transitionCount = 0;
 
-			UpdateFrameStatistics(rendererState, input->t);
+			UpdateFrameStatistics(&rendererState, input->t);
 		}
 	}
 
@@ -123,7 +116,7 @@ Cleanup:
 	 * LEAK ALL THE THINGS!
 	 */
 
-	TeardownRenderer(rendererState);
+	TeardownRenderer(&rendererState);
 	return 0;
 
 Failure:
